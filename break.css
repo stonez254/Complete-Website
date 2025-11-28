@@ -131,7 +131,7 @@ html, body {
 }
 
 .category-section {
-    background-color: rgba(0, 0, 0, 0.3);
+   background-image: url('stock.jpg'); /* Or .png, depending on the file type */
     padding: 20px;
     border-radius: 10px;
     margin-bottom: 25px;
@@ -181,7 +181,7 @@ html, body {
 
 /* Card interactions */
 .link-card:hover {
-    background: rgba(255, 255, 255, 0.2);
+   background-image: url('stock.jpg'); /* Or .png, depending on the file type */
     transform: translateY(-5px) scale(1.02);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
 }
