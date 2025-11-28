@@ -32,6 +32,18 @@ html, body {
 }
 
 body {
+
+
+    /* Example using the image as the background for the body */
+
+    background-image: url('myImageBg.jpg'); /* Or .png, depending on the file type */
+    
+    /* Set positioning */
+    background-size: cover; 
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center center;
+
     /* Using a conic gradient to simulate a rotational, 3D blend */
     background: conic-gradient(from 45deg at 50% 50%, 
                 var(--color-black) 0%, 
