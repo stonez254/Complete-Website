@@ -14,7 +14,8 @@
 
 html, body {
     display: flex;
-    overflow-x: hidden; 
+    overflow-x: scroll; 
+    width: 100%;
     min-height: 100vh;
     font-family: 'Roboto', sans-serif;
     color: #e0e0e0;
