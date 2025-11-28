@@ -13,13 +13,14 @@
 }
 
 html, body {
-    display: flex;
-    overflow-x: hidden
-    ; 
+    /* FIX 1: Removed extra semicolon (;) from overflow-x: hidden */
+    overflow-x: hidden; 
     width: 100%;
     min-height: 100vh;
     font-family: 'Roboto', sans-serif;
     color: #e0e0e0;
+    /* FIX 2: Added height: 100% to html for better viewport behavior */
+    height: 100%;
 }
 
 /* --- 1. Background Gradient (Maroon + Black 3D Blended Rotational) --- */
@@ -38,10 +39,12 @@ body {
                 var(--color-black) 100%);
     background-size: 200% 200%; /* Allows for movement */
     animation: rotate-gradient 30s ease infinite;
+    
+    /* Ensure body is column flex for vertical layout */
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    /* Note: If content doesn't fill the screen, consider adding height: 100%; here too. */
 }
 
 /* --- 2. Horizontal Smoke Movement Animation (Overlay) --- */
@@ -105,8 +108,18 @@ body::before {
 
 #main-content {
     text-align: center;
-    padding: var(--nav-height) 20px 40px;
-    z-index: 5; /* Ensure content is above smoke overlay */
+    /* Using auto margins to center block content */
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1000px; 
+    width: 100%;
+    /* Ensure content starts below the fixed navigation bar */
+    padding-top: var(--nav-height); 
+    padding-left: 20px; 
+    padding-right: 20px;
+    padding-bottom: 40px;
+    z-index: 5; 
+    position: relative; 
 }
 
 /* Title: Glowing, Pulse, or Shimmer */
@@ -129,7 +142,7 @@ body::before {
 }
 
 #current-time {
-    font-family: 'Bungee Outline', sans-serif; /* Using Bungee Outline for the BongBong aesthetic */
+    font-family: 'Bungee Outline', sans-serif;
     font-size: clamp(1.5em, 5vw, 3em);
     color: var(--color-neon-blue);
     display: inline-block;
@@ -139,24 +152,19 @@ body::before {
     box-shadow: 0 0 15px var(--color-neon-blue);
 }
 
-/* --- 5. Futuristic Interactive Buttons --- */
-
-/* --- 5. Futuristic Interactive Buttons (UPDATED FIX) --- */
+/* --- 5. Futuristic Interactive Buttons (FIXED LAYOUT) --- */
 
 .navigation-grid {
     display: grid;
-    /* FIX: Reduced min width to ensure 3 columns fit on smaller screens for all 6 tabs */
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+    /* FIX APPLIED: Ensures 3 columns fit consistently on smallest screens */
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); 
     
-    gap: 25px; /* Tighter gap for better space utilization */
+    gap: 25px; 
     
     width: 100%; 
     
-    /* Ensure content has padding and uses full viewport width */
-    padding: 0 15px; 
-    
-    /* max-width removed if it was there, or kept if it applies to larger screens */
-    /* max-width: 1000px; */ 
+    /* Ensure padding is consistent with #main-content */
+    padding: 0; 
 }
 
 .nav-button {
@@ -165,7 +173,7 @@ body::before {
     align-items: center;
     justify-content: center;
     height: 120px;
-    background: rgba(0, 0, 0, 0.5); /* Transparent background */
+    background: rgba(0, 0, 0, 0.5);
     color: #fff;
     text-decoration: none;
     font-size: 1.2em;
