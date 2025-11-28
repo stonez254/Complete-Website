@@ -14,7 +14,8 @@
 
 html, body {
     display: flex;
-    overflow-x: hidden; 
+    overflow-x: hidden
+    ; 
     width: 100%;
     min-height: 100vh;
     font-family: 'Roboto', sans-serif;
@@ -147,7 +148,7 @@ body::before {
     /* FIX: Reduced min width to ensure 3 columns fit on smaller screens for all 6 tabs */
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
     
-    gap: 15px; /* Tighter gap for better space utilization */
+    gap: 25px; /* Tighter gap for better space utilization */
     
     width: 100%; 
     
