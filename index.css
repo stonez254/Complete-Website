@@ -140,13 +140,22 @@ body::before {
 
 /* --- 5. Futuristic Interactive Buttons --- */
 
+/* --- 5. Futuristic Interactive Buttons (UPDATED FIX) --- */
+
 .navigation-grid {
     display: grid;
-   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 15px;
-    max-width: 1000px;
-    width: 100%;
-    padding: 0 15px;
+    /* FIX: Reduced min width to ensure 3 columns fit on smaller screens for all 6 tabs */
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+    
+    gap: 15px; /* Tighter gap for better space utilization */
+    
+    width: 100%; 
+    
+    /* Ensure content has padding and uses full viewport width */
+    padding: 0 15px; 
+    
+    /* max-width removed if it was there, or kept if it applies to larger screens */
+    /* max-width: 1000px; */ 
 }
 
 .nav-button {
