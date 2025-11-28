@@ -18,7 +18,7 @@ html, body {
     overflow-x: hidden; 
     min-height: 100vh;
     font-family: 'Arial', sans-serif;
-    background: linear-gradient(135deg, var(--fun-bg), #243b55); /* Subtle gradient for depth */
+    background-image: url('myImageBg.jpg'); /* Or .png, depending on the file type */
     color: #f0f0f0;
     position: relative;
 }
@@ -34,7 +34,7 @@ html, body {
     justify-content: flex-end;
     align-items: center;
     padding: 0 15px;
-    background: rgba(20, 30, 48, 0.9);
+    background-image: url('myImageBg.jpg'); /* Or .png, depending on the file type */
     backdrop-filter: blur(4px);
     z-index: 100;
     border-bottom: 2px solid var(--accent-yellow);
