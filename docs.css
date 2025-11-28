@@ -60,7 +60,7 @@ html, body {
 /* --- 2. Main Content and Animated Title --- */
 
 #docs-main-container {
-    padding-top: calc(var(--nav-height) + 20px);
+    padding-top: 20px;
     padding-bottom: 40px;
     max-width: 1000px;
     margin: 0 auto;

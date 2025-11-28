@@ -168,3 +168,50 @@ document.addEventListener('DOMContentLoaded', () => {
     langSelector.dispatchEvent(new Event('change'));
 
 });
+
+// --- NEW FUNCTION: Full Screen Mode Toggle ---
+function toggleFullScreen() {
+    const doc = document.documentElement;
+    const navBar = document.getElementById('fixed-nav');
+    
+    // 1. Toggle Full Screen API
+    if (!document.fullscreenElement) {
+        if (doc.requestFullscreen) {
+            doc.requestFullscreen();
+        } else if (doc.webkitRequestFullscreen) { /* Safari */
+            doc.webkitRequestFullscreen();
+        } else if (doc.msRequestFullscreen) { /* IE11 */
+            doc.msRequestFullscreen();
+        }
+        
+        // 2. Hide the navigation bar element
+        if (navBar) {
+            navBar.style.display = 'none';
+        }
+        
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) { /* Safari */
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { /* IE11 */
+            document.msExitFullscreen();
+        }
+
+        // 3. Show the navigation bar element again
+        if (navBar) {
+            navBar.style.display = 'flex'; // Restore original display
+        }
+    }
+}
+
+// Attach the function to a new 'FULL SCREEN' button (assuming you add one in the HTML)
+document.addEventListener('DOMContentLoaded', () => {
+    // ... Existing DOMContentLoaded code ...
+    
+    // Find the new button and attach the handler
+    const fullScreenBtn = document.getElementById('fullscreen-btn');
+    if (fullScreenBtn) {
+        fullScreenBtn.addEventListener('click', toggleFullScreen);
+    }
+});
