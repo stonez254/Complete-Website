@@ -1,20 +1,20 @@
 {
-  "name": "My Web App",
-  "short_name": "WebApp",
+  "name": "EDERSTONE WEB",
+  "short_name": "E-WEB",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0057ff",
+  "background_color": "#000000",
+  "theme_color": "#800000",
   "icons": [
     {
-      "src": "icons/icon-192.png",
-      "sizes": "192x192",
+      "src": "/icons/apple-touch-icon.png",
+      "sizes": "180x180",
       "type": "image/png"
     },
     {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
+      "src": "/icons/favicon-96x96.png",
+      "sizes": "96x96",
       "type": "image/png"
     }
   ]
