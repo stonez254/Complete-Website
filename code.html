@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ederstone Web - Code Sandbox</title>
+    <link rel="stylesheet" href="code.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header id="fixed-nav">
+        <button id="home-btn" onclick="window.location.href='index.html'">HOME</button>
+        <button id="back-btn">BACK</button>
+    </header>
+
+    <main id="code-sandbox-container">
+        
+        <div id="controls-bar">
+            <label for="language-selector">Language:</label>
+            <select id="language-selector">
+                <option value="html">HTML</option>
+                <option value="css">CSS</option>
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python (Pyodide)</option>
+            </select>
+            
+            <button id="run-btn">RUN CODE 🚀</button>
+        </div>
+
+        <div id="output-screen-wrapper">
+            <div id="screen-glare"></div>
+            <iframe id="output-screen" sandbox="allow-scripts allow-forms allow-same-origin">
+                </iframe>
+            <div id="error-console" class="hidden">
+                Error: Check your syntax.
+            </div>
+        </div>
+        
+        <div id="editor-wrapper">
+            <textarea id="code-editor" placeholder="Write your code here..."></textarea>
+        </div>
+
+    </main>
+
+    <script src="code.js"></script>
+    
+    </body>
+</html>

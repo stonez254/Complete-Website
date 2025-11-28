@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ederstone Web - Tech Library</title>
+    <link rel="stylesheet" href="docs.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header id="fixed-nav">
+        <button id="home-btn" onclick="window.location.href='index.html'">HOME</button>
+        <button id="back-btn">BACK</button>
+    </header>
+
+    <main id="docs-main-container">
+
+        <section id="library-header">
+            <h1 id="library-title">EDERSTONE TECH LIBRARY</h1>
+            <p class="subtitle">Access digital documentation, tutorials, and cheat sheets.</p>
+        </section>
+
+        <div id="document-categories">
+            
+            <section class="doc-category" id="category-html">
+                <h2>HTML & Structure</h2>
+                <div class="doc-links">
+                    <a href="docs/html-cheatsheet.pdf" target="_blank" class="doc-link">HTML5 Cheat Sheet (PDF)</a>
+                    <a href="#" class="doc-link">Semantic HTML Tutorial</a>
+                    <a href="#" class="doc-link">Accessibility Guidelines</a>
+                </div>
+            </section>
+
+            <section class="doc-category" id="category-css">
+                <h2>CSS & Design</h2>
+                <div class="doc-links">
+                    <a href="#" class="doc-link">Advanced CSS Layouts (Flex & Grid)</a>
+                    <a href="#" class="doc-link">Keyframes Animation Handbook</a>
+                    <a href="docs/css-reference.pdf" target="_blank" class="doc-link">CSS Reference Manual</a>
+                </div>
+            </section>
+
+            <section class="doc-category" id="category-javascript">
+                <h2>JavaScript & Logic</h2>
+                <div class="doc-links">
+                    <a href="#" class="doc-link">ES6+ Features Guide</a>
+                    <a href="#" class="doc-link">Asynchronous JS Tutorial</a>
+                    <a href="#" class="doc-link">DOM Manipulation Best Practices</a>
+                </div>
+            </section>
+
+            <section class="doc-category" id="category-python">
+                <h2>Python & Backend</h2>
+                <div class="doc-links">
+                    <a href="#" class="doc-link">Python Basics for Web Dev</a>
+                    <a href="#" class="doc-link">Introduction to Django/Flask</a>
+                    <a href="docs/python-data-structures.pdf" target="_blank" class="doc-link">Python Data Structures (PDF)</a>
+                </div>
+            </section>
+            
+        </div>
+    </main>
+    
+    <div id="scroll-wave-overlay"></div>
+
+    <script src="docs.js"></script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EDERSTONE WEB - Home</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&family=Bungee+Outline&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header id="fixed-nav">
+        <button id="home-btn" onclick="window.location.href='index.html'">HOME</button>
+        <button id="back-btn">BACK</button>
+    </header>
+
+    <main id="main-content">
+        
+        <h1 id="main-title">EDERSTONE WEB</h1>
+
+        <div id="time-display">
+            <span id="current-time">00:00:00</span>
+        </div>
+
+        <div class="navigation-grid">
+            <a href="about.html" class="nav-button" data-label="Profile">
+                <span class="icon">👤</span> About
+            </a>
+            <a href="tools.html" class="nav-button" data-label="AI, Resources">
+                <span class="icon">🛠️</span> Tools
+            </a>
+            <a href="docs.html" class="nav-button" data-label="Library">
+                <span class="icon">📚</span> Docs
+            </a>
+            <a href="code.html" class="nav-button" data-label="Sandbox">
+                <span class="icon">💻</span> Code
+            </a>
+            <a href="break.html" class="nav-button" data-label="Entertainment">
+                <span class="icon">🎉</span> Break
+            </a>
+            <a href="test.html" class="nav-button" data-label="Ideas, Projects">
+                <span class="icon">💡</span> Tests
+            </a>
+        </div>
+
+    </main>
+
+    <script src="index.js"></script>
+</body>
+</html>

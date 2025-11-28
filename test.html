@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ederstone Web - Project Ideas</title>
+    <link rel="stylesheet" href="test.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+    <header id="fixed-nav">
+        <button id="home-btn" onclick="window.location.href='index.html'">HOME</button>
+        <button id="back-btn">BACK</button>
+    </header>
+
+    <main id="test-main-container">
+
+        <h1 class="page-title">🧠 Project Ideas & Challenges</h1>
+        <p class="subtitle">Fuel your creativity with these coding project starting points.</p>
+        
+        <div id="filter-controls">
+            <label for="difficulty-filter">Filter Difficulty:</label>
+            <select id="difficulty-filter">
+                <option value="all">All Levels</option>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+            </select>
+        </div>
+
+        <div id="project-ideas-list">
+            
+            <article class="project-card" data-difficulty="beginner">
+                <div class="card-header">
+                    <h2>Simple To-Do List App</h2>
+                    <span class="difficulty-tag beginner">Beginner</span>
+                </div>
+                <div class="card-body">
+                    <p class="description">A classic project. Create a list that allows users to add, delete, and mark tasks as complete using local storage.</p>
+                    <button class="expand-btn"><i class="fas fa-plus-circle"></i> Expand Details</button>
+                    <div class="details-content hidden">
+                        <h3>Tech Focus:</h3>
+                        <ul>
+                            <li>HTML, CSS, Vanilla JavaScript (DOM manipulation)</li>
+                            <li>Local Storage API</li>
+                        </ul>
+                    </div>
+                </div>
+            </article>
+
+            <article class="project-card" data-difficulty="intermediate">
+                <div class="card-header">
+                    <h2>Weather Dashboard</h2>
+                    <span class="difficulty-tag intermediate">Intermediate</span>
+                </div>
+                <div class="card-body">
+                    <p class="description">Fetch weather data from a public API (like OpenWeatherMap) and display current and forecasted conditions with custom icons.</p>
+                    <button class="expand-btn"><i class="fas fa-plus-circle"></i> Expand Details</button>
+                    <div class="details-content hidden">
+                        <h3>Tech Focus:</h3>
+                        <ul>
+                            <li>Async/Await & Fetch API</li>
+                            <li>Data processing (JSON)</li>
+                            <li>Responsive design</li>
+                        </ul>
+                    </div>
+                </div>
+            </article>
+
+            <article class="project-card" data-difficulty="advanced">
+                <div class="card-header">
+                    <h2>Real-time Chat Application</h2>
+                    <span class="difficulty-tag advanced">Advanced</span>
+                </div>
+                <div class="card-body">
+                    <p class="description">Build a multi-user chat interface using WebSockets for instant messaging, featuring user login and persistent messages.</p>
+                    <button class="expand-btn"><i class="fas fa-plus-circle"></i> Expand Details</button>
+                    <div class="details-content hidden">
+                        <h3>Tech Focus:</h3>
+                        <ul>
+                            <li>Node.js (or Python) Backend</li>
+                            <li>WebSockets (e.g., Socket.io)</li>
+                            <li>Basic database (e.g., SQLite)</li>
+                        </ul>
+                    </div>
+                </div>
+            </article>
+
+        </div>
+    </main>
+
+    <script src="test.js"></script>
+</body>
+</html>

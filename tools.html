@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ederstone Web - Development Tools</title>
+    <link rel="stylesheet" href="tools.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+    <header id="fixed-nav">
+        <button id="home-btn" onclick="window.location.href='index.html'">HOME</button>
+        <button id="back-btn">BACK</button>
+    </header>
+
+    <main id="tools-main-container">
+
+        <h1 class="page-title">⚙️ Essential Development Tools</h1>
+        <p class="subtitle">Curated lists of websites, AI, and communities to enhance your workflow.</p>
+        
+        <section class="tool-category" id="coding-websites">
+            <h2>💻 Top Free Coding Websites</h2>
+            <div class="tool-grid">
+                <a href="https://freecodecamp.org" target="_blank" class="tool-link-card" data-category="web">
+                    <i class="fab fa-free-code-camp"></i>
+                    <span>FreeCodeCamp</span>
+                </a>
+                <a href="https://codepen.io" target="_blank" class="tool-link-card" data-category="design">
+                    <i class="fab fa-codepen"></i>
+                    <span>CodePen</span>
+                </a>
+                <a href="https://w3schools.com" target="_blank" class="tool-link-card" data-category="docs">
+                    <i class="fas fa-book"></i>
+                    <span>W3Schools</span>
+                </a>
+                <a href="https://hackerrank.com" target="_blank" class="tool-link-card" data-category="challenge">
+                    <i class="fas fa-code"></i>
+                    <span>HackerRank</span>
+                </a>
+                <a href="https://khanacademy.org" target="_blank" class="tool-link-card" data-category="education">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Khan Academy</span>
+                </a>
+            </div>
+        </section>
+
+        <section class="tool-category" id="ai-tools">
+            <h2>🤖 Top AI Tools for Developers</h2>
+            <div class="tool-grid">
+                <a href="https://github.com/features/copilot" target="_blank" class="tool-link-card" data-category="code">
+                    <i class="fas fa-robot"></i>
+                    <span>GitHub Copilot</span>
+                </a>
+                <a href="https://chatgpt.com" target="_blank" class="tool-link-card" data-category="chat">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>ChatGPT</span>
+                </a>
+                <a href="https://tabnine.com" target="_blank" class="tool-link-card" data-category="code">
+                    <i class="fas fa-brain"></i>
+                    <span>Tabnine</span>
+                </a>
+                <a href="https://gemini.google.com" target="_blank" class="tool-link-card" data-category="chat">
+                    <i class="fas fa-meteor"></i>
+                    <span>Gemini</span>
+                </a>
+            </div>
+        </section>
+
+        <section class="tool-category" id="coding-communities">
+            <h2>🤝 Top Coding Communities</h2>
+            <div class="tool-grid">
+                <a href="https://stackoverflow.com" target="_blank" class="tool-link-card" data-category="help">
+                    <i class="fab fa-stack-overflow"></i>
+                    <span>Stack Overflow</span>
+                </a>
+                <a href="https://discord.com" target="_blank" class="tool-link-card" data-category="chat">
+                    <i class="fab fa-discord"></i>
+                    <span>Discord Servers</span>
+                </a>
+                <a href="https://reddit.com/r/programming" target="_blank" class="tool-link-card" data-category="forum">
+                    <i class="fab fa-reddit-alien"></i>
+                    <span>r/Programming</span>
+                </a>
+                <a href="https://dev.to" target="_blank" class="tool-link-card" data-category="blog">
+                    <i class="fab fa-dev"></i>
+                    <span>DEV Community</span>
+                </a>
+            </div>
+        </section>
+        
+        <section class="tool-category" id="other-platforms">
+            <h2>🌐 Other Useful Platforms</h2>
+            <div class="tool-grid">
+                <a href="https://trello.com" target="_blank" class="tool-link-card" data-category="project">
+                    <i class="fab fa-trello"></i>
+                    <span>Trello (PM)</span>
+                </a>
+                <a href="https://figma.com" target="_blank" class="tool-link-card" data-category="design">
+                    <i class="fab fa-figma"></i>
+                    <span>Figma (UI/UX)</span>
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="tools.js"></script>
+</body>
+</html>
