@@ -164,7 +164,7 @@ body::before {
     /* FIX APPLIED: Ensures 3 columns fit consistently on smallest screens */
     grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); 
     
-    gap: 25px; 
+    gap: 50px; 
     
     width: 100%; 
     
