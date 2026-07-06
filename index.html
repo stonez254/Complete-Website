@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+l<!-- Standard Favicon -->
+<link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
+<link rel="icon" type="image/x-icon" href="assets/icons/favicon.ico">
+
+<!-- Touch Icons -->
+<link rel="apple-touch-icon" sizes="192x192" href="assets/icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="assets/icons/icon-512.png">
+
+<!-- Web App Manifest -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#000000">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EDERSTONE WEB - Home</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Bungee+Outline&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div id="pixel-background"></div> 
+
+    <header id="fixed-nav">
+        <button id="home-btn" onclick="window.location.href='index.html'">HOME</button>
+        <button id="back-btn">BACK</button>
+    </header>
+
+    <main id="main-content">
+        
+        <h1 id="main-title">EDERSTONE WEB</h1>
+
+        <div id="time-display">
+            <span id="current-time">00:00:00</span>
+        </div>
+
+        <div id="game-console"></div>
+
+        <div class="navigation-grid">
+            <a href="about.html" class="nav-button" data-label="Profile">
+                <span class="icon">👤</span> About
+            </a>
+            <a href="tools.html" class="nav-button" data-label="AI, Resources">
+                <span class="icon">🛠️</span> Tools
+            </a>
+            <a href="docs.html" class="nav-button" data-label="Library">
+                <span class="icon">📚</span> Docs
+            </a>
+            <a href="code.html" class="nav-button" data-label="Sandbox">
+                <span class="icon">💻</span> Code
+            </a>
+            <a href="break.html" class="nav-button" data-label="Entertainment">
+                <span class="icon">🎉</span> Break
+            </a>
+            <a href="test.html" class="nav-button" data-label="Ideas, Projects">
+                <span class="icon">💡</span> Tests
+            </a>
+        </div>
+
+    </main>
+
+    <script src="index.js"></script>
+    <script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/service-worker.js")
+      .catch(err => console.log("SW registration failed:", err));
+  }
+</script>
+
+</body>
+</html>
