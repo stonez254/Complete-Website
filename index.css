@@ -135,7 +135,7 @@ body::before {
 }
 
 #main-title {
-    font-family: 'Bungee Inline', cursive;
+    font-family: 'chiller', cursive;
     font-size: clamp(2.5em, 8vw, 5em);
     color: #fff;
     margin-bottom: 20px;
@@ -147,12 +147,12 @@ body::before {
 }
 
 #current-time {
-    font-family: 'Bungee Outline', sans-serif;
+    font-family: 'Chiller', sans-serif;
     font-size: clamp(1.5em, 5vw, 3em);
     color: var(--color-neon-blue);
     display: inline-block;
     padding: 5px 10px;
-    border: 1px solid rgba(0, 255, 255, 0.5);
+    border: 1px solid white;
     background-color: rgba(0, 0, 0, 0.4);
     box-shadow: 0 0 15px var(--color-neon-blue);
 }
