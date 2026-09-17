@@ -1,66 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-<!-- Standard Favicon -->
-<link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
-<link rel="icon" type="image/x-icon" href="assets/icons/favicon.ico">
-
-<!-- Touch Icons -->
-<link rel="apple-touch-icon" sizes="192x192" href="assets/icons/icon-192.png">
-<link rel="apple-touch-icon" sizes="512x512" href="assets/icons/icon-512.png">
-
-<!-- Web App Manifest -->
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#000000">
-
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ederstone Web - Code basic languages for free Compilation</title>
-    <link rel="stylesheet" href="code.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Ederstone Code Lab — an interactive browser sandbox for experimenting with HTML, CSS and JavaScript.">
+  <title>Code Lab | Ederstone</title>
+  <link rel="stylesheet" href="code.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-
-    <header id="fixed-nav">
-        <button id="fullscreen-btn">FULL SCREEN</button>
-        
-      
-    </header>
-
-    <main id="code-sandbox-container">
-        
-        <div id="controls-bar">
-            <label for="language-selector">Language:</label>
-            <select id="language-selector">
-                <option value="html">HTML</option>
-                <option value="css">CSS</option>
-                <option value="javascript">JavaScript</option>
-                <option value="python">Python (Pyodide)</option>
-            </select>
-            
-            <button id="run-btn">RUN CODE 🚀</button>
-        </div>
-
-        <div id="output-screen-wrapper">
-            <div id="screen-glare"></div>
-            <iframe id="output-screen" sandbox="allow-scripts allow-forms allow-same-origin">
-                </iframe>
-            <div id="error-console" class="hidden">
-                Error: Check your syntax.
-            </div>
-        </div>
-        
-        <div id="editor-wrapper">
-            <textarea id="code-editor" placeholder="Write your code here..."></textarea>
-        </div>
-
-    </main>
-
-    <script src="code.js"></script>
-    
-    </body>
+  <header class="site-header"><a class="brand" href="index.html"><span>EDER</span>STONE</a><nav><a href="index.html">Home</a><a href="about.html">About</a><a href="code.html" aria-current="page">Code Lab</a></nav><a class="header-cta" href="index.html#contact">Contact ↗</a></header>
+  <main>
+    <div class="intro"><div><p class="eyebrow">EDERSTONE / CODE LAB</p><h1>Write it.<br><em>Run it.</em></h1></div><p>Experiment with front-end code directly in the browser. Choose a language, edit the example and run your work.</p></div>
+    <section class="lab" aria-label="Code playground">
+      <div class="controls"><label for="language-selector">Language</label><select id="language-selector"><option value="html">HTML</option><option value="css">CSS</option><option value="javascript">JavaScript</option><option value="python">Python</option></select><button id="run-btn">Run code <span>▶</span></button></div>
+      <div class="workspace"><div class="editor-pane"><div class="pane-head"><span>EDITOR</span><span>Ctrl + Enter</span></div><textarea id="code-editor" spellcheck="false" aria-label="Code editor" placeholder="Write your code here..."></textarea></div><div class="output-pane"><div class="pane-head"><span>OUTPUT</span><span>LIVE SANDBOX</span></div><iframe id="output-screen" title="Code output" sandbox="allow-scripts allow-forms"></iframe><div id="error-console" class="error hidden"></div></div></div>
+    </section>
+    <p class="lab-note">HTML, CSS and JavaScript run locally in the browser. Python requires a configured Python runtime and is shown as a supported option for future expansion.</p>
+  </main>
+  <footer><span>© 2026 Ederstone Code Lab</span><a href="index.html">Back to portfolio ↗</a></footer>
+  <script src="code.js"></script>
+</body>
 </html>
