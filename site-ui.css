@@ -22,3 +22,13 @@
 html.ui-light .global-nav a[aria-current="page"]{color:#fff;background:linear-gradient(135deg,#c9143b,#6d3fe8);border-color:rgba(255,255,255,.34);box-shadow:0 0 20px rgba(201,20,59,.18)}
 html.ui-light .global-nav .ui-code[aria-current="page"]{color:#fff;background:linear-gradient(135deg,#c9143b,#d97706);border-color:rgba(255,255,255,.4)}
 @media(prefers-reduced-motion:reduce){.global-nav a[aria-current="page"]{transition:none}}
+
+/* EDERSTONE WORKSPACE BACKDROP */
+body{position:relative;isolation:isolate;background-color:#05060d!important;background-image:radial-gradient(circle at 12% 18%,rgba(0,217,255,.10),transparent 24%),radial-gradient(circle at 88% 30%,rgba(255,36,72,.11),transparent 25%),radial-gradient(circle at 50% 92%,rgba(124,60,255,.10),transparent 30%),linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px)!important;background-size:auto,auto,auto,44px 44px,44px 44px;background-attachment:fixed}
+body:before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(circle at 50% 50%,transparent 0 34%,rgba(5,6,13,.34) 78%,rgba(5,6,13,.72) 100%),linear-gradient(120deg,transparent 0 48%,rgba(0,217,255,.025) 50%,transparent 52%);mix-blend-mode:screen}
+body:after{content:"∑  ∫  λ  <\/ >  { }  01  10  ∞  ∆  SQL  JAVA  CSS  JS  PYTHON  EDERSTONE";position:fixed;inset:auto 0 0 0;height:32px;z-index:-1;pointer-events:none;overflow:hidden;white-space:nowrap;font:600 .58rem/32px monospace;letter-spacing:.22em;color:rgba(0,217,255,.08);text-align:center;mask-image:linear-gradient(90deg,transparent,#000 15%,#000 85%,transparent)}
+html.ui-light body{background-color:#edf2f7!important;background-image:radial-gradient(circle at 12% 18%,rgba(0,124,156,.10),transparent 24%),radial-gradient(circle at 88% 30%,rgba(201,20,59,.08),transparent 25%),radial-gradient(circle at 50% 92%,rgba(109,63,232,.07),transparent 30%),linear-gradient(rgba(15,23,42,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(15,23,42,.045) 1px,transparent 1px)!important;background-size:auto,auto,auto,44px 44px,44px 44px;background-attachment:fixed}
+html.ui-light body:before{background:radial-gradient(circle at 50% 50%,transparent 0 34%,rgba(237,242,247,.3) 78%,rgba(237,242,247,.72) 100%)}
+html.ui-light body:after{color:rgba(0,124,156,.09)}
+@media(max-width:760px){body{background-size:auto,auto,auto,30px 30px,30px 30px}body:after{font-size:.5rem;letter-spacing:.12em}}
+@media(prefers-reduced-motion:reduce){body{background-attachment:scroll}}
