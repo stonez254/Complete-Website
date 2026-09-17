@@ -1,217 +1,118 @@
 document.addEventListener('DOMContentLoaded', () => {
+  const editor = document.getElementById('code-editor');
+  const langSelector = document.getElementById('language-selector');
+  const runBtn = document.getElementById('run-btn');
+  const outputScreen = document.getElementById('output-screen');
+  const errorConsole = document.getElementById('error-console');
 
-    const editor = document.getElementById('code-editor');
-    const langSelector = document.getElementById('language-selector');
-    const runBtn = document.getElementById('run-btn');
-    const outputScreen = document.getElementById('output-screen');
-    const errorConsole = document.getElementById('error-console');
-    const outputWrapper = document.getElementById('output-screen-wrapper');
+  if (!editor || !langSelector || !runBtn || !outputScreen || !errorConsole) return;
 
-    // --- 1. Navigation and Transition Handlers (General Rules) ---
+  document.body.style.transition = 'opacity 0.25s ease';
+  document.body.style.opacity = '1';
 
-    const homeBtn = document.getElementById('home-btn');
-    const backBtn = document.getElementById('back-btn');
+  const examples = {
+    html: '<main>\n  <h1>Hello, Ederstone.</h1>\n  <p>Build something useful.</p>\n</main>',
+    css: 'body {\n  font-family: system-ui, sans-serif;\n  padding: 2rem;\n  background: #111;\n  color: #fff;\n}\nh1 { letter-spacing: -0.04em; }',
+    javascript: 'const message = "Code executed successfully!";\nconsole.log(message);\ndocument.body.innerHTML += `<p>${message}</p>`;',
+    python: 'print("Hello from Python")\n\nfor n in range(5):\n    print(n)'
+  };
 
-    // Smooth transition function
-    function animateTransition(targetUrl) {
-        document.body.style.opacity = 0; 
-        setTimeout(() => {
-            window.location.href = targetUrl;
-        }, 400); 
-    }
-    
-    // Page load transition
-    document.body.style.transition = 'opacity 0.4s ease-in-out';
-    document.body.style.opacity = 1;
+  function showError(message) {
+    errorConsole.textContent = `Error: ${message}`;
+    errorConsole.classList.remove('hidden');
+  }
 
-    homeBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        animateTransition('index.html');
-    });
+  function clearError() {
+    errorConsole.textContent = '';
+    errorConsole.classList.add('hidden');
+  }
 
-    backBtn.addEventListener('click', () => {
-        if (window.history.length > 2) {
-            window.history.back();
-        } else {
-            console.log("No substantial history found, navigating to HOME.");
-            animateTransition('index.html');
-        }
-    });
+  function writeOutput(documentText) {
+    const doc = outputScreen.contentDocument;
+    doc.open();
+    doc.write(documentText);
+    doc.close();
+  }
 
-    // --- 2. Code Execution Logic ---
+  function runCode() {
+    clearError();
+    const code = editor.value;
+    const language = langSelector.value;
 
-    // Animation Trigger
-    function triggerAnimation() {
-        outputWrapper.classList.remove('screen-active');
-        // Force reflow/repaint to restart the animation
-        void outputWrapper.offsetWidth; 
-        outputWrapper.classList.add('screen-active');
-    }
+    try {
+      if (language === 'html') {
+        writeOutput(code);
+        return;
+      }
 
-    function showError(message) {
-        errorConsole.textContent = `Error: ${message}`;
-        errorConsole.classList.remove('hidden');
-    }
+      if (language === 'css') {
+        writeOutput(`<!doctype html><html><head><meta charset="utf-8"><style>${code}</style></head><body><h1>CSS Output</h1><p>Your CSS is running in the sandbox.</p></body></html>`);
+        return;
+      }
 
-    function clearError() {
-        errorConsole.classList.add('hidden');
-    }
+      if (language === 'javascript') {
+        const encoded = encodeURIComponent(code);
+        writeOutput(`<!doctype html><html><body><div id="output"></div><script>
+          const output = document.getElementById('output');
+          const originalLog = console.log;
+          console.log = (...args) => {
+            const line = document.createElement('div');
+            line.textContent = args.map(String).join(' ');
+            output.appendChild(line);
+            originalLog(...args);
+          };
+          try {
+            const source = decodeURIComponent('${encoded}');
+            new Function(source)();
+          } catch (error) {
+            const line = document.createElement('pre');
+            line.textContent = 'JS Error: ' + error.message;
+            output.appendChild(line);
+          }
+        <\/script></body></html>`);
+        return;
+      }
 
-    function runCode() {
-        clearError();
-        triggerAnimation();
-
-        const code = editor.value;
-        const language = langSelector.value;
-        const iframeDoc = outputScreen.contentWindow.document;
-
-        // Clear previous output
-        iframeDoc.open();
-        iframeDoc.write('');
-        iframeDoc.close();
-        
-        try {
-            switch (language) {
-                case 'html':
-                    // If HTML, write the entire content to the iframe
-                    iframeDoc.open();
-                    iframeDoc.write(code);
-                    iframeDoc.close();
-                    break;
-
-                case 'css':
-                    // If CSS, wrap it in style tags and inject into the iframe head
-                    iframeDoc.open();
-                    iframeDoc.write(`<!DOCTYPE html><html><head><style>${code}</style></head><body><h1>CSS Output</h1><p>The CSS below has been applied to this default content.</p></body></html>`);
-                    iframeDoc.close();
-                    break;
-                
-                case 'javascript':
-                    // If JavaScript, inject a basic HTML structure and run the script
-                    iframeDoc.open();
-                    iframeDoc.write(`
-                        <!DOCTYPE html>
-                        <html>
-                        <body>
-                            <p id="output-js">JavaScript Output:</p>
-                            <script>
-                                // Capture console output to display on the page
-                                const originalConsoleLog = console.log;
-                                console.log = (...args) => {
-                                    document.getElementById('output-js').innerHTML += '<br>' + args.join(' ');
-                                    originalConsoleLog(...args);
-                                };
-                                try {
-                                    ${code}
-                                } catch (e) {
-                                    document.getElementById('output-js').innerHTML += '<br><span style="color: red;">JS Error: ' + e.message + '</span>';
-                                }
-                            </script>
-                        </body>
-                        </html>
-                    `);
-                    iframeDoc.close();
-                    break;
-                
-                case 'python':
-                    // Basic Python (using Pyodide or simple evaluation notes)
-                    // NOTE: Pyodide is required for in-browser Python execution. 
-                    // This function assumes the Pyodide environment is set up.
-                    // For a true sandbox, you would check if Pyodide is loaded and execute:
-                    /*
-                    if (window.pyodide) {
-                        const output = window.pyodide.runPython(code);
-                        iframeDoc.open();
-                        iframeDoc.write(`Python Output:<pre>${output}</pre>`);
-                        iframeDoc.close();
-                    } else {
-                        showError("Python execution requires the Pyodide library. Please load it in the HTML.");
-                    }
-                    */
-                    // Fallback for demonstration without Pyodide load:
-                    showError("Python execution environment not fully configured in this sandbox. Requires Pyodide.");
-                    break;
+      if (language === 'python') {
+        const encoded = encodeURIComponent(code);
+        writeOutput(`<!doctype html><html><head><meta charset="utf-8"><script src="https://cdn.jsdelivr.net/pyodide/v0.28.2/full/pyodide.js"><\/script></head><body><pre id="output">Loading Python runtime...</pre><script>
+          const output = document.getElementById('output');
+          (async () => {
+            try {
+              const pyodide = await loadPyodide();
+              const source = decodeURIComponent('${encoded}');
+              let text = '';
+              pyodide.setStdout({ batched: value => { text += value + '\\n'; } });
+              pyodide.setStderr({ batched: value => { text += value + '\\n'; } });
+              await pyodide.runPythonAsync(source);
+              output.textContent = text || 'Python code executed successfully.';
+            } catch (error) {
+              output.textContent = 'Python Error: ' + error.message;
             }
-        } catch (e) {
-            showError(`General Execution Error: ${e.message}`);
-        }
+          })();
+        <\/script></body></html>`);
+        return;
+      }
+
+      showError('Unsupported language.');
+    } catch (error) {
+      showError(error.message);
     }
+  }
 
-    // --- 3. Event Listeners ---
-    runBtn.addEventListener('click', runCode);
+  runBtn.addEventListener('click', runCode);
 
-    // Optional: Run code on Ctrl+Enter
-    editor.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-            e.preventDefault();
-            runCode();
-        }
-    });
-
-    // Optional: Populate with a default example on load
-    langSelector.addEventListener('change', () => {
-        const lang = langSelector.value;
-        let defaultCode = '';
-        if (lang === 'html') {
-            defaultCode = '<h1>Hello Ederstone Code!</h1>\n<p style="color: blue;">Welcome to the HTML Sandbox.</p>';
-        } else if (lang === 'css') {
-            defaultCode = 'body { background-color: #222; }\nh1 { color: orange; text-shadow: 0 0 5px red; }';
-        } else if (lang === 'javascript') {
-            defaultCode = 'function greeting() {\n  let msg = "Code executed successfully!";\n  console.log(msg);\n}\ngreeting();\n// Try changing console.log to alert() or document.write() for different results.';
-        } else if (lang === 'python') {
-            defaultCode = 'def fibonacci(n):\n    a, b = 0, 1\n    for _ in range(n):\n        print(a)\n        a, b = b, a + b\n\nfibonacci(5)';
-        }
-        editor.value = defaultCode;
-    });
-
-    // Initialize with a default example
-    langSelector.dispatchEvent(new Event('change'));
-
-});
-
-// --- NEW FUNCTION: Full Screen Mode Toggle ---
-function toggleFullScreen() {
-    const doc = document.documentElement;
-    const navBar = document.getElementById('fixed-nav');
-    
-    // 1. Toggle Full Screen API
-    if (!document.fullscreenElement) {
-        if (doc.requestFullscreen) {
-            doc.requestFullscreen();
-        } else if (doc.webkitRequestFullscreen) { /* Safari */
-            doc.webkitRequestFullscreen();
-        } else if (doc.msRequestFullscreen) { /* IE11 */
-            doc.msRequestFullscreen();
-        }
-        
-        // 2. Hide the navigation bar element
-        if (navBar) {
-            navBar.style.display = 'none';
-        }
-        
-    } else {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) { /* Safari */
-            document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) { /* IE11 */
-            document.msExitFullscreen();
-        }
-
-        // 3. Show the navigation bar element again
-        if (navBar) {
-            navBar.style.display = 'flex'; // Restore original display
-        }
+  editor.addEventListener('keydown', event => {
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+      event.preventDefault();
+      runCode();
     }
-}
+  });
 
-// Attach the function to a new 'FULL SCREEN' button (assuming you add one in the HTML)
-document.addEventListener('DOMContentLoaded', () => {
-    // ... Existing DOMContentLoaded code ...
-    
-    // Find the new button and attach the handler
-    const fullScreenBtn = document.getElementById('fullscreen-btn');
-    if (fullScreenBtn) {
-        fullScreenBtn.addEventListener('click', toggleFullScreen);
-    }
+  langSelector.addEventListener('change', () => {
+    editor.value = examples[langSelector.value] || '';
+    clearError();
+  });
+
+  editor.value = examples[langSelector.value] || examples.html;
 });
