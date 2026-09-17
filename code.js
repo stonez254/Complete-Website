@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const examples = {
     html: `<main style="font-family:system-ui;padding:32px"><h1>Hello, Ederstone.</h1><p>Build something useful.</p></main>`,
     css: `body {\n  margin: 0;\n  min-height: 100vh;\n  display: grid;\n  place-items: center;\n  background: linear-gradient(135deg, #05060b, #35101d);\n  color: white;\n  font-family: system-ui;\n}\nh1 { letter-spacing: -0.04em; }`,
-    javascript: `const message = "Code executed successfully!";\nconsole.log(message);\ndocument.body.innerHTML = `<main style="font:600 18px system-ui;padding:32px"><h2>${message}</h2></main>`;`,
+    javascript: `const message = "Code executed successfully!";\nconsole.log(message);\ndocument.body.innerHTML = \`<main style="font:600 18px system-ui;padding:32px"><h2>\${message}</h2></main>\`;`,
     python: `print("Hello from Python")\n\nfor n in range(5):\n    print(n)`
   };
 
@@ -37,9 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     pulseOutput();
   }
 
-  function runHTML(code) {
-    writeOutput(code);
-  }
+  function runHTML(code) { writeOutput(code); }
 
   function runCSS(code) {
     writeOutput(`<!doctype html><html><head><meta charset="utf-8"><style>${code}</style></head><body><main><h1>CSS Output</h1><p>Your stylesheet is running in the sandbox.</p></main></body></html>`);
@@ -92,15 +90,14 @@ document.addEventListener('DOMContentLoaded', () => {
   function runCode() {
     clearError();
     runBtn.disabled = true;
-    runBtn.querySelector('span').textContent = '●';
-
+    const icon = runBtn.querySelector('span');
+    if (icon) icon.textContent = '●';
     try {
-      const code = editor.value;
       switch (langSelector.value) {
-        case 'html': runHTML(code); break;
-        case 'css': runCSS(code); break;
-        case 'javascript': runJavaScript(code); break;
-        case 'python': runPython(code); break;
+        case 'html': runHTML(editor.value); break;
+        case 'css': runCSS(editor.value); break;
+        case 'javascript': runJavaScript(editor.value); break;
+        case 'python': runPython(editor.value); break;
         default: throw new Error('Unsupported language.');
       }
     } catch (error) {
@@ -108,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } finally {
       setTimeout(() => {
         runBtn.disabled = false;
-        runBtn.querySelector('span').textContent = '▶';
+        if (icon) icon.textContent = '▶';
       }, 350);
     }
   }
@@ -122,9 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (event.key === 'Tab') {
       event.preventDefault();
-      const start = editor.selectionStart;
-      const end = editor.selectionEnd;
-      editor.setRangeText('  ', start, end, 'end');
+      editor.setRangeText('  ', editor.selectionStart, editor.selectionEnd, 'end');
     }
   });
 
