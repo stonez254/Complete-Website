@@ -11,14 +11,14 @@
 .about-profile-card figcaption span{font-size:.58rem;letter-spacing:.12em;color:var(--cyan)}
 @media(max-width:760px){.about-profile-card{margin-bottom:22px}.about-profile-photo{max-height:520px}}
 
-/* EDERSTONE MEANING · RESPONSIVE PLANETARY ORBIT */
+/* EDERSTONE MEANING · PREMIUM PLANETARY SYSTEM */
 .about-hero .ederstone-stack{
-  --orbit-size:min(390px,88vw);
-  --planet-size:112px;
-  --orbit-radius:145px;
+  --orbit-size:min(410px,90vw);
+  --planet-size:104px;
+  --orbit-radius:calc(var(--orbit-size) * .37);
   width:var(--orbit-size);
   height:var(--orbit-size);
-  margin:38px auto 20px;
+  margin:42px auto 28px;
   position:relative;
   display:block;
   isolation:isolate;
@@ -28,21 +28,21 @@
   position:absolute;
   left:50%;
   top:50%;
-  width:44%;
+  width:42%;
   aspect-ratio:1;
   transform:translate(-50%,-50%);
   display:grid;
   place-items:center;
-  border:1px solid rgba(255,255,255,.18);
+  border:2px solid rgba(255,36,72,.72);
   border-radius:50%;
-  color:rgba(255,255,255,.8);
-  font:800 .72rem "Space Grotesk",sans-serif;
-  letter-spacing:.22em;
-  background:radial-gradient(circle,rgba(124,60,255,.14),rgba(7,8,18,.9) 68%);
-  box-shadow:0 0 45px rgba(124,60,255,.12),inset 0 0 35px rgba(0,217,255,.05);
+  color:#fff;
+  font:800 clamp(.48rem,1.7vw,.7rem)/1 "Space Grotesk",sans-serif;
+  letter-spacing:.18em;
+  text-align:center;
+  background:radial-gradient(circle at 35% 30%,rgba(255,36,72,.2),rgba(124,60,255,.12) 42%,rgba(7,8,18,.96) 72%);
+  box-shadow:0 0 0 7px rgba(255,36,72,.035),0 0 35px rgba(255,36,72,.22),0 0 70px rgba(124,60,255,.13),inset 0 0 30px rgba(0,217,255,.06);
   z-index:2;
 }
-/* The central EDERSTONE border IS the planetary orbit. */
 .about-hero .ederstone-stack:after{
   content:"";
   position:absolute;
@@ -51,9 +51,9 @@
   width:74%;
   height:74%;
   transform:translate(-50%,-50%);
-  border:1px solid rgba(0,217,255,.28);
+  border:1px solid rgba(255,36,72,.55);
   border-radius:50%;
-  box-shadow:0 0 24px rgba(0,217,255,.05),inset 0 0 18px rgba(124,60,255,.04);
+  box-shadow:0 0 18px rgba(255,36,72,.12),0 0 42px rgba(255,36,72,.06);
   z-index:1;
   pointer-events:none;
 }
@@ -64,149 +64,145 @@
   top:50%;
   width:var(--planet-size);
   height:var(--planet-size);
-  padding:13px;
+  padding:11px;
   border-radius:50%;
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
   text-align:center;
-  border:1px solid rgba(255,255,255,.16);
-  background:radial-gradient(circle at 35% 25%,rgba(24,28,48,.98),rgba(7,8,18,.96));
-  box-shadow:0 10px 30px rgba(0,0,0,.28),0 0 24px rgba(0,217,255,.06);
+  border:1px solid rgba(255,255,255,.18);
+  background:radial-gradient(circle at 32% 22%,rgba(40,43,67,.98),rgba(10,11,22,.98) 70%);
+  box-shadow:0 10px 28px rgba(0,0,0,.4),0 0 18px rgba(255,36,72,.08);
   transform-origin:center;
   z-index:3;
-  animation:ederstonePlanetOrbit 18s linear infinite;
+  animation:ederstonePlanetOrbit 16s linear infinite;
   will-change:transform;
+  backface-visibility:hidden;
 }
 .about-hero .ederstone-box:nth-child(1){animation-delay:0s}
-.about-hero .ederstone-box:nth-child(2){animation-delay:-4.5s}
-.about-hero .ederstone-box:nth-child(3){animation-delay:-9s}
-.about-hero .ederstone-box:nth-child(4){animation-delay:-13.5s}
+.about-hero .ederstone-box:nth-child(2){animation-delay:-4s}
+.about-hero .ederstone-box:nth-child(3){animation-delay:-8s}
+.about-hero .ederstone-box:nth-child(4){animation-delay:-12s}
 .about-hero .ederstone-box:before{content:none}
 .about-hero .ederstone-box:after{
   content:"";
   position:absolute;
-  inset:4px;
+  inset:3px;
   border:1px solid rgba(0,217,255,.18);
   border-radius:50%;
   pointer-events:none;
 }
 .about-hero .ederstone-box:hover{
-  border-color:rgba(0,217,255,.5);
-  box-shadow:0 14px 36px rgba(0,0,0,.35),0 0 28px rgba(0,217,255,.13);
+  border-color:rgba(255,36,72,.65);
+  box-shadow:0 14px 34px rgba(0,0,0,.48),0 0 25px rgba(255,36,72,.2);
   animation-play-state:paused;
 }
 .about-hero .ederstone-box-number{
   position:absolute;
-  top:13px;
-  right:18px;
-  color:#65708a;
-  font:800 .5rem "Space Grotesk",sans-serif;
-  letter-spacing:.08em;
+  top:10px;
+  right:14px;
+  color:#7f879c;
+  font:800 .48rem/1 "Space Grotesk",sans-serif;
 }
 .about-hero .ederstone-icon{
-  width:30px;
-  height:30px;
+  width:29px;
+  height:29px;
   border-radius:50%;
   display:grid;
   place-items:center;
-  border:1px solid rgba(0,217,255,.35);
-  color:#00d9ff;
-  font:800 .65rem "Space Grotesk",sans-serif;
-  background:rgba(0,217,255,.05);
+  border:1px solid rgba(255,36,72,.55);
+  color:#ff5a72;
+  font:800 .62rem/1 "Space Grotesk",sans-serif;
+  background:rgba(255,36,72,.06);
   flex:0 0 auto;
 }
 .about-hero .ederstone-box h3{
-  margin-top:6px;
-  font:700 .76rem/1.05 "Space Grotesk",sans-serif;
+  margin-top:5px;
+  font:700 .72rem/1.05 "Space Grotesk",sans-serif;
 }
 .about-hero .ederstone-box p{
   margin-top:4px;
-  color:#8f99ad;
-  font-size:.52rem;
-  line-height:1.3;
+  color:#a5adbf;
+  font-size:.5rem;
+  line-height:1.28;
 }
 @keyframes ederstonePlanetOrbit{
-  from{
-    transform:rotate(0deg) translateY(calc(-1 * var(--planet-distance))) rotate(0deg);
-  }
-  to{
-    transform:rotate(360deg) translateY(calc(-1 * var(--planet-distance))) rotate(-360deg);
-  }
+  from{transform:rotate(0deg) translateY(calc(-1 * var(--planet-distance))) rotate(0deg)}
+  to{transform:rotate(360deg) translateY(calc(-1 * var(--planet-distance))) rotate(-360deg)}
 }
+
+/* MOBILE-FIRST POLISH */
 @media(max-width:760px){
+  body{overflow-x:hidden}
+  main{padding:42px 16px 32px}
+  .about-hero{padding-bottom:58px}
+  .section-label{font-size:.62rem;letter-spacing:.14em}
+  .hero-grid{gap:26px;margin-top:20px}
+  .hero-grid h1,.closing h2{font-size:clamp(2.7rem,15vw,4.8rem);line-height:.92}
+  .kicker{font-size:.65rem;margin-bottom:12px}
+  .intro{font-size:.9rem;line-height:1.65}
+  .intro p+p{margin-top:15px}
+  .about-profile-card{width:100%;margin:0 auto 22px;border-radius:18px}
+  .about-profile-photo{width:100%;height:auto;max-height:none;aspect-ratio:4/5;object-fit:cover}
+  .about-profile-card figcaption{padding:12px 13px}
+  .about-profile-card figcaption strong{font-size:.62rem;letter-spacing:.08em}
+  .about-profile-card figcaption span{font-size:.48rem;letter-spacing:.08em}
   .about-hero .ederstone-stack{
-    --orbit-size:min(330px,84vw);
-    --planet-size:84px;
-    --orbit-radius:calc((var(--orbit-size) * .74) / 2);
-    margin:30px auto 18px;
+    --orbit-size:min(340px,88vw);
+    --planet-size:78px;
+    --orbit-radius:calc(var(--orbit-size) * .37);
+    margin:32px auto 12px;
   }
-  .about-hero .ederstone-stack:before{
-    width:46%;
-    font-size:.58rem;
-    letter-spacing:.16em;
-  }
-  .about-hero .ederstone-stack:after{
-    width:74%;
-    height:74%;
-    border-color:rgba(0,217,255,.34);
-  }
-  .about-hero .ederstone-box{
-    padding:8px;
-  }
-  .about-hero .ederstone-box-number{
-    top:8px;
-    right:12px;
-    font-size:.42rem;
-  }
-  .about-hero .ederstone-icon{
-    width:23px;
-    height:23px;
-    font-size:.5rem;
-  }
-  .about-hero .ederstone-box h3{
-    margin-top:4px;
-    font-size:.58rem;
-  }
-  .about-hero .ederstone-box p{
-    margin-top:3px;
-    font-size:.42rem;
-    line-height:1.25;
-  }
+  .about-hero .ederstone-stack:before{width:44%;font-size:.5rem;letter-spacing:.13em}
+  .about-hero .ederstone-stack:after{width:74%;height:74%;border-width:1.5px}
+  .about-hero .ederstone-box{padding:7px;animation-duration:13s}
+  .about-hero .ederstone-box:nth-child(2){animation-delay:-3.25s}
+  .about-hero .ederstone-box:nth-child(3){animation-delay:-6.5s}
+  .about-hero .ederstone-box:nth-child(4){animation-delay:-9.75s}
+  .about-hero .ederstone-icon{width:22px;height:22px;font-size:.45rem}
+  .about-hero .ederstone-box-number{top:7px;right:9px;font-size:.36rem}
+  .about-hero .ederstone-box h3{font-size:.52rem;margin-top:3px}
+  .about-hero .ederstone-box p{font-size:.34rem;line-height:1.18;margin-top:2px}
+  .content-section,.timeline-section{padding:68px 0}
+  .two-column{gap:28px;margin-top:22px}
+  .two-column h2{font-size:clamp(2.3rem,12vw,4rem)}
+  .skill-list{border-top:1px solid var(--line)}
+  .skill-list div{gap:14px;padding:14px 2px}
+  .skill-list b{font-size:.6rem;min-width:22px}
+  .skill-list span{font-size:.78rem;line-height:1.45}
+  .profile-strip{margin:0;border-radius:14px}
+  .profile-strip div{padding:22px 18px}
+  .profile-strip strong{font-size:.9rem}
+  .profile-strip p{font-size:.78rem}
+  .principles{gap:1px;margin-top:22px;border-radius:14px}
+  .principles article{padding:24px 20px}
+  .principles h3{font-size:1.1rem;margin:25px 0 8px}
+  .principles p,.timeline-item p{font-size:.78rem;line-height:1.55}
+  .timeline{margin-top:22px}
+  .timeline-item{grid-template-columns:58px 1fr;gap:13px;padding:22px 0}
+  .timeline-item>span{font-size:.58rem;margin-bottom:0}
+  .timeline-item h3{font-size:1rem}
+  .experience-details{padding:11px 12px}
+  .experience-details li{font-size:.72rem}
+  .closing{padding:80px 0 40px}
+  footer{padding:24px 16px 34px;font-size:.7rem}
 }
 @media(max-width:420px){
+  .hero-grid h1,.closing h2{font-size:clamp(2.45rem,14.5vw,3.5rem)}
   .about-hero .ederstone-stack{
-    --orbit-size:min(292px,82vw);
-    --planet-size:70px;
-    --orbit-radius:calc((var(--orbit-size) * .74) / 2);
-    margin-top:24px;
+    --orbit-size:min(292px,86vw);
+    --planet-size:64px;
+    --orbit-radius:calc(var(--orbit-size) * .37);
   }
-  .about-hero .ederstone-stack:before{
-    width:48%;
-    font-size:.48rem;
-    letter-spacing:.12em;
-  }
-  .about-hero .ederstone-box{
-    padding:6px;
-  }
-  .about-hero .ederstone-box-number{
-    top:6px;
-    right:9px;
-    font-size:.36rem;
-  }
-  .about-hero .ederstone-icon{
-    width:19px;
-    height:19px;
-    font-size:.42rem;
-  }
-  .about-hero .ederstone-box h3{
-    font-size:.48rem;
-  }
-  .about-hero .ederstone-box p{
-    font-size:.35rem;
-    line-height:1.18;
-  }
+  .about-hero .ederstone-stack:before{font-size:.42rem;letter-spacing:.09em}
+  .about-hero .ederstone-box{padding:5px}
+  .about-hero .ederstone-icon{width:18px;height:18px;font-size:.38rem}
+  .about-hero .ederstone-box-number{font-size:.31rem;top:5px;right:7px}
+  .about-hero .ederstone-box h3{font-size:.43rem}
+  .about-hero .ederstone-box p{font-size:.29rem}
+  .skill-list span{font-size:.73rem}
+  .timeline-item{grid-template-columns:50px 1fr}
 }
 @media(prefers-reduced-motion:reduce){
   .about-hero .ederstone-box{animation:none}
