@@ -13,3 +13,43 @@ function initCookieConsent(){
   if(!existing) document.body.appendChild(banner);
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initCookieConsent); else initCookieConsent();
+
+function initAIGuide(){
+  if(document.getElementById('ai-guide-button')) return;
+  const button=document.createElement('button');
+  button.id='ai-guide-button';
+  button.className='ai-guide-button';
+  button.type='button';
+  button.setAttribute('aria-label','Ask AI to guide and summarise this page');
+  button.title='AI Guide';
+  button.innerHTML='<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="17" r="8"></circle><path d="M10 39c1.8-8 6.4-12 14-12s12.2 4 14 12"></path><path d="M6 24h4M38 24h4M24 5V1"></path></svg><span>AI GUIDE</span>';
+  document.body.appendChild(button);
+
+  const modal=document.createElement('div');
+  modal.className='ai-guide-modal';
+  modal.hidden=true;
+  modal.innerHTML='<div class="ai-guide-backdrop" data-ai-close></div><section class="ai-guide-panel" role="dialog" aria-modal="true" aria-labelledby="ai-guide-title"><button class="ai-guide-close" type="button" data-ai-close aria-label="Close AI Guide">×</button><div class="ai-guide-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="17" r="8"></circle><path d="M10 39c1.8-8 6.4-12 14-12s12.2 4 14 12"></path></svg></div><p class="ai-guide-kicker">EDERSTONE / AI GUIDE</p><h2 id="ai-guide-title">Need a quick guide?</h2><p class="ai-guide-copy">Ask AI to summarise this page, explain the sections or help you understand what is here.</p><div class="ai-guide-actions"><button class="ai-guide-copy-btn" type="button" id="ai-guide-copy">Copy AI prompt</button><button class="ai-guide-open-btn" type="button" id="ai-guide-open">Open ChatGPT ↗</button></div><p class="ai-guide-note" id="ai-guide-note">The prompt includes the current page content. No API key is stored on this website.</p></section></div>';
+  document.body.appendChild(modal);
+
+  const getPrompt=()=>{
+    const clone=document.body.cloneNode(true);
+    clone.querySelectorAll('#ai-guide-button,.ai-guide-modal,.global-pane,.cookie-push,script,style,noscript').forEach(el=>el.remove());
+    const title=document.title.replace(/\s*\|\s*Ederstone.*$/i,'');
+    const text=(clone.innerText||'').replace(/\n{3,}/g,'\n\n').trim().slice(0,14000);
+    return 'You are the AI guide for the Ederstone portfolio. Summarise the page below in clear, concise sections. Explain what the page contains, the key points a visitor should know, and any important calls to action. Do not invent information. If something is a concept or ongoing work, preserve that wording.\n\nPAGE: '+title+'\n\nCONTENT:\n'+text;
+  };
+  const close=()=>{modal.hidden=true;document.body.classList.remove('ai-guide-open')};
+  button.addEventListener('click',()=>{modal.hidden=false;document.body.classList.add('ai-guide-open');setTimeout(()=>modal.querySelector('.ai-guide-close').focus(),0)});
+  modal.querySelectorAll('[data-ai-close]').forEach(el=>el.addEventListener('click',close));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!modal.hidden)close()});
+  modal.querySelector('#ai-guide-copy').addEventListener('click',async()=>{
+    try{await navigator.clipboard.writeText(getPrompt());modal.querySelector('#ai-guide-note').textContent='AI prompt copied. Paste it into any AI assistant to get a page summary.'}
+    catch(e){modal.querySelector('#ai-guide-note').textContent='Copy was blocked by the browser. Use Open ChatGPT and copy the prompt manually if needed.'}
+  });
+  modal.querySelector('#ai-guide-open').addEventListener('click',async()=>{
+    const prompt=getPrompt();
+    try{await navigator.clipboard.writeText(prompt);modal.querySelector('#ai-guide-note').textContent='Prompt copied. ChatGPT is opening now. Paste the prompt into the chat.'}catch(e){}
+    window.open('https://chatgpt.com/','_blank','noopener,noreferrer');
+  });
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initAIGuide); else initAIGuide();
