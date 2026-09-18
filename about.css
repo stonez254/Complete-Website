@@ -11,22 +11,118 @@
 .about-profile-card figcaption span{font-size:.58rem;letter-spacing:.12em;color:var(--cyan)}
 @media(max-width:760px){.about-profile-card{margin-bottom:22px}.about-profile-photo{max-height:520px}}
 
-/* EDERSTONE MEANING · ROTATING CIRCLE RING */
-.about-hero .ederstone-stack{width:min(390px,88vw);aspect-ratio:1;margin:38px auto 20px;position:relative;display:block}
-.about-hero .ederstone-stack:before{content:"EDERSTONE";position:absolute;inset:22%;display:grid;place-items:center;border:1px solid rgba(255,255,255,.13);border-radius:50%;color:rgba(255,255,255,.8);font:800 .72rem "Space Grotesk";letter-spacing:.22em;background:radial-gradient(circle,rgba(124,60,255,.12),rgba(7,8,18,.82) 68%);box-shadow:0 0 45px rgba(124,60,255,.12),inset 0 0 35px rgba(0,217,255,.05);z-index:2}
-.about-hero .ederstone-stack:after{content:"";position:absolute;inset:9%;border:1px dashed rgba(255,255,255,.1);border-radius:50%;animation:ederstoneRingSpin 18s linear infinite}
-.about-hero .ederstone-box{position:absolute;width:112px;height:112px;padding:13px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:1px solid rgba(255,255,255,.16);background:radial-gradient(circle at 35% 25%,rgba(24,28,48,.98),rgba(7,8,18,.96));box-shadow:0 10px 30px rgba(0,0,0,.28),0 0 24px rgba(0,217,255,.06);transform:translate(-50%,-50%);z-index:3;animation:none!important}
-.about-hero .ederstone-box:nth-child(1){left:50%;top:0}
-.about-hero .ederstone-box:nth-child(2){left:100%;top:50%}
-.about-hero .ederstone-box:nth-child(3){left:50%;top:100%}
-.about-hero .ederstone-box:nth-child(4){left:0;top:50%}
+/* EDERSTONE MEANING · PLANETARY ORBIT RING */
+.about-hero .ederstone-stack{
+  width:min(390px,88vw);
+  aspect-ratio:1;
+  margin:38px auto 20px;
+  position:relative;
+  display:block;
+}
+.about-hero .ederstone-stack:before{
+  content:"EDERSTONE";
+  position:absolute;
+  inset:22%;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:50%;
+  color:rgba(255,255,255,.8);
+  font:800 .72rem "Space Grotesk";
+  letter-spacing:.22em;
+  background:radial-gradient(circle,rgba(124,60,255,.12),rgba(7,8,18,.82) 68%);
+  box-shadow:0 0 45px rgba(124,60,255,.12),inset 0 0 35px rgba(0,217,255,.05);
+  z-index:2;
+}
+.about-hero .ederstone-stack:after{
+  content:"";
+  position:absolute;
+  inset:9%;
+  border:1px dashed rgba(255,255,255,.1);
+  border-radius:50%;
+  animation:ederstoneRingSpin 18s linear infinite;
+}
+.about-hero .ederstone-box{
+  --orbit-radius:145px;
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:112px;
+  height:112px;
+  padding:13px;
+  border-radius:50%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  border:1px solid rgba(255,255,255,.16);
+  background:radial-gradient(circle at 35% 25%,rgba(24,28,48,.98),rgba(7,8,18,.96));
+  box-shadow:0 10px 30px rgba(0,0,0,.28),0 0 24px rgba(0,217,255,.06);
+  transform-origin:center;
+  z-index:3;
+  animation:ederstonePlanetOrbit 18s linear infinite;
+}
+.about-hero .ederstone-box:nth-child(1){animation-delay:0s}
+.about-hero .ederstone-box:nth-child(2){animation-delay:-4.5s}
+.about-hero .ederstone-box:nth-child(3){animation-delay:-9s}
+.about-hero .ederstone-box:nth-child(4){animation-delay:-13.5s}
 .about-hero .ederstone-box:before{content:none}
-.about-hero .ederstone-box:after{content:"";position:absolute;inset:4px;border:1px solid rgba(0,217,255,.18);border-radius:50%;pointer-events:none}
-.about-hero .ederstone-box:hover{transform:translate(-50%,-50%) scale(1.08);border-color:rgba(0,217,255,.5);box-shadow:0 14px 36px rgba(0,0,0,.35),0 0 28px rgba(0,217,255,.13)}
-.about-hero .ederstone-box-number{position:absolute;top:13px;right:18px;color:#65708a;font:800 .5rem "Space Grotesk";letter-spacing:.08em}
-.about-hero .ederstone-icon{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(0,217,255,.35);color:#00d9ff;font:800 .65rem "Space Grotesk";background:rgba(0,217,255,.05)}
-.about-hero .ederstone-box h3{margin-top:6px;font:700 .76rem/1.05 "Space Grotesk",sans-serif}
-.about-hero .ederstone-box p{margin-top:4px;color:#8f99ad;font-size:.52rem;line-height:1.35}
+.about-hero .ederstone-box:after{
+  content:"";
+  position:absolute;
+  inset:4px;
+  border:1px solid rgba(0,217,255,.18);
+  border-radius:50%;
+  pointer-events:none;
+}
+.about-hero .ederstone-box:hover{
+  border-color:rgba(0,217,255,.5);
+  box-shadow:0 14px 36px rgba(0,0,0,.35),0 0 28px rgba(0,217,255,.13);
+  animation-play-state:paused;
+}
+.about-hero .ederstone-box-number{
+  position:absolute;
+  top:13px;
+  right:18px;
+  color:#65708a;
+  font:800 .5rem "Space Grotesk";
+  letter-spacing:.08em;
+}
+.about-hero .ederstone-icon{
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(0,217,255,.35);
+  color:#00d9ff;
+  font:800 .65rem "Space Grotesk";
+  background:rgba(0,217,255,.05);
+}
+.about-hero .ederstone-box h3{
+  margin-top:6px;
+  font:700 .76rem/1.05 "Space Grotesk",sans-serif;
+}
+.about-hero .ederstone-box p{
+  margin-top:4px;
+  color:#8f99ad;
+  font-size:.52rem;
+  line-height:1.35;
+}
+@keyframes ederstonePlanetOrbit{
+  from{transform:rotate(0deg) translateY(calc(-1 * var(--orbit-radius))) rotate(0deg)}
+  to{transform:rotate(360deg) translateY(calc(-1 * var(--orbit-radius))) rotate(-360deg)}
+}
 @keyframes ederstoneRingSpin{to{transform:rotate(360deg)}}
-@media(max-width:700px){.about-hero .ederstone-stack{width:min(320px,82vw)}.about-hero .ederstone-box{width:92px;height:92px;padding:9px}.about-hero .ederstone-box h3{font-size:.65rem}.about-hero .ederstone-box p{font-size:.46rem}.about-hero .ederstone-icon{width:25px;height:25px;font-size:.55rem}}
-@media(prefers-reduced-motion:reduce){.about-hero .ederstone-stack:after{animation:none}}
+@media(max-width:700px){
+  .about-hero .ederstone-stack{width:min(320px,82vw)}
+  .about-hero .ederstone-box{--orbit-radius:112px;width:92px;height:92px;padding:9px}
+  .about-hero .ederstone-box h3{font-size:.65rem}
+  .about-hero .ederstone-box p{font-size:.46rem}
+  .about-hero .ederstone-icon{width:25px;height:25px;font-size:.55rem}
+}
+@media(prefers-reduced-motion:reduce){
+  .about-hero .ederstone-stack:after,
+  .about-hero .ederstone-box{animation:none}
+}
