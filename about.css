@@ -10,3 +10,19 @@
 .about-profile-card figcaption strong{font:700 .78rem/'Space Grotesk',sans-serif;letter-spacing:.12em;color:var(--text)}
 .about-profile-card figcaption span{font-size:.58rem;letter-spacing:.12em;color:var(--cyan)}
 @media(max-width:760px){.about-profile-card{margin-bottom:22px}.about-profile-photo{max-height:520px}}
+
+/* EDERSTONE MEANING · VERTICAL ANIMATED BOXES */
+.about-hero .ederstone-stack{width:min(820px,100%);margin:30px 0 0;display:flex;flex-direction:column;gap:12px}
+.about-hero .ederstone-box{min-height:125px;padding:18px 20px;display:grid;grid-template-columns:45px 1fr;align-items:center;gap:16px;border:1px solid rgba(255,255,255,.12);border-radius:15px;background:linear-gradient(105deg,rgba(14,17,31,.94),rgba(8,10,20,.78));position:relative;overflow:hidden;transition:.35s ease;animation:aboutEderstoneFloat 5s ease-in-out infinite}
+.about-hero .ederstone-box:nth-child(2){animation-delay:-1.25s}.about-hero .ederstone-box:nth-child(3){animation-delay:-2.5s}.about-hero .ederstone-box:nth-child(4){animation-delay:-3.75s}
+.about-hero .ederstone-box:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,217,255,.07),transparent 35%,rgba(255,36,72,.06));transform:translateX(-100%);animation:aboutEderstoneSweep 4.8s ease-in-out infinite}
+.about-hero .ederstone-box:after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#00d9ff,#7c3cff,#ff2448);box-shadow:0 0 18px rgba(0,217,255,.4)}
+.about-hero .ederstone-box:hover{transform:translateX(8px);border-color:rgba(0,217,255,.4);box-shadow:0 16px 42px rgba(0,0,0,.3),0 0 28px rgba(0,217,255,.07)}
+.about-hero .ederstone-box-number{color:#69748f;font:800 .65rem "Space Grotesk";letter-spacing:.15em;align-self:start}
+.about-hero .ederstone-icon{display:inline-grid;place-items:center;width:38px;height:38px;border:1px solid rgba(0,217,255,.35);border-radius:10px;color:#00d9ff;font:800 .82rem "Space Grotesk";background:rgba(0,217,255,.05)}
+.about-hero .ederstone-box h3{margin-top:8px;font:700 1.25rem/1.1 "Space Grotesk",sans-serif}
+.about-hero .ederstone-box p{margin-top:5px;color:#9da6ba;font-size:.76rem;line-height:1.65}
+@keyframes aboutEderstoneFloat{0%,100%{transform:translateX(0)}50%{transform:translateX(3px)}}
+@keyframes aboutEderstoneSweep{0%,35%{transform:translateX(-100%);opacity:0}50%{opacity:1}75%,100%{transform:translateX(100%);opacity:0}}
+@media(max-width:700px){.about-hero .ederstone-box{padding:16px;grid-template-columns:38px 1fr;gap:12px}.about-hero .ederstone-box h3{font-size:1.1rem}}
+@media(prefers-reduced-motion:reduce){.about-hero .ederstone-box,.about-hero .ederstone-box:before{animation:none}}
