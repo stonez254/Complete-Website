@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const editor = document.getElementById('code-editor');
   const langSelector = document.getElementById('language-selector');
   const runBtn = document.getElementById('run-btn');
+  const downloadBtn = document.getElementById('download-btn');
   const outputScreen = document.getElementById('output-screen');
   const errorConsole = document.getElementById('error-console');
   const rainCanvas = document.getElementById('rain-canvas');
@@ -87,6 +88,39 @@ document.addEventListener('DOMContentLoaded', () => {
     <\/script></body></html>`);
   }
 
+  const fileTypes = {
+    html: { extension: 'html', mime: 'text/html' },
+    css: { extension: 'css', mime: 'text/css' },
+    javascript: { extension: 'js', mime: 'text/javascript' },
+    python: { extension: 'py', mime: 'text/x-python' }
+  };
+
+  function downloadCode() {
+    if (!downloadBtn) return;
+    clearError();
+    const code = editor.value;
+    const type = fileTypes[langSelector.value] || fileTypes.html;
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const filename = `ederstone-code-${timestamp}.${type.extension}`;
+    const blob = new Blob([code], { type: `${type.mime};charset=utf-8` });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    const original = downloadBtn.innerHTML;
+    downloadBtn.innerHTML = 'Downloaded <span>✓</span>';
+    downloadBtn.classList.add('downloaded');
+    setTimeout(() => {
+      downloadBtn.innerHTML = original;
+      downloadBtn.classList.remove('downloaded');
+    }, 1400);
+  }
+
   function runCode() {
     clearError();
     runBtn.disabled = true;
@@ -111,6 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   runBtn.addEventListener('click', runCode);
+  if (downloadBtn) downloadBtn.addEventListener('click', downloadCode);
 
   editor.addEventListener('keydown', event => {
     if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
