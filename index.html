@@ -42,6 +42,50 @@
           <span><small>CODE HUB</small><strong>Think it. Code it. Run it.</strong><em>Step inside Ederstone's interactive coding space and see what your ideas can do.</em></span>
           <span class="hub-arrow">↗</span>
         </a>
+
+        <section class="home-poem-card" aria-labelledby="home-poem-title">
+          <div class="home-poem-head">
+            <div>
+              <p class="home-poem-label">EDERPOETRY / FEATURED</p>
+              <h2 id="home-poem-title">Breaking Poverty’s Chains</h2>
+              <p class="home-poem-date">18TH SEP 2026</p>
+            </div>
+            <span class="home-poem-mark">EP</span>
+          </div>
+          <p class="home-poem-preview">A poem about struggle, resilience, ambition and the decision to rise beyond poverty.</p>
+          <button class="home-poem-toggle" type="button" aria-expanded="false" aria-controls="home-poem-content">
+            <span>Read poem</span><b>↓</b>
+          </button>
+          <div class="home-poem-content" id="home-poem-content" hidden>
+            <div class="home-poem">
+              <p>I bore the heavy chains of empty hands,<br>
+              And felt the bitter frost of endless night.<br>
+              When umaskini ruled my native lands,<br>
+              I begged the heavens for a drop of light,</p>
+
+              <p>While hunger burned me like a raging brand.<br>
+              That merciless adui stole my youth,<br>
+              And wrapped my dreams in rags of grey despair.<br>
+              I learned the harsh and cold, unyielding truth—</p>
+
+              <p>When nia struggles under heavy care,<br>
+              The path of life becomes a jagged tooth.<br>
+              I watched my people bleed beneath its reign,<br>
+              Where mafanikio seemed a distant shore.</p>
+
+              <p>Yet deep within the quiet of my pain,<br>
+              I swore I would not suffer anymore,<br>
+              And broke the iron links of sorrow's chain.<br>
+              Now standing tall above the battle line,</p>
+
+              <p>With ushindi glowing in my chest,<br>
+              I leave the shadows of that dark design.<br>
+              No longer bound, no longer dispossessed,<br>
+              The dawn of strength and freedom now is mine.</p>
+            </div>
+            <p class="home-poem-signature">EDERPOETRY · 18TH SEP 2026</p>
+          </div>
+        </section>
       </div>
 
       <div class="hero-visual" aria-hidden="true">
@@ -76,5 +120,20 @@
 
   <script src="index.js"></script>
   <script src="site-ui.js"></script>
+  <script>
+    (() => {
+      const button = document.querySelector('.home-poem-toggle');
+      const content = document.getElementById('home-poem-content');
+      if (!button || !content) return;
+      button.addEventListener('click', () => {
+        const expanded = button.getAttribute('aria-expanded') === 'true';
+        button.setAttribute('aria-expanded', String(!expanded));
+        content.hidden = expanded;
+        button.querySelector('span').textContent = expanded ? 'Read poem' : 'Hide poem';
+        button.querySelector('b').textContent = expanded ? '↓' : '↑';
+        if (!expanded && 'vibrate' in navigator) navigator.vibrate(10);
+      });
+    })();
+  </script>
 </body>
 </html>
