@@ -39,7 +39,30 @@ function initAIGuide(){
     return 'You are the AI guide for the Ederstone portfolio. Summarise the page below in clear, concise sections. Explain what the page contains, the key points a visitor should know, and any important calls to action. Do not invent information. If something is a concept or ongoing work, preserve that wording.\n\nPAGE: '+title+'\n\nCONTENT:\n'+text;
   };
   const close=()=>{modal.hidden=true;document.body.classList.remove('ai-guide-open')};
-  button.addEventListener('click',()=>{modal.hidden=false;document.body.classList.add('ai-guide-open');setTimeout(()=>modal.querySelector('.ai-guide-close').focus(),0)});
+  let dragging=false,startX=0,startY=0,startLeft=0,startTop=0,moved=false;
+  const saved=localStorage.getItem('ederstone-ai-guide-position');
+  if(saved){try{const p=JSON.parse(saved);button.style.left=p.left+'px';button.style.top=p.top+'px';button.style.right='auto';button.style.bottom='auto'}catch(e){}}
+  const move=(x,y)=>{
+    const maxX=window.innerWidth-button.offsetWidth,maxY=window.innerHeight-button.offsetHeight;
+    const left=Math.max(0,Math.min(maxX,startLeft+x-startX)),top=Math.max(0,Math.min(maxY,startTop+y-startY));
+    button.style.left=left+'px';button.style.top=top+'px';button.style.right='auto';button.style.bottom='auto';
+  };
+  button.addEventListener('pointerdown',e=>{
+    dragging=true;moved=false;startX=e.clientX;startY=e.clientY;
+    const r=button.getBoundingClientRect();startLeft=r.left;startTop=r.top;
+    button.setPointerCapture?.(e.pointerId);button.classList.add('is-dragging');e.preventDefault();
+  });
+  button.addEventListener('pointermove',e=>{if(!dragging)return;if(Math.abs(e.clientX-startX)>4||Math.abs(e.clientY-startY)>4)moved=true;move(e.clientX,e.clientY)});
+  button.addEventListener('pointerup',e=>{
+    if(!dragging)return;dragging=false;button.classList.remove('is-dragging');
+    const r=button.getBoundingClientRect();
+    localStorage.setItem('ederstone-ai-guide-position',JSON.stringify({left:r.left,top:r.top}));
+    if(moved)e.preventDefault();
+  });
+  button.addEventListener('click',e=>{
+    if(moved){e.preventDefault();moved=false;return}
+    modal.hidden=false;document.body.classList.add('ai-guide-open');setTimeout(()=>modal.querySelector('.ai-guide-close').focus(),0)
+  });
   modal.querySelectorAll('[data-ai-close]').forEach(el=>el.addEventListener('click',close));
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!modal.hidden)close()});
   modal.querySelector('#ai-guide-copy').addEventListener('click',async()=>{
