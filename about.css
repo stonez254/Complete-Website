@@ -149,3 +149,158 @@
 
 /* Professional CV CTA */
 .cv-see-button{display:inline-flex;align-items:center;gap:12px;margin:22px 0 8px;padding:12px 18px;border:1px solid rgba(255,82,109,.55);border-radius:2px;background:linear-gradient(135deg,rgba(255,45,78,.14),rgba(255,255,255,.025));color:#fff;text-decoration:none;font:700 .68rem/1 "Space Grotesk";letter-spacing:.13em;text-transform:uppercase;box-shadow:0 8px 28px rgba(0,0,0,.22);transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}.cv-see-button span{color:#ff526d;font-size:1rem;transition:transform .25s ease}.cv-see-button:hover{transform:translateY(-3px);border-color:#ff526d;box-shadow:0 12px 35px rgba(255,45,78,.16)}.cv-see-button:hover span{transform:translate(3px,-3px)}.cv-see-button:focus-visible{outline:2px solid #ff526d;outline-offset:4px}@media(max-width:760px){.cv-see-button{margin-top:18px;padding:11px 16px}}
+
+
+/* DEDICATED CV CTA · FLASHY PROFESSIONAL PROFILE ACTION */
+.cv-cta-section{
+  position:relative;
+  margin:0 0 30px;
+  padding:28px 24px 25px;
+  overflow:hidden;
+  text-align:center;
+  border:1px solid rgba(255,45,78,.38);
+  border-radius:18px;
+  background:
+    radial-gradient(circle at 50% 110%,rgba(255,45,78,.2),transparent 55%),
+    linear-gradient(145deg,rgba(255,45,78,.1),rgba(8,9,17,.94) 58%);
+  box-shadow:0 16px 45px rgba(0,0,0,.34),inset 0 0 35px rgba(255,45,78,.045);
+  isolation:isolate;
+}
+.cv-cta-section:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(110deg,transparent 20%,rgba(255,255,255,.08) 48%,transparent 62%);
+  transform:translateX(-120%);
+  animation:cvCtaSweep 4.5s ease-in-out infinite;
+  pointer-events:none;
+}
+.cv-cta-section:after{
+  content:"";
+  position:absolute;
+  inset:7px;
+  border:1px solid rgba(255,82,109,.12);
+  border-radius:13px;
+  pointer-events:none;
+}
+.cv-cta-glow{
+  position:absolute;
+  width:180px;
+  height:180px;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  background:rgba(255,45,78,.14);
+  filter:blur(45px);
+  animation:cvCtaGlow 2.8s ease-in-out infinite;
+  pointer-events:none;
+}
+.cv-cta-kicker{
+  position:relative;
+  z-index:2;
+  display:block;
+  color:#ff526d;
+  font:700 .56rem/1 "Space Grotesk",sans-serif;
+  letter-spacing:.24em;
+}
+.cv-cta-section h2{
+  position:relative;
+  z-index:2;
+  margin:9px 0 5px;
+  color:#fff;
+  font:700 clamp(1.35rem,3vw,1.8rem)/1 "Space Grotesk",sans-serif;
+}
+.cv-cta-section h2 em{
+  color:#ff526d;
+  font-style:normal;
+}
+.cv-cta-section p{
+  position:relative;
+  z-index:2;
+  max-width:440px;
+  margin:0 auto 19px;
+  color:#a7afc0;
+  font-size:.7rem;
+  line-height:1.55;
+}
+.cv-see-button{
+  position:relative;
+  z-index:4;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:13px;
+  min-width:185px;
+  padding:15px 22px;
+  overflow:hidden;
+  border:1px solid #ff526d;
+  border-radius:999px;
+  background:linear-gradient(110deg,#8e1831,#d52f50 48%,#8e1831);
+  background-size:220% 100%;
+  color:#fff;
+  text-decoration:none;
+  font:800 .7rem/1 "Space Grotesk",sans-serif;
+  letter-spacing:.2em;
+  box-shadow:0 0 0 0 rgba(255,45,78,.55),0 12px 30px rgba(255,45,78,.2);
+  animation:cvButtonGradient 3s ease-in-out infinite,cvButtonFloat 2.4s ease-in-out infinite,cvButtonGlow 2s ease-in-out infinite;
+  transition:transform .25s ease,box-shadow .25s ease;
+}
+.cv-see-button:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(105deg,transparent 25%,rgba(255,255,255,.48) 48%,transparent 67%);
+  transform:translateX(-120%);
+  animation:cvButtonShine 2.7s ease-in-out infinite;
+}
+.cv-see-button:hover{
+  transform:translateY(-4px) scale(1.035);
+  box-shadow:0 0 0 7px rgba(255,45,78,.07),0 18px 42px rgba(255,45,78,.34);
+}
+.cv-see-button:focus-visible{
+  outline:2px solid #fff;
+  outline-offset:5px;
+}
+.cv-btn-label,.cv-btn-arrow{position:relative;z-index:2}
+.cv-btn-arrow{
+  display:grid;
+  place-items:center;
+  width:25px;
+  height:25px;
+  border:1px solid rgba(255,255,255,.42);
+  border-radius:50%;
+  font-size:.9rem;
+  letter-spacing:0;
+  transition:transform .25s ease,background .25s ease;
+}
+.cv-see-button:hover .cv-btn-arrow{
+  transform:translate(3px,-3px) rotate(4deg);
+  background:rgba(255,255,255,.12);
+}
+.cv-btn-pulse{
+  position:absolute;
+  width:7px;
+  height:7px;
+  left:18px;
+  top:9px;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:0 0 10px #fff;
+  animation:cvDotPulse 1.8s ease-in-out infinite;
+}
+@keyframes cvCtaSweep{0%,30%{transform:translateX(-120%)}60%,100%{transform:translateX(120%)}}
+@keyframes cvCtaGlow{0%,100%{opacity:.45;transform:translate(-50%,-50%) scale(.8)}50%{opacity:.9;transform:translate(-50%,-50%) scale(1.15)}}
+@keyframes cvButtonGradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes cvButtonFloat{0%,100%{margin-top:0}50%{margin-top:-3px}}
+@keyframes cvButtonGlow{0%,100%{box-shadow:0 0 0 0 rgba(255,45,78,.4),0 12px 30px rgba(255,45,78,.2)}50%{box-shadow:0 0 0 7px rgba(255,45,78,.05),0 15px 38px rgba(255,45,78,.3)}}
+@keyframes cvButtonShine{0%,25%{transform:translateX(-120%)}55%,100%{transform:translateX(120%)}}
+@keyframes cvDotPulse{0%,100%{opacity:.35;transform:scale(.8)}50%{opacity:1;transform:scale(1.3)}}
+@media(max-width:760px){
+  .cv-cta-section{margin-bottom:24px;padding:24px 15px 22px;border-radius:15px}
+  .cv-cta-section p{font-size:.62rem;margin-bottom:17px}
+  .cv-see-button{min-width:170px;padding:14px 18px;font-size:.62rem}
+}
+@media(prefers-reduced-motion:reduce){
+  .cv-cta-section:before,.cv-cta-glow,.cv-see-button,.cv-see-button:before,.cv-btn-pulse{animation:none}
+}
