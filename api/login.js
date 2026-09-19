@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 
 const SECRET=process.env.PORTFOLIO_AUTH_SECRET;
-const COOKIE='ederstone_session';
+const COOKIE='__Host-ederstone_session';
 
 function sign(value){return crypto.createHmac('sha256',SECRET).update(value).digest('base64url')}
 function parseCode(code){const m=String(code||'').trim().toUpperCase().match(/^EDR-([A-Z0-9]+)-([A-Z0-9]+)-([A-Z0-9]+)$/);if(!m)return null;return{exp:parseInt(m[1],36),nonce:m[2],sig:m[3]}}
