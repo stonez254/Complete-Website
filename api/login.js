@@ -14,7 +14,7 @@ export default async function handler(req,res){
     const {code}=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
     const p=parseCode(code);
     if(!p||!p.exp||p.exp<Date.now())return res.status(401).json({error:'Invalid or expired access code.'});
-    const expected=sign(p.exp+'|'+p.nonce).slice(0,10);
+    const expected=sign(p.exp+'|'+p.nonce).slice(0,10).toUpperCase();
     if(expected.length!==p.sig.length||!crypto.timingSafeEqual(Buffer.from(expected),Buffer.from(p.sig)))return res.status(401).json({error:'Invalid or expired access code.'});
     const token=session(Date.now()+12*60*60*1000);
     res.setHeader('Set-Cookie',COOKIE+'='+token+'; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=43200');
