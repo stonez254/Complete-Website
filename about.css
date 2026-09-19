@@ -304,3 +304,96 @@
 @media(prefers-reduced-motion:reduce){
   .cv-cta-section:before,.cv-cta-glow,.cv-see-button,.cv-see-button:before,.cv-btn-pulse{animation:none}
 }
+
+
+/* EDERSTONE MEANING · RESPONSIVE FLEXBOX CARDS */
+.ederstone-meaning-grid{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-top:30px;
+  align-items:stretch;
+}
+.meaning-card{
+  position:relative;
+  flex:1 1 calc(33.333% - 8px);
+  min-width:210px;
+  min-height:150px;
+  display:flex;
+  align-items:flex-start;
+  gap:16px;
+  padding:20px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:16px;
+  background:
+    radial-gradient(circle at 100% 0%,rgba(255,45,78,.1),transparent 42%),
+    linear-gradient(145deg,rgba(20,22,34,.96),rgba(8,10,18,.98));
+  box-shadow:0 12px 30px rgba(0,0,0,.24);
+  transition:transform .28s ease,border-color .28s ease,box-shadow .28s ease;
+}
+.meaning-card:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.05) 50%,transparent 70%);
+  transform:translateX(-120%);
+  transition:transform .6s ease;
+  pointer-events:none;
+}
+.meaning-card:hover{
+  transform:translateY(-5px);
+  border-color:rgba(255,45,78,.5);
+  box-shadow:0 18px 40px rgba(0,0,0,.38),0 0 28px rgba(255,45,78,.08);
+}
+.meaning-card:hover:before{transform:translateX(120%)}
+.meaning-letter{
+  flex:0 0 48px;
+  width:48px;
+  height:48px;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(255,82,109,.55);
+  border-radius:13px;
+  color:#ff526d;
+  background:rgba(255,45,78,.07);
+  box-shadow:inset 0 0 20px rgba(255,45,78,.05);
+  font:800 1.15rem/1 "Space Grotesk",sans-serif;
+}
+.meaning-card small{
+  display:block;
+  color:#626b7e;
+  font:700 .5rem/1 "Space Grotesk",sans-serif;
+  letter-spacing:.16em;
+  margin:2px 0 8px;
+}
+.meaning-card h3{
+  color:#fff;
+  font:700 1rem/1.15 "Space Grotesk",sans-serif;
+  margin-bottom:7px;
+}
+.meaning-card p{
+  color:#9da6ba;
+  font-size:.68rem;
+  line-height:1.55;
+}
+@media(max-width:900px){
+  .meaning-card{flex-basis:calc(50% - 6px)}
+}
+@media(max-width:560px){
+  .ederstone-meaning-grid{gap:10px}
+  .meaning-card{
+    flex-basis:100%;
+    min-width:0;
+    min-height:112px;
+    padding:16px;
+    border-radius:14px;
+  }
+  .meaning-letter{flex-basis:40px;width:40px;height:40px;border-radius:11px;font-size:.95rem}
+  .meaning-card h3{font-size:.86rem}
+  .meaning-card p{font-size:.62rem}
+}
+@media(prefers-reduced-motion:reduce){
+  .meaning-card{transition:none}
+  .meaning-card:before{display:none}
+}
