@@ -1,8 +1,7 @@
 {
-  "name": "ederstone-portfolio",
-  "private": true,
-  "type": "module",
-  "engines": {
-    "node": "24.x"
-  }
+  "name":"ederstone-portfolio",
+  "private":true,
+  "type":"module",
+  "engines":{"node":"24.x"},
+  "dependencies":{"@vercel/functions":"^3.9.8"}
 }
