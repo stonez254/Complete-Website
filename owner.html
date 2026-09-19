@@ -1,3 +1,61 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><meta name="robots" content="noindex,nofollow"><title>Owner Access | Ederstone</title><link rel="stylesheet" href="auth.css"><style>.owner-card{max-width:540px}.owner-card h1{font-size:clamp(2rem,6vw,3.2rem)}.owner-form{margin-top:25px;text-align:left}.owner-result{display:none;margin-top:18px;padding:18px;border:1px solid rgba(98,255,176,.3);border-radius:14px;background:rgba(98,255,176,.04)}.owner-code{display:block;margin:8px 0 13px;color:#62ffb0;font:800 1.15rem/1.3 "Space Grotesk",Arial,sans-serif;letter-spacing:.12em;word-break:break-all}.owner-actions{display:flex;gap:9px}.owner-actions button{margin:0}.owner-secondary{background:transparent!important;border-color:rgba(255,255,255,.15)!important;box-shadow:none!important}.owner-note{margin:16px 0 0;color:#747d90;font-size:.68rem;line-height:1.6}.owner-back{display:inline-block;margin-top:18px;color:#9ca4b7;font-size:.72rem}.owner-back:hover{color:#ff526f}</style></head>
-<body><main class="auth-screen"><div class="auth-noise"></div><div class="auth-orbit auth-orbit-a"></div><div class="auth-orbit auth-orbit-b"></div><section class="auth-card owner-card"><div class="auth-mark"><span>ES</span></div><p class="auth-kicker">OWNER CONTROL · ACCESS CODE GENERATOR</p><h1>Generate <em>access.</em></h1><p class="auth-intro">Create a time-limited code to send to someone who needs access to your portfolio.</p><form id="owner-form" class="owner-form"><label for="admin-key">OWNER KEY</label><div class="auth-input-wrap"><span>⌁</span><input id="admin-key" type="password" autocomplete="off" required placeholder="Enter owner key"></div><button type="submit"><span>GENERATE CODE</span><b>↗</b></button><p id="owner-status" class="auth-status" role="status"></p></form><div id="owner-result" class="owner-result"><small style="color:#8b96a9">ACCESS CODE</small><strong id="generated-code" class="owner-code"></strong><small id="generated-expiry" style="color:#8b96a9"></small><div class="owner-actions"><button id="copy-code" type="button">COPY CODE</button><button id="generate-again" type="button" class="owner-secondary">NEW CODE</button></div></div><p class="owner-note">The owner key is never stored by this page. Keep it private. Codes expire automatically.</p><a class="owner-back" href="auth.html">← Back to sign in</a></section></main><script>const f=document.getElementById('owner-form'),s=document.getElementById('owner-status'),r=document.getElementById('owner-result'),c=document.getElementById('generated-code'),x=document.getElementById('generated-expiry'),copy=document.getElementById('copy-code'),again=document.getElementById('generate-again');async function generate(){const key=document.getElementById('admin-key').value.trim();if(!key)return;s.textContent='Generating secure code…';try{const q=await fetch('/api/generate-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminKey:key})});const d=await q.json();if(!q.ok){s.textContent=d.error||'Could not generate code.';r.style.display='none';return}c.textContent=d.code;x.textContent='Expires '+new Date(d.expiresAt).toLocaleString();r.style.display='block';s.textContent='Code generated.'}catch(e){s.textContent='Connection error. Please try again.'}}f.addEventListener('submit',e=>{e.preventDefault();generate()});again.addEventListener('click',generate);copy.addEventListener('click',async()=>{await navigator.clipboard.writeText(c.textContent);copy.textContent='COPIED ✓';setTimeout(()=>copy.textContent='COPY CODE',1500)});
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Owner Access | Ederstone</title>
+<link rel="stylesheet" href="auth.css">
+<style>
+.owner-card{max-width:540px}
+.owner-card h1{font-size:clamp(2rem,6vw,3.2rem)}
+.owner-form{margin-top:25px;text-align:left}
+.owner-result{display:none;margin-top:18px;padding:18px;border:1px solid rgba(98,255,176,.3);border-radius:14px;background:rgba(98,255,176,.04)}
+.owner-code{display:block;margin:8px 0 13px;color:#62ffb0;font:800 1.15rem/1.3 "Space Grotesk",Arial,sans-serif;letter-spacing:.12em;word-break:break-all}
+.owner-actions{display:flex;gap:9px}
+.owner-actions button{margin:0}
+.owner-secondary{background:transparent!important;border-color:rgba(255,255,255,.15)!important;box-shadow:none!important}
+.owner-note{margin:16px 0 0;color:#747d90;font-size:.68rem;line-height:1.6}
+.owner-back{display:inline-block;margin-top:18px;color:#9ca4b7;font-size:.72rem}
+.owner-back:hover{color:#ff526f}
+.owner-status.error{color:#ff6b81}
+</style>
+</head>
+<body>
+<main class="auth-screen">
+<div class="auth-noise"></div>
+<div class="auth-orbit auth-orbit-a"></div>
+<div class="auth-orbit auth-orbit-b"></div>
+<section class="auth-card owner-card">
+<div class="auth-mark"><span>ES</span></div>
+<p class="auth-kicker">OWNER CONTROL · ACCESS CODE GENERATOR</p>
+<h1>Generate <em>access.</em></h1>
+<p class="auth-intro">Create a time-limited code to send to someone who needs access to your portfolio.</p>
+
+<form id="owner-form" class="owner-form" novalidate>
+<label for="admin-key">OWNER KEY</label>
+<div class="auth-input-wrap">
+<span>⌁</span>
+<input id="admin-key" type="password" autocomplete="off" required placeholder="Enter owner key">
+</div>
+<button id="generate-button" type="submit"><span>GENERATE CODE</span><b>↗</b></button>
+<p id="owner-status" class="auth-status" role="status" aria-live="polite"></p>
+</form>
+
+<div id="owner-result" class="owner-result">
+<small style="color:#8b96a9">ACCESS CODE</small>
+<strong id="generated-code" class="owner-code"></strong>
+<small id="generated-expiry" style="color:#8b96a9"></small>
+<div class="owner-actions">
+<button id="copy-code" type="button">COPY CODE</button>
+<button id="generate-again" type="button" class="owner-secondary">NEW CODE</button>
+</div>
+</div>
+
+<p class="owner-note">The owner key is never stored by this page. Keep it private. Codes expire automatically.</p>
+<a class="owner-back" href="auth.html">← Back to sign in</a>
+</section>
+</main>
+<script src="owner.js" defer></script>
+</body>
+</html>
