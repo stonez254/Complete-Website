@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#07070a">
+<meta name="robots" content="noindex,nofollow">
+<title>Access | Ederstone</title>
+<link rel="stylesheet" href="auth.css">
+</head>
+<body>
+<main class="auth-screen">
+  <div class="auth-noise"></div>
+  <div class="auth-orbit auth-orbit-a"></div>
+  <div class="auth-orbit auth-orbit-b"></div>
+  <section class="auth-card" aria-labelledby="auth-title">
+    <div class="auth-mark"><span>ES</span></div>
+    <p class="auth-kicker">PRIVATE PORTFOLIO · ACCESS CONTROL</p>
+    <h1 id="auth-title">Welcome to <em>Ederstone.</em></h1>
+    <p class="auth-intro">This is a personal portfolio. Access is intentionally restricted. Enter the access code provided by Hanningtone.</p>
+    <form id="auth-form" autocomplete="off">
+      <label for="access-code">ACCESS CODE</label>
+      <div class="auth-input-wrap">
+        <span>⌁</span>
+        <input id="access-code" name="code" type="text" inputmode="text" autocomplete="one-time-code" placeholder="EDR-XXXX-XXXX-XXXX" maxlength="40" required autofocus>
+      </div>
+      <button id="auth-submit" type="submit"><span>UNLOCK PORTFOLIO</span><b>↗</b></button>
+      <p id="auth-status" class="auth-status" role="status" aria-live="polite"></p>
+    </form>
+    <div class="auth-footer">
+      <span>EDERSTONE · MATHEMATICS × CODE × CREATION</span>
+      <a href="owner.html">Owner access</a>
+    </div>
+  </section>
+</main>
+<script src="auth.js" defer></script>
+</body>
+</html>
