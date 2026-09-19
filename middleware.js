@@ -1,9 +1,10 @@
 import crypto from 'node:crypto';
+import { next } from '@vercel/functions';
 
 export const config={runtime:'nodejs'};
 
 const SECRET=process.env.PORTFOLIO_AUTH_SECRET;
-const COOKIE='ederstone_session';
+const COOKIE='__Host-ederstone_session';
 
 function allowed(path){
   return path==='/auth.html'||path==='/owner.html'||path.startsWith('/api/')||path.startsWith('/assets/')||
@@ -27,8 +28,10 @@ function valid(token){
 export default function middleware(request){
   const url=new URL(request.url);
   const path=url.pathname;
-  if(allowed(path))return new Response(null,{status:204});
-  if(valid(request.headers.get('cookie')?.match(/(?:^|;\s*)ederstone_session=([^;]+)/)?.[1]))return new Response(null,{status:204});
-  const next=encodeURIComponent(path+(url.search||''));
-  return Response.redirect(new URL('/auth.html?next='+next,request.url),302);
+  if(allowed(path))return next();
+  const cookie=request.headers.get('cookie')||'';
+  const token=cookie.match(/(?:^|;\s*)__Host-ederstone_session=([^;]+)/)?.[1];
+  if(valid(token))return next();
+  const nextPath=encodeURIComponent(path+(url.search||''));
+  return Response.redirect(new URL('/auth.html?next='+nextPath,request.url),302);
 }
