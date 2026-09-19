@@ -1,1 +1,34 @@
-const crypto=require('crypto');const SECRET=process.env.PORTFOLIO_AUTH_SECRET;const COOKIE='ederstone_session';function allowed(path){return path==='/auth.html'||path==='/owner.html'||path.startsWith('/api/')||path.startsWith('/assets/')||path==='/auth.css'||path==='/auth.js'||path==='/manifest.json'||path==='/service-worker.js'||path==='/favicon.ico'||/\.(png|jpg|jpeg|gif|webp|svg|ico|css|js|mp4|woff2?)$/i.test(path)}function valid(token){if(!SECRET||!token)return false;const parts=token.split('.');if(parts.length!==2)return false;try{const exp=Number(Buffer.from(parts[0],'base64url').toString());if(!exp||exp<Date.now())return false;const expected=crypto.createHmac('sha256',SECRET).update(String(exp)).digest('base64url');return crypto.timingSafeEqual(Buffer.from(expected),Buffer.from(parts[1]))}catch(e){return false}}module.exports=(req,res)=>{const path=new URL(req.url,'http://localhost').pathname;if(allowed(path))return res.status(200).end();const token=req.cookies?.[COOKIE];if(valid(token))return res.status(200).end();const next=encodeURIComponent(path+(new URL(req.url,'http://localhost').search||''));res.writeHead(302,{Location:'/auth.html?next='+next});res.end()};
+import crypto from 'node:crypto';
+
+export const config={runtime:'nodejs'};
+
+const SECRET=process.env.PORTFOLIO_AUTH_SECRET;
+const COOKIE='ederstone_session';
+
+function allowed(path){
+  return path==='/auth.html'||path==='/owner.html'||path.startsWith('/api/')||path.startsWith('/assets/')||
+    path==='/auth.css'||path==='/auth.js'||path==='/manifest.json'||path==='/service-worker.js'||path==='/favicon.ico'||
+    /\.(png|jpg|jpeg|gif|webp|svg|ico|css|js|mp4|woff2?)$/i.test(path);
+}
+
+function valid(token){
+  if(!SECRET||!token)return false;
+  const parts=token.split('.');
+  if(parts.length!==2)return false;
+  try{
+    const exp=Number(Buffer.from(parts[0],'base64url').toString());
+    if(!exp||exp<Date.now())return false;
+    const expected=crypto.createHmac('sha256',SECRET).update(String(exp)).digest('base64url');
+    if(expected.length!==parts[1].length)return false;
+    return crypto.timingSafeEqual(Buffer.from(expected),Buffer.from(parts[1]));
+  }catch(e){return false}
+}
+
+export default function middleware(request){
+  const url=new URL(request.url);
+  const path=url.pathname;
+  if(allowed(path))return new Response(null,{status:204});
+  if(valid(request.headers.get('cookie')?.match(/(?:^|;\s*)ederstone_session=([^;]+)/)?.[1]))return new Response(null,{status:204});
+  const next=encodeURIComponent(path+(url.search||''));
+  return Response.redirect(new URL('/auth.html?next='+next,request.url),302);
+}
