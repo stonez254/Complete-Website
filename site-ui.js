@@ -76,3 +76,19 @@ function initAIGuide(){
   });
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initAIGuide); else initAIGuide();
+
+
+// CV reveal: keep the detailed CV hidden until the visitor explicitly selects See CV.
+document.addEventListener('DOMContentLoaded',()=>{
+  const cv=document.getElementById('cv');
+  const trigger=document.querySelector('.cv-see-button');
+  if(!cv||!trigger)return;
+  cv.hidden=true;
+  trigger.addEventListener('click',event=>{
+    event.preventDefault();
+    cv.hidden=false;
+    cv.removeAttribute('hidden');
+    cv.scrollIntoView({behavior:'smooth',block:'start'});
+    history.replaceState(null,'','#cv');
+  });
+});
