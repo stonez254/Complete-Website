@@ -17,3 +17,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// Ederstone album-style meaning expansion
+const albumButton=document.getElementById('ederstone-album-toggle');
+const albumPanel=document.getElementById('ederstone-expanded-meaning');
+if(albumButton&&albumPanel){
+  albumButton.addEventListener('click',()=>{
+    const isOpen=albumButton.getAttribute('aria-expanded')==='true';
+    albumButton.setAttribute('aria-expanded',String(!isOpen));
+    albumPanel.hidden=isOpen;
+    if(!isOpen)setTimeout(()=>albumPanel.scrollIntoView({behavior:'smooth',block:'nearest'}),80);
+  });
+}
