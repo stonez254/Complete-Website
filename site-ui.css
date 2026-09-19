@@ -54,3 +54,7 @@ html.ui-light .ui-logo-mark{color:#fff}
 
 /* DRAGGABLE AI GUIDE */
 .ai-guide-button{touch-action:none;user-select:none;-webkit-user-select:none}.ai-guide-button.is-dragging{animation:none;cursor:grabbing;transform:scale(1.06);box-shadow:0 16px 45px rgba(0,0,0,.55),0 0 34px rgba(255,36,72,.3)}
+
+
+/* AUTHENTICATED PORTFOLIO LOCK */
+.ui-logout{width:36px;height:36px;margin-left:6px;border:1px solid rgba(255,255,255,.12);border-radius:50%;background:rgba(255,255,255,.035);color:#aeb5c5;cursor:pointer;font:700 1rem/1 "Space Grotesk",sans-serif;transition:.22s}.ui-logout:hover{color:#ff526f;border-color:rgba(255,82,111,.65);box-shadow:0 0 20px rgba(255,45,78,.12);transform:translateY(-1px)}@media(max-width:760px){.ui-logout{width:32px;height:32px;margin-left:2px}}
