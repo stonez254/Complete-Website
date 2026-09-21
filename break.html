@@ -286,19 +286,36 @@ document.addEventListener('DOMContentLoaded', function () {
           return '<p>' + p.innerText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</p>';
         }).join('');
 
-      var w = window.open('', '_blank');
-      if (!w) {
-        alert('Please allow pop-ups to print the poem as PDF.');
+      if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF !== 'function') {
+        alert('PDF generator is still loading. Please try again in a moment.');
         return;
       }
-      w.document.write('<!doctype html><html><head><title>' +
-        title.replace(/</g,'&lt;') +
-        '</title><style>body{font-family:Georgia,serif;max-width:760px;margin:55px auto;padding:0 30px;color:#111}.meta,.date{font:12px Arial;color:#666;letter-spacing:.5px}h1{font-size:30px}p{font-size:17px;line-height:1.8;margin:0 0 22px}@media print{body{margin:25px auto}}</style></head><body><div class="meta">' +
-        meta + '</div><h1>' + title + '</h1><div class="date">' + date +
-        '</div>' + paras + '</body></html>');
-      w.document.close();
-      w.focus();
-      setTimeout(function(){ w.print(); }, 600);
+      var jsPDF = window.jspdf.jsPDF;
+      var doc = new jsPDF({unit:'pt', format:'a4'});
+      var margin = 52, pageWidth = doc.internal.pageSize.getWidth(), pageHeight = doc.internal.pageSize.getHeight();
+      var maxWidth = pageWidth - (margin * 2), y = margin;
+      function addWrapped(text, size, font, gap) {
+        doc.setFont(font || 'times', 'normal');
+        doc.setFontSize(size);
+        var lines = doc.splitTextToSize(text, maxWidth);
+        var lineHeight = size * 1.55;
+        lines.forEach(function(line) {
+          if (y + lineHeight > pageHeight - margin) { doc.addPage(); y = margin; }
+          doc.text(line, margin, y);
+          y += lineHeight;
+        });
+        y += gap || 0;
+      }
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(8);
+      doc.text(meta, margin, y); y += 20;
+      addWrapped(title, 24, 'times', 8);
+      addWrapped(date, 9, 'helvetica', 18);
+      Array.prototype.slice.call(poem.querySelectorAll('.poem-stanza')).forEach(function(p) {
+        addWrapped(p.innerText, 13, 'times', 16);
+      });
+      var safeName = title.replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'').toLowerCase() || 'ederpoetry';
+      doc.save(safeName + '.pdf');
     });
   });
 
