@@ -1,8 +1,8 @@
 /* --- 0. General Setup and Variables --- */
 :root {
-    --fun-bg: #141e30; /* Deep blue night sky base */
-    --accent-red: #ff416c;
-    --accent-yellow: #ffc141;
+    --fun-bg: #240811; /* Deep blue night sky base */
+    --accent-red: #67142b;
+    --accent-yellow: #b52d4d;
     --card-bg: rgba(255, 255, 255, 0.1);
     --nav-height: 60px;
 }
@@ -53,7 +53,7 @@ html, body {
 }
 
 #fixed-nav button:hover {
-    background-color: #ff6888;
+    background-color: #8b1b38;
     transform: scale(1.05);
 }
 
@@ -142,7 +142,7 @@ html, body {
     color: rgb(250, 250, 253);
     margin-bottom: 20px;
     font-size: 1.8em;
-    text-shadow: 0 0 5px rgba(46, 204, 113, 0.5);
+    text-shadow: 0 0 5px rgba(125,25,55, 0.5);
 }
 
 .link-grid {
