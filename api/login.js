@@ -35,7 +35,7 @@ export default async function handler(req,res){
       return res.status(401).json({error:'Invalid or expired access code.'});
     }
 
-    const SESSION_SECONDS=180;
+    const SESSION_SECONDS=300;
     const token=session(Date.now()+SESSION_SECONDS*1000);
     res.setHeader('Set-Cookie',COOKIE+'='+token+'; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age='+SESSION_SECONDS);
     return res.status(200).json({ok:true});
