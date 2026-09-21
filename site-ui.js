@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 
 
-function initPortfolioLock(){const lock=document.getElementById('ui-logout');if(!lock)return;lock.addEventListener('click',async()=>{try{await fetch('/api/logout',{method:'POST'})}catch(e){}location.href='/auth.html'})}
+function initPortfolioLock(){const lock=document.getElementById('ui-logout');if(!lock)return;lock.addEventListener('click',async()=>{sessionStorage.removeItem('ederstone-session-start');sessionStorage.removeItem('ederstone-session-expired');try{await fetch('/api/logout',{method:'POST',keepalive:true})}catch(e){}location.replace('/auth.html')})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initPortfolioLock);else initPortfolioLock();
 
 
@@ -204,8 +204,8 @@ function initPrivateSessionGuard(){
   const key='ederstone-session-start';
   const start=Number(sessionStorage.getItem(key)||0);
   if(!start){location.replace('/auth.html');return}
-  const expire=()=>{if(sessionStorage.getItem('ederstone-session-expired')==='1')return;sessionStorage.setItem('ederstone-session-expired','1');fetch('/api/logout',{method:'POST',keepalive:true}).catch(()=>{});location.replace('/session-expired.html')};
-  const remaining=60000-(Date.now()-start);
+  const expire=()=>{if(sessionStorage.getItem('ederstone-session-expired')==='1')return;sessionStorage.setItem('ederstone-session-expired','1');sessionStorage.removeItem('ederstone-session-start');fetch('/api/logout',{method:'POST',keepalive:true}).catch(()=>{});location.replace('/session-expired.html')};
+  fetch('/api/session',{credentials:'same-origin'}).then(r=>{if(!r.ok)expire()}).catch(()=>{});const remaining=60000-(Date.now()-start);
   if(remaining<=0){expire();return}
   window.setTimeout(expire,remaining);
   window.setInterval(()=>{if(Date.now()-start>=60000)expire()},1000);
