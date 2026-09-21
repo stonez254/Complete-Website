@@ -1,0 +1,1 @@
+(()=>{setTimeout(()=>{location.replace('/auth.html')},4000)})();
