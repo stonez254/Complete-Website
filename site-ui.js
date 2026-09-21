@@ -221,7 +221,37 @@ function initPrivateSessionGuard(){
   
   let timer=document.getElementById('ederstone-access-timer');
   if(!timer){timer=document.createElement('div');timer.id='ederstone-access-timer';timer.className='ederstone-access-timer';timer.setAttribute('role','timer');timer.setAttribute('aria-label','Portfolio access time remaining');document.body.appendChild(timer)}
-  const renderTimer=()=>{const left=Math.max(0,ACCESS_DURATION-(Date.now()-start));const sec=Math.ceil(left/1000);const mins=Math.floor(sec/60);const secs=sec%60;timer.textContent='ACCESS · '+mins+':'+String(secs).padStart(2,'0');timer.classList.toggle('is-warning',left<=30000);if(left<=0)expire()};
+  let warning=document.getElementById('ederstone-access-warning');
+  if(!warning){
+    warning=document.createElement('div');
+    warning.id='ederstone-access-warning';
+    warning.className='ederstone-access-warning';
+    warning.setAttribute('role','alert');
+    warning.hidden=true;
+    warning.innerHTML='<strong>ACCESS TIME RUNNING OUT</strong><span id="ederstone-access-warning-text">You will be logged out soon.</span>';
+    document.body.appendChild(warning);
+  }
+  let lastWarningState='';
+  const renderTimer=()=>{
+    const left=Math.max(0,ACCESS_DURATION-(Date.now()-start));
+    const sec=Math.ceil(left/1000);
+    const mins=Math.floor(sec/60);
+    const secs=sec%60;
+    timer.textContent='ACCESS · '+mins+':'+String(secs).padStart(2,'0');
+    const warningState=left<=30000?'warning':'normal';
+    timer.classList.toggle('is-warning',warningState==='warning');
+    if(left<=30000&&left>0){
+      warning.hidden=false;
+      const w=warning.querySelector('#ederstone-access-warning-text');
+      if(w)w.textContent='Your portfolio session expires in '+sec+' second'+(sec===1?'':'s')+'.';
+      warning.classList.toggle('is-critical',left<=10000);
+    }else{
+      warning.hidden=true;
+      warning.classList.remove('is-critical');
+    }
+    if(warningState!==lastWarningState&&left<=30000&&left>0) lastWarningState=warningState;
+    if(left<=0)expire();
+  };
   renderTimer();
   window.setInterval(renderTimer,250);
 }
