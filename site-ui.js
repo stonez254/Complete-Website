@@ -211,50 +211,29 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 function initPrivateSessionGuard(){
   const path=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   if(path==='auth.html'||path==='owner.html'||path==='access-loader.html'||path==='session-expired.html')return;
-  const key='ederstone-session-start';
-  const start=Number(sessionStorage.getItem(key)||0);
-  if(!start){location.replace('/auth.html');return}
-  const expire=()=>{if(sessionStorage.getItem('ederstone-session-expired')==='1')return;sessionStorage.setItem('ederstone-session-expired','1');sessionStorage.removeItem('ederstone-session-start');fetch('/api/logout',{method:'POST',keepalive:true}).catch(()=>{});location.replace('/session-expired.html')};
-  fetch('/api/session',{credentials:'same-origin'}).then(r=>{if(!r.ok)expire()}).catch(()=>{});const ACCESS_DURATION=300000;
-  const remaining=ACCESS_DURATION-(Date.now()-start);
+  const start=Number(sessionStorage.getItem('ederstone-session-start')||0);
+  const serverExpiry=Number(sessionStorage.getItem('ederstone-session-expires')||0);
+  if(!start||!serverExpiry){location.replace('/auth.html');return}
+  const expire=()=>{if(sessionStorage.getItem('ederstone-session-expired')==='1')return;sessionStorage.setItem('ederstone-session-expired','1');sessionStorage.removeItem('ederstone-session-start');sessionStorage.removeItem('ederstone-session-expires');fetch('/api/logout',{method:'POST',keepalive:true}).catch(()=>{});location.replace('/session-expired.html')};
+  fetch('/api/session',{credentials:'same-origin'}).then(r=>{if(!r.ok)expire()}).catch(()=>{});
+  const remaining=serverExpiry-Date.now();
   if(remaining<=0){expire();return}
-  
   let timer=document.getElementById('ederstone-access-timer');
   if(!timer){timer=document.createElement('div');timer.id='ederstone-access-timer';timer.className='ederstone-access-timer';timer.setAttribute('role','timer');timer.setAttribute('aria-label','Portfolio access time remaining');document.body.appendChild(timer)}
   let warning=document.getElementById('ederstone-access-warning');
-  if(!warning){
-    warning=document.createElement('div');
-    warning.id='ederstone-access-warning';
-    warning.className='ederstone-access-warning';
-    warning.setAttribute('role','alert');
-    warning.hidden=true;
-    warning.innerHTML='<strong>ACCESS TIME RUNNING OUT</strong><span id="ederstone-access-warning-text">You will be logged out soon.</span>';
-    document.body.appendChild(warning);
-  }
-  let lastWarningState='';
+  if(!warning){warning=document.createElement('div');warning.id='ederstone-access-warning';warning.className='ederstone-access-warning';warning.setAttribute('role','alert');warning.hidden=true;warning.innerHTML='<strong>ACCESS TIME RUNNING OUT</strong><span id="ederstone-access-warning-text">You will be logged out soon.</span>';document.body.appendChild(warning)}
   const renderTimer=()=>{
-    const left=Math.max(0,ACCESS_DURATION-(Date.now()-start));
-    const sec=Math.ceil(left/1000);
-    const mins=Math.floor(sec/60);
-    const secs=sec%60;
-    timer.textContent='ACCESS · '+mins+':'+String(secs).padStart(2,'0');
-    const warningState=left<=30000?'warning':'normal';
-    timer.classList.toggle('is-warning',warningState==='warning');
-    if(left<=30000&&left>0){
-      warning.hidden=false;
-      const w=warning.querySelector('#ederstone-access-warning-text');
-      if(w)w.textContent='Your portfolio session expires in '+sec+' second'+(sec===1?'':'s')+'.';
-      warning.classList.toggle('is-critical',left<=10000);
-    }else{
-      warning.hidden=true;
-      warning.classList.remove('is-critical');
-    }
-    if(warningState!==lastWarningState&&left<=30000&&left>0) lastWarningState=warningState;
+    const left=Math.max(0,serverExpiry-Date.now()),sec=Math.ceil(left/1000),days=Math.floor(sec/86400),hours=Math.floor((sec%86400)/3600),mins=Math.floor((sec%3600)/60),secs=sec%60;
+    const display=days?days+'d '+String(hours).padStart(2,'0')+'h':hours?hours+'h '+String(mins).padStart(2,'0')+'m':mins+':'+String(secs).padStart(2,'0');
+    timer.textContent='ACCESS · '+display;
+    const warningLeft=Math.min(30000,Math.max(0,left));
+    timer.classList.toggle('is-warning',warningLeft>0&&left<=30000);
+    if(left<=30000&&left>0){warning.hidden=false;const w=warning.querySelector('#ederstone-access-warning-text');if(w)w.textContent='Your portfolio session expires in '+sec+' second'+(sec===1?'':'s')+'.';warning.classList.toggle('is-critical',left<=10000)}else{warning.hidden=true;warning.classList.remove('is-critical')}
     if(left<=0)expire();
   };
-  renderTimer();
-  window.setInterval(renderTimer,250);
+  renderTimer();window.setInterval(renderTimer,250);
 }
+
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initPrivateSessionGuard);else initPrivateSessionGuard();
 
 
