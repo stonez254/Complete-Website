@@ -1,16 +1,16 @@
 /* --- 0. General Setup and Variables --- */
 :root {
-    --primary-green: #2ecc71; /* Confidence/Creativity */
-    --soft-blue: #3498db;
+    --primary-green: #8b1b38; /* Confidence/Creativity */
+    --soft-blue: #8b1b38;
     --light-bg: #f4f6f7;
-    --dark-text: #2c3e50;
-    --card-shadow: rgba(44, 62, 80, 0.2);
+    --dark-text: #420d1c;
+    --card-shadow: rgba(125,25,55, 0.2);
     --nav-height: 60px;
 
     /* Difficulty Colors */
-    --beginner-color: #5cb85c; /* Green */
-    --intermediate-color: #f0ad4e; /* Yellow/Orange */
-    --advanced-color: #d9534f; /* Red */
+    --beginner-color: #8b1b38; /* Green */
+    --intermediate-color: #b52d4d; /* Yellow/Orange */
+    --advanced-color: #67142b; /* Red */
 }
 
 * {
@@ -59,7 +59,7 @@ html, body {
 }
 
 #fixed-nav button:hover {
-    background-color: #5faee3;
+    background-color: #8b1b38;
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
@@ -171,7 +171,7 @@ html, body {
 }
 
 .expand-btn:hover {
-    color: #1e8449;
+    color: #67142b;
 }
 
 .expand-btn i {
@@ -213,3 +213,7 @@ html, body {
     margin-bottom: 0;
     transition: all 0.5s ease-out;
 }
+
+/* BUILD REQUIREMENTS · FLEX SYSTEM */
+.build-points{display:flex;flex-wrap:wrap;gap:9px;margin:12px 0 0;padding:0}.build-points>span{flex:1 1 190px;display:flex;align-items:center;min-height:40px;padding:9px 11px;border:1px solid rgba(139,27,56,.32);border-radius:11px;background:rgba(35,8,17,.45);transition:transform .25s,border-color .25s,box-shadow .25s;animation:buildPointIn .55s both}.build-points>span::before{content:"";width:5px;height:5px;flex:0 0 auto;border-radius:50%;margin-right:8px;background:#b52d4d}.build-points>span:hover{transform:translateY(-3px);border-color:#8b1b38;box-shadow:0 10px 25px rgba(0,0,0,.28)}@keyframes buildPointIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@media(prefers-reduced-motion:reduce){.build-points>span{animation:none}}
+
