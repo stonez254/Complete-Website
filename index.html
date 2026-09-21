@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Ederstone — the personal portfolio of Hanningtone Okoth Odhiambo, focused on mathematics, computer science, technology, data and creative work.">
-  <meta name="theme-color" content="#070812">
+  <meta name="description" content="Ederstone — Mathematics, code, technology and creative work by Hanningtone Okoth Odhiambo.">
+  <meta name="theme-color" content="#050505">
   <title>Ederstone | Mathematics × Code × Creation</title>
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
   <link rel="stylesheet" href="index.css">
   <link rel="stylesheet" href="site-ui.css">
-  </head>
+</head>
 <body>
   <canvas id="rain-canvas" aria-hidden="true"></canvas>
   <div class="color-field" aria-hidden="true"><span></span><span></span><span></span></div>
@@ -19,124 +19,95 @@
   </header>
 
   <main>
-    <section class="hero home-hero" aria-labelledby="hero-title">
-      <div class="hero-copy">
-        <div class="intro-glow-box" aria-label="Introduction to Ederstone">
-          <div class="intro-glow-line"></div>
-          <p class="intro-glow-kicker">WELCOME TO EDERSTONE</p>
-          <p class="intro-glow-text">A personal space where mathematics, code, technology and creativity come together to turn ideas into something real.</p>
-          <p class="intro-glow-text intro-glow-text-alt">Explore the work, discover the thinking, experiment in the Code Lab and see what can be built next.</p>
+    <section class="storybook-cover" aria-labelledby="hero-title">
+      <div class="storybook-copy">
+        <p class="book-kicker">EDERSTONE / 2026 EDITION</p>
+        <div class="book-rule"></div>
+        <p class="ad-line">MATHEMATICS · CODE · CREATION</p>
+        <h1 id="hero-title">Ideas worth<br><em>building.</em></h1>
+        <p class="book-lead">A compact portfolio of things I build, solve and create. Step inside, turn the page, and see the work.</p>
+
+        <div class="book-actions">
+          <a class="book-button book-button-primary" href="projects.html">See the work <span>↗</span></a>
+          <a class="book-button book-button-secondary" href="contact.html">Start a conversation <span>→</span></a>
         </div>
-        <p class="eyebrow"><span class="status-dot"></span> EDERSTONE / PERSONAL PORTFOLIO</p>
-        <h1 id="hero-title">Building ideas<br><em>into reality.</em></h1>
-        <p class="hero-text">Meet the mind behind Ederstone. A results-driven Mathematics and Computer Science student combining technology, analytical thinking, creativity, communication and an innovation-oriented approach to problem solving.</p>
-        <div class="hero-actions">
-          <a class="button button-primary" href="projects.html">Explore my work <span>↗</span></a>
-          <a class="button button-ghost" href="about.html">Discover more <span>→</span></a>
+
+        <div class="book-ad">
+          <span class="book-ad-tag">FEATURED</span>
+          <div>
+            <strong>From an idea to something real.</strong>
+            <p>Websites, software experiments, analytical work and creative projects, presented in one place.</p>
+          </div>
+          <a href="services.html" aria-label="View Ederstone services">VIEW SERVICES ↗</a>
         </div>
-        <a class="coding-hub-cta" href="code.html">
-          <span class="hub-icon">&lt;/&gt;</span>
-          <span><small>CODE HUB</small><strong>Think it. Code it. Run it.</strong><em>Step inside Ederstone's interactive coding space and see what your ideas can do.</em></span>
-          <span class="hub-arrow">↗</span>
+      </div>
+
+      <div class="storybook-visual" aria-label="Ederstone brand mark">
+        <div class="book-page page-back"></div>
+        <div class="book-page page-front">
+          <div class="page-top"><span>EDERSTONE</span><span>PAGE 01</span></div>
+          <div class="page-mark"><b>E</b><span>S</span></div>
+          <strong class="page-word">EDERSTONE</strong>
+          <p>MATHEMATICS<br>× CODE<br>× CREATION</p>
+          <div class="page-stamp">OPEN</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="story-strip" aria-label="Ederstone story">
+      <div class="story-heading">
+        <p>THE STORY</p>
+        <h2>Three ways to<br><em>turn the page.</em></h2>
+      </div>
+      <div class="story-chapters">
+        <a class="story-chapter" href="projects.html">
+          <span>01 / BUILD</span>
+          <strong>Make useful things.</strong>
+          <p>Digital products, websites and experiments built to move an idea beyond the sketch.</p>
+          <b>Projects ↗</b>
         </a>
-
-        <section class="home-poem-card" aria-labelledby="home-poem-title">
-          <div class="home-poem-head">
-            <div>
-              <p class="home-poem-label">EDERPOETRY / FEATURED</p>
-              <h2 id="home-poem-title">Breaking Poverty’s Chains</h2>
-              <p class="home-poem-date">18TH SEP 2026</p>
-            </div>
-            <span class="home-poem-mark">EP</span>
-          </div>
-          <p class="home-poem-preview">A poem about struggle, resilience, ambition and the decision to rise beyond poverty.</p>
-          <div class="home-poem-actions">
-            <button class="home-poem-toggle" type="button" aria-expanded="false" aria-controls="home-poem-content"><span>Read poem</span><b>↓</b></button>
-            <button class="poem-action" type="button" data-speak-target="#home-poem-content"><span class="reader-icon">◉</span><span class="reader-label">Read aloud</span></button>
-            <span class="reader-status" aria-live="polite"></span>
-          </div>
-          <div class="home-poem-content" id="home-poem-content" hidden>
-            <div class="home-poem">
-              <p>Heavy chains of empty hands remain,<br>
-              As bitter frost consumes the endless night.<br>
-              Where umaskini leaves a lasting stain,<br>
-              The faintest dreams still reach for drops of light.</p>
-
-              <p>While hunger burns beneath a ruthless brand,<br>
-              That merciless adui steals away youth.<br>
-              Dreams wrapped in rags across the barren land,<br>
-              Reveal the harsh and cold, unyielding truth.</p>
-
-              <p>When nia struggles under heavy care,<br>
-              The path of life becomes a jagged road.<br>
-              Across the earth, worn faces bear despair,<br>
-              While mafanikio waits beyond the load.</p>
-
-              <p>Yet deep within the ruins of the pain,<br>
-              A spark survives beneath the weight of scars.<br>
-              The iron links of sorrow break like rain,<br>
-              And courage rises past the fallen bars.</p>
-
-              <p>With ushindi glowing through the darkest night,<br>
-              The shadows fade beneath a rising sun.<br>
-              No longer bound by poverty's cruel might,<br>
-              The dawn of strength declares that chains are done.</p>
-            </div>
-            <p class="home-poem-signature">EDERPOETRY · 18TH SEP 2026</p>
-          </div>
-        </section>
+        <a class="story-chapter" href="code.html">
+          <span>02 / SOLVE</span>
+          <strong>Think in systems.</strong>
+          <p>Mathematics, programming, data and problem solving meet inside the Code Lab.</p>
+          <b>Code Lab ↗</b>
+        </a>
+        <a class="story-chapter" href="break.html">
+          <span>03 / CREATE</span>
+          <strong>Leave a mark.</strong>
+          <p>Poetry, writing and ideas that give the technical work another dimension.</p>
+          <b>Eder Poetry ↗</b>
+        </a>
       </div>
+    </section>
 
-      <div class="hero-visual" aria-label="Animated Ederstone visual">
-        <div class="orbit"></div>
-        <div class="orbit orbit-b"></div>
-        <div class="core-card">
-          <div class="core-top"><span>EDERSTONE / CORE</span><span>01</span></div>
-          <div class="core-center">
-            <div class="core-mark"><b>E</b>S</div>
-            <div class="core-wordmark">EDERSTONE</div>
-          </div>
-          <div class="core-bottom"><span>MATHEMATICS</span><span>CODE × CREATION</span></div>
+    <section class="featured-page" aria-labelledby="home-poem-title">
+      <div class="featured-copy">
+        <p class="book-kicker">EDER POETRY / FEATURED WORK</p>
+        <h2 id="home-poem-title">Breaking Poverty’s Chains</h2>
+        <p>One page from the creative side of Ederstone, about struggle, resilience, ambition and the decision to rise beyond poverty.</p>
+        <button class="book-button book-button-secondary home-poem-toggle" type="button" aria-expanded="false" aria-controls="home-poem-content"><span>Open the page</span><b>↓</b></button>
+      </div>
+      <div class="featured-meta">
+        <span>18 SEP 2026</span>
+        <span>EDER POETRY</span>
+      </div>
+      <div class="home-poem-content" id="home-poem-content" hidden>
+        <div class="home-poem">
+          <p>Heavy chains of empty hands remain,<br>As bitter frost consumes the endless night.<br>Where umaskini leaves a lasting stain,<br>The faintest dreams still reach for drops of light.</p>
+          <p>While hunger burns beneath a ruthless brand,<br>That merciless adui steals away youth.<br>Dreams wrapped in rags across the barren land,<br>Reveal the harsh and cold, unyielding truth.</p>
+          <p>When nia struggles under heavy care,<br>The path of life becomes a jagged road.<br>Across the earth, worn faces bear despair,<br>While mafanikio waits beyond the load.</p>
+          <p>Yet deep within the ruins of the pain,<br>A spark survives beneath the weight of scars.<br>The iron links of sorrow break like rain,<br>And courage rises past the fallen bars.</p>
+          <p>With ushindi glowing through the darkest night,<br>The shadows fade beneath a rising sun.<br>No longer bound by poverty's cruel might,<br>The dawn of strength declares that chains are done.</p>
         </div>
+        <p class="home-poem-signature">EDER POETRY · 18 SEP 2026</p>
       </div>
     </section>
 
-    <section class="what-ederstone section" aria-labelledby="what-ederstone-title">
-      <div class="section-label">WHAT IS EDERSTONE?</div>
-      <div class="what-ederstone-intro">
-        <h2 id="what-ederstone-title">One identity. <em>Many dimensions.</em></h2>
-        <p>Ederstone is a personal ecosystem built around learning, creating, solving problems and turning ideas into practical work.</p>
-      </div>
-      <div class="ederstone-stack">
-        <article class="ederstone-box">
-          <span class="ederstone-box-number">01</span>
-          <div><span class="ederstone-icon">∑</span><h3>Mathematics</h3><p>• Analytical thinking<br>• Problem solving<br>• Logic and structure</p></div>
-        </article>
-        <article class="ederstone-box">
-          <span class="ederstone-box-number">02</span>
-          <div><span class="ederstone-icon">&lt;/&gt;</span><h3>Code & Technology</h3><p>• Software development<br>• Web experiences<br>• Digital experimentation</p></div>
-        </article>
-        <article class="ederstone-box">
-          <span class="ederstone-box-number">03</span>
-          <div><span class="ederstone-icon">✦</span><h3>Creation</h3><p>• Design and ideas<br>• Poetry and writing<br>• Creative expression</p></div>
-        </article>
-        <article class="ederstone-box">
-          <span class="ederstone-box-number">04</span>
-          <div><span class="ederstone-icon">◈</span><h3>Growth & Impact</h3><p>• Continuous learning<br>• Building useful solutions<br>• Creating opportunities</p></div>
-        </article>
-      </div>
-    </section>
-
-    <section class="home-direction section">
-      <div class="section-label">EXPLORE THE PORTFOLIO</div>
-      <div class="home-direction-grid">
-        <a href="about.html" class="direction-card"><span>01</span><h2>About</h2><p>Professional profile, education, experience, skills, interests and the thinking behind Ederstone.</p><b>Open →</b></a>
-        <a href="projects.html" class="direction-card"><span>02</span><h2>Projects</h2><p>A focused archive of digital products, concepts, technical work and creative projects.</p><b>Open →</b></a>
-        <a href="code.html" class="direction-card"><span>03</span><h2>Code Lab</h2><p>An interactive space for experimenting with HTML, CSS, JavaScript and Python.</p><b>Open →</b></a>
-        <a href="services.html" class="direction-card"><span>04</span><h2>Services</h2><p>Web, software, data, design, mathematics, marketing and communication-focused work.</p><b>Open →</b></a>
-        <a href="break.html" class="direction-card"><span>05</span><h2>Creative</h2><p>Poetry, writing, ideas, research interests and the creative side beyond programming.</p><b>Open →</b></a>
-        <a href="contact.html" class="direction-card"><span>06</span><h2>Contact</h2><p>Get in touch about a project, collaboration, service or creative idea.</p><b>Open →</b></a>
-      </div>
+    <section class="home-close">
+      <p>YOUR NEXT PAGE COULD START HERE.</p>
+      <h2>Have an idea?<br><em>Let's build it.</em></h2>
+      <a class="book-button book-button-primary" href="contact.html">Talk to Ederstone ↗</a>
     </section>
   </main>
 
@@ -157,9 +128,9 @@
         const expanded = button.getAttribute('aria-expanded') === 'true';
         button.setAttribute('aria-expanded', String(!expanded));
         content.hidden = expanded;
-        button.querySelector('span').textContent = expanded ? 'Read poem' : 'Hide poem';
+        button.querySelector('span').textContent = expanded ? 'Open the page' : 'Close the page';
         button.querySelector('b').textContent = expanded ? '↓' : '↑';
-        if (!expanded && 'vibrate' in navigator) navigator.vibrate(10);
+        if (!expanded) content.scrollIntoView({behavior:'smooth',block:'nearest'});
       });
     })();
   </script>
