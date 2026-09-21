@@ -182,3 +182,9 @@ html.ui-light body p,html.ui-light body li,html.ui-light body .intro,html.ui-lig
 body{top:0!important}
 @media(max-width:500px){.language-float-wrap{right:12px;bottom:12px}.language-float-button{width:58px;height:58px}.language-panel{bottom:69px}}
 @media(prefers-reduced-motion:reduce){.language-float-button:hover,.language-options button:hover,.language-reset:hover{transform:none}}
+
+/* HARD BLOCK THIRD-PARTY TRANSLATION/RATING UI */
+.goog-te-banner-frame,.goog-te-balloon-frame,.goog-te-menu-frame,.goog-tooltip,.goog-te-spinner-pos,.goog-te-gadget,.goog-te-ftab,.goog-te-balloon,
+iframe[src*="translate.google."],iframe[src*="translate.googleapis."],iframe.goog-te-banner-frame{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;width:0!important;height:0!important;border:0!important}
+body{top:0!important}
+html,body{overflow-x:hidden}
