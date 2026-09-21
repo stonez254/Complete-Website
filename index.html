@@ -9,10 +9,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
   <link rel="stylesheet" href="index.css">
   <link rel="stylesheet" href="site-ui.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-</head>
+  </head>
 <body>
   <canvas id="rain-canvas" aria-hidden="true"></canvas>
   <div class="color-field" aria-hidden="true"><span></span><span></span><span></span></div>
@@ -53,9 +50,11 @@
             <span class="home-poem-mark">EP</span>
           </div>
           <p class="home-poem-preview">A poem about struggle, resilience, ambition and the decision to rise beyond poverty.</p>
-          <button class="home-poem-toggle" type="button" aria-expanded="false" aria-controls="home-poem-content">
-            <span>Read poem</span><b>↓</b>
-          </button>
+          <div class="home-poem-actions">
+            <button class="home-poem-toggle" type="button" aria-expanded="false" aria-controls="home-poem-content"><span>Read poem</span><b>↓</b></button>
+            <button class="poem-action" type="button" data-speak-target="#home-poem-content"><span class="reader-icon">◉</span><span class="reader-label">Read aloud</span></button>
+            <span class="reader-status" aria-live="polite"></span>
+          </div>
           <div class="home-poem-content" id="home-poem-content" hidden>
             <div class="home-poem">
               <p>Heavy chains of empty hands remain,<br>
