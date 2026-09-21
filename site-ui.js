@@ -151,6 +151,8 @@ function initPoemReader(){
      u.onend=()=>{idx++;next()};u.onerror=()=>stop();state.queue.push(u);window.speechSynthesis.speak(u);
    };next();
  };
+ const globalSettings=[...document.querySelectorAll('[data-open-voice-settings]')];
+ globalSettings.forEach(btn=>btn.addEventListener('click',()=>ensurePanel().hidden=false));
  buttons.forEach(button=>{
    if(!supported){button.disabled=true;return}
    button.addEventListener('click',()=>{const target=document.querySelector(button.dataset.speakTarget);if(!target)return;if(state.button===button){stop();return}speak(button,target)});
