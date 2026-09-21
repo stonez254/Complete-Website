@@ -96,3 +96,47 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 function initPortfolioLock(){const lock=document.getElementById('ui-logout');if(!lock)return;lock.addEventListener('click',async()=>{try{await fetch('/api/logout',{method:'POST'})}catch(e){}location.href='/auth.html'})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initPortfolioLock);else initPortfolioLock();
+
+
+/* ACCESSIBLE POEM READER · BROWSER SPEECH SYNTHESIS */
+function initPoemReader(){
+  const supported='speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+  let activeButton=null;
+  let activeUtterance=null;
+  const stop=()=>{
+    if('speechSynthesis' in window) window.speechSynthesis.cancel();
+    if(activeButton){activeButton.classList.remove('is-speaking');activeButton.querySelector('.reader-label').textContent='Read aloud';}
+    activeButton=null;activeUtterance=null;
+  };
+  document.querySelectorAll('[data-speak-target]').forEach(button=>{
+    if(!supported){button.disabled=true;button.title='Speech reading is not supported by this browser';return}
+    button.addEventListener('click',()=>{
+      const selector=button.getAttribute('data-speak-target');
+      const target=document.querySelector(selector);
+      if(!target)return;
+      if(activeButton===button){stop();return}
+      stop();
+      const text=(target.innerText||target.textContent||'').replace(/\s+/g,' ').trim();
+      if(!text)return;
+      const utterance=new SpeechSynthesisUtterance(text);
+      utterance.rate=.9;
+      utterance.pitch=1;
+      utterance.volume=1;
+      const voices=window.speechSynthesis.getVoices();
+      const preferred=voices.find(v=>/^en(-|_)/i.test(v.lang)&&/google|microsoft|natural|english/i.test(v.name))||voices.find(v=>/^en/i.test(v.lang));
+      if(preferred)utterance.voice=preferred;
+      utterance.onstart=()=>{
+        activeButton=button;activeUtterance=utterance;button.classList.add('is-speaking');button.querySelector('.reader-label').textContent='Stop reading';
+        const status=button.parentElement.querySelector('.reader-status');if(status)status.textContent='Reading…';
+      };
+      utterance.onend=()=>{
+        if(activeButton===button){button.classList.remove('is-speaking');button.querySelector('.reader-label').textContent='Read aloud';const status=button.parentElement.querySelector('.reader-status');if(status)status.textContent='';}
+        activeButton=null;activeUtterance=null;
+      };
+      utterance.onerror=()=>{if(activeButton===button){button.classList.remove('is-speaking');button.querySelector('.reader-label').textContent='Read aloud';const status=button.parentElement.querySelector('.reader-status');if(status)status.textContent='Speech unavailable';}activeButton=null;activeUtterance=null};
+      window.speechSynthesis.speak(utterance);
+    });
+  });
+  window.addEventListener('pagehide',stop);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initPoemReader);else initPoemReader();
