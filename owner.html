@@ -4,12 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
+<meta name="ederstone-owner-build" content="duration-control-v2">
 <title>Owner Access | Ederstone</title>
 <link rel="stylesheet" href="auth.css">
 <style>
 .owner-card{max-width:580px}.owner-card h1{font-size:clamp(2rem,6vw,3.2rem)}
 .owner-form{margin-top:25px;text-align:left}.owner-field{margin-top:16px}
-.owner-select{width:100%;box-sizing:border-box;padding:14px 16px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:#0c0d12;color:#fff;font:inherit;outline:none}
+.owner-select{width:100%;box-sizing:border-box;padding:15px 44px 15px 16px;border:1px solid rgba(255,82,111,.5);border-radius:12px;background:#0c0d12;color:#fff;font:inherit;outline:none;min-height:52px;display:block}
 .owner-select:focus{border-color:#ff526f}.owner-duration-note{margin:8px 0 0;color:#747d90;font-size:.68rem}
 .owner-result{display:none;margin-top:18px;padding:18px;border:1px solid rgba(98,255,176,.3);border-radius:14px;background:rgba(98,255,176,.04)}
 .owner-code{display:block;margin:8px 0 13px;color:#62ffb0;font:800 1.15rem/1.3 "Space Grotesk",Arial,sans-serif;letter-spacing:.12em;word-break:break-all}
@@ -30,8 +31,8 @@
 <form id="owner-form" class="owner-form" novalidate>
 <label for="admin-key">OWNER KEY</label>
 <div class="auth-input-wrap"><span>⌁</span><input id="admin-key" type="password" autocomplete="off" required placeholder="Enter owner key"></div>
-<div class="owner-field">
-<label for="access-duration">SESSION DURATION</label>
+<div class="owner-field" id="session-duration-control">
+<label for="access-duration">SESSION DURATION · CHOOSE ACCESS TIME</label>
 <select id="access-duration" class="owner-select">
 <option value="900">15 minutes</option><option value="1800">30 minutes</option><option value="3600" selected>1 hour</option><option value="10800">3 hours</option><option value="21600">6 hours</option><option value="43200">12 hours</option><option value="86400">24 hours</option><option value="172800">48 hours</option><option value="604800">7 days</option><option value="custom">Custom duration…</option>
 </select>
