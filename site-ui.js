@@ -215,10 +215,15 @@ function initPrivateSessionGuard(){
   const start=Number(sessionStorage.getItem(key)||0);
   if(!start){location.replace('/auth.html');return}
   const expire=()=>{if(sessionStorage.getItem('ederstone-session-expired')==='1')return;sessionStorage.setItem('ederstone-session-expired','1');sessionStorage.removeItem('ederstone-session-start');fetch('/api/logout',{method:'POST',keepalive:true}).catch(()=>{});location.replace('/session-expired.html')};
-  fetch('/api/session',{credentials:'same-origin'}).then(r=>{if(!r.ok)expire()}).catch(()=>{});const remaining=60000-(Date.now()-start);
+  fetch('/api/session',{credentials:'same-origin'}).then(r=>{if(!r.ok)expire()}).catch(()=>{});const ACCESS_DURATION=180000;
+  const remaining=ACCESS_DURATION-(Date.now()-start);
   if(remaining<=0){expire();return}
-  window.setTimeout(expire,remaining);
-  window.setInterval(()=>{if(Date.now()-start>=60000)expire()},1000);
+  
+  let timer=document.getElementById('ederstone-access-timer');
+  if(!timer){timer=document.createElement('div');timer.id='ederstone-access-timer';timer.className='ederstone-access-timer';timer.setAttribute('role','timer');timer.setAttribute('aria-label','Portfolio access time remaining');document.body.appendChild(timer)}
+  const renderTimer=()=>{const left=Math.max(0,ACCESS_DURATION-(Date.now()-start));const sec=Math.ceil(left/1000);const mins=Math.floor(sec/60);const secs=sec%60;timer.textContent='ACCESS · '+mins+':'+String(secs).padStart(2,'0');timer.classList.toggle('is-warning',left<=30000);if(left<=0)expire()};
+  renderTimer();
+  window.setInterval(renderTimer,250);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initPrivateSessionGuard);else initPrivateSessionGuard();
 
