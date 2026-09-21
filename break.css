@@ -1,8 +1,8 @@
 /* --- 0. General Setup and Variables --- */
 :root {
     --fun-bg: #240811; /* Deep blue night sky base */
-    --accent-red: #67142b;
-    --accent-yellow: #b52d4d;
+    --accent-red: #420d1c;
+    --accent-yellow: #67142b;
     --card-bg: rgba(255, 255, 255, 0.1);
     --nav-height: 60px;
 }
@@ -53,7 +53,7 @@ html, body {
 }
 
 #fixed-nav button:hover {
-    background-color: #8b1b38;
+    background-color: #420d1c;
     transform: scale(1.05);
 }
 
