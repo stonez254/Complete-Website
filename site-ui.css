@@ -109,3 +109,41 @@ a{transition:color .25s ease,border-color .25s ease,transform .25s ease}
 .home-poem-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 @media(max-width:500px){.poem-action{min-height:42px;padding:9px 12px;font-size:.62rem}}
 @media(prefers-reduced-motion:reduce){.poem-action.is-speaking{animation:none}}
+
+/* =========================================================
+   EDERSTONE 60° CHROMATIC SYSTEM
+   Dark = bright typography. Light = dark typography.
+   Theme colours: maroon / black / white.
+   Animated accents: cyan / yellow / maroon / orange.
+   ========================================================= */
+:root{
+ --theme60:linear-gradient(60deg,#050505 0%,#67142b 50%,#ffffff 100%);
+ --text60:linear-gradient(60deg,#ffffff 0%,#ffb6c7 38%,#ffffff 68%,#f5a0b5 100%);
+ --accent60:linear-gradient(60deg,#00e5ff 0%,#ffd400 35%,#b52d4d 68%,#ff7a18 100%);
+ --accent-cyan:#00e5ff;--accent-yellow:#ffd400;--accent-orange:#ff7a18;
+}
+body{background-color:#050505!important}
+h1,h2,h3,h4,h5,h6,.hero h1,.closing h2,.poem-title,.home-poem-head h2,.core-wordmark,.cta h2{
+ color:transparent!important;background-image:var(--text60)!important;background-size:260% 100%!important;
+ -webkit-background-clip:text!important;background-clip:text!important;animation:eder60Text 9s ease-in-out infinite;
+}
+button,.button,.header-cta,.contact-button,.modding-cta{background-image:linear-gradient(60deg,#050505 0%,#67142b 58%,#ffffff 100%);background-size:220% 100%;color:#fff!important}
+.global-nav a[aria-current="page"]{background-image:linear-gradient(60deg,#050505,#67142b,#b52d4d)!important;color:#fff!important}
+.ui-theme:hover,.ai-guide-button:hover{border-color:var(--accent-cyan)!important;box-shadow:0 0 24px rgba(0,229,255,.2),0 0 30px rgba(255,122,24,.12)!important}
+@keyframes eder60Text{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes ederChromatic{0%,100%{box-shadow:0 0 0 rgba(0,229,255,0)}25%{box-shadow:0 0 28px rgba(0,229,255,.18)}50%{box-shadow:0 0 28px rgba(255,212,0,.16)}75%{box-shadow:0 0 28px rgba(255,122,24,.18)}}
+.color-field span,.ambient-one,.ambient-two,.auth-orbit,.auth-orbit-a,.auth-orbit-b{animation-duration:14s}
+[data-accent-animation],.ui-code{animation:ederChromatic 4s ease-in-out infinite}
+html.ui-light{
+ --text60:linear-gradient(60deg,#050505 0%,#67142b 48%,#050505 100%);
+}
+html.ui-light h1,html.ui-light h2,html.ui-light h3,html.ui-light h4,html.ui-light h5,html.ui-light h6,html.ui-light .hero h1,html.ui-light .closing h2,html.ui-light .poem-title,html.ui-light .home-poem-head h2,html.ui-light .core-wordmark,html.ui-light .cta h2{
+ color:transparent!important;background-image:var(--text60)!important;-webkit-background-clip:text!important;background-clip:text!important;
+}
+html.ui-light p,html.ui-light li,html.ui-light .intro,html.ui-light .hero-text,html.ui-light .creative-copy,html.ui-light .project p,html.ui-light .service p,html.ui-light .contact-grid p{color:#240811!important}
+html.ui-light .global-pane{background:rgba(255,255,255,.94)!important}
+html.ui-light .ui-clock strong,html.ui-light .ui-weather strong{color:#050505!important}
+html.ui-light .button,html.ui-light button,html.ui-light .header-cta,html.ui-light .contact-button{color:#fff!important}
+@media(prefers-reduced-motion:reduce){
+ h1,h2,h3,h4,h5,h6,.hero h1,.closing h2,.poem-title,.home-poem-head h2,.core-wordmark,.cta h2{animation:none!important;background-position:50% 50%!important}
+}
