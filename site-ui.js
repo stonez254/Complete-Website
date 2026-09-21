@@ -160,6 +160,9 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 /* GLOBAL COPYRIGHT MARQUEE */
 function initCopyrightMarquee(){
  document.querySelectorAll('footer').forEach(footer=>{
+   footer.querySelectorAll('span').forEach(span=>{
+     if(/©?\s*2026\s*Ederstone/i.test(span.textContent||''))span.remove();
+   });
    let m=footer.querySelector('.copyright-marquee');
    if(!m){m=document.createElement('div');m.className='copyright-marquee';m.innerHTML='<span>EDERSTONE @2026</span><span>EDERSTONE @2026</span><span>EDERSTONE @2026</span>';footer.prepend(m)}
  });
