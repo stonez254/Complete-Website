@@ -1,9 +1,9 @@
 /* --- 0. General Setup and Variables --- */
 :root {
-    --primary-blue: #67142b;
-    --dark-slate: #420d1c;
+    --primary-blue: #420d1c;
+    --dark-slate: #240811;
     --light-gray: #ecf0f1;
-    --link-hover: #8b1b38;
+    --link-hover: #420d1c;
     --nav-height: 60px;
 }
 
