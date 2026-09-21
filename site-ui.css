@@ -188,3 +188,8 @@ body{top:0!important}
 iframe[src*="translate.google."],iframe[src*="translate.googleapis."],iframe.goog-te-banner-frame{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;width:0!important;height:0!important;border:0!important}
 body{top:0!important}
 html,body{overflow-x:hidden}
+
+/* FULL-VIEWPORT DEFAULT — all devices */
+html,body{width:100%;min-width:100%;min-height:100%;margin:0;padding:0}
+body{min-height:100vh;min-height:100dvh;width:100vw;overflow-x:hidden}
+#app,main,.page-shell,.site-shell{width:100%;min-width:100%;min-height:100vh;min-height:100dvh}
