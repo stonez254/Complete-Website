@@ -200,3 +200,7 @@ body{min-height:100vh;min-height:100dvh;width:100vw;overflow-x:hidden}
 /* Aggressive suppression of Google Translate banner / rating / tooltip UI */
 .goog-te-banner-frame,.goog-te-balloon-frame,.goog-te-menu-frame,.goog-te-menu2,.goog-te-balloon,.goog-tooltip,.goog-tooltip:hover,.goog-te-spinner-pos,.goog-te-gadget,.goog-te-ftab,.goog-te-banner,.skiptranslate iframe,.skiptranslate{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;width:0!important;height:0!important;max-width:0!important;max-height:0!important;border:0!important}
 html body{top:0!important}
+
+
+/* ACCESS COUNTDOWN */
+.ederstone-access-timer{position:fixed;top:14px;right:14px;z-index:100001;padding:8px 11px;border:1px solid rgba(255,255,255,.24);border-radius:999px;background:rgba(5,5,5,.82);color:#fff;backdrop-filter:blur(10px);font:800 10px/1 system-ui,sans-serif;letter-spacing:.1em;box-shadow:0 8px 24px rgba(0,0,0,.28);pointer-events:none;white-space:nowrap}.ederstone-access-timer.is-warning{animation:ederstoneTimerPulse 1s infinite}@keyframes ederstoneTimerPulse{50%{opacity:.55;transform:scale(1.04)}}@media(max-width:600px){.ederstone-access-timer{top:10px;right:10px;font-size:9px;padding:7px 9px}}
