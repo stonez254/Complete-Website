@@ -129,7 +129,7 @@ function initPoemReader(){
    document.body.appendChild(panel);
    const render=()=>{
      const vs=getVoiceOptions(),wrap=panel.querySelector('#voice-slots');wrap.innerHTML='';
-     for(let i=0;i<4;i++){const lab=document.createElement('label');lab.className='voice-slot';lab.innerHTML='<span>VOICE '+(i+1)+'</span>';const sel=document.createElement('select');sel.dataset.voiceSlot=i;sel.innerHTML='<option value="">Auto / browser default</option>'+vs.map(v=>'<option value="'+v.i+'">'+v.label.replace(/"/g,'&quot;')+'</option>').join('');if(state.settings.voiceIndexes[i]!=null)sel.value=state.settings.voiceIndexes[i];lab.appendChild(sel);wrap.appendChild(lab)}
+     for(let i=0;i<4;i++){const lab=document.createElement('label');lab.className='voice-slot';lab.innerHTML='<span>VOICE '+(i+1)+'</span>';const sel=document.createElement('select');sel.dataset.voiceSlot=i;sel.innerHTML='<option value="">Auto / allowed language</option>'+vs.map(v=>'<option value="'+v.i+'">'+v.label.replace(/"/g,'&quot;')+'</option>').join('');if(state.settings.voiceIndexes[i]!=null)sel.value=state.settings.voiceIndexes[i];lab.appendChild(sel);wrap.appendChild(lab)}
      panel.querySelector('#voice-mode').value=state.settings.mode||'single';panel.querySelector('#voice-rate').value=state.settings.rate||.9;panel.querySelector('#voice-pitch').value=state.settings.pitch||1;
    };
    panel.querySelectorAll('[data-voice-close]').forEach(x=>x.addEventListener('click',()=>panel.hidden=true));
@@ -146,7 +146,7 @@ function initPoemReader(){
    const next=()=>{
      if(idx>=parts.length){stop();return}
      const u=new SpeechSynthesisUtterance(parts[idx]);u.rate=state.settings.rate||.9;u.pitch=state.settings.pitch||1;u.volume=1;
-     let vi=state.settings.voiceIndexes?.[state.settings.mode==='four'?idx%4:0];if(vi!=null&&vs[vi])u.voice=vs[vi];
+     let vi=state.settings.voiceIndexes?.[state.settings.mode==='four'?idx%4:0];if(vi!=null&&vs[vi]&&isAllowedVoice(vs[vi]))u.voice=vs[vi];else{const fallback=vs.find(isAllowedVoice);if(fallback)u.voice=fallback;}
      const s=button.parentElement.querySelector('.reader-status');if(s)s.textContent=state.settings.mode==='four'?('Voice '+((idx%4)+1)+' · Reading…'):'Reading…';
      u.onend=()=>{idx++;next()};u.onerror=()=>stop();state.queue.push(u);window.speechSynthesis.speak(u);
    };next();
@@ -221,3 +221,22 @@ function initPrivateSessionGuard(){
   window.setInterval(()=>{if(Date.now()-start>=60000)expire()},1000);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initPrivateSessionGuard);else initPrivateSessionGuard();
+
+
+/* PWA INSTALL — make Ederstone installable as an app */
+function initEderstoneInstall(){
+  if(document.querySelector('link[rel="manifest"]')){}
+  else{const m=document.createElement('link');m.rel='manifest';m.href='/manifest.json';document.head.appendChild(m)}
+  if(!document.querySelector('meta[name="mobile-web-app-capable"]')){const m=document.createElement('meta');m.name='mobile-web-app-capable';m.content='yes';document.head.appendChild(m)}
+  if(!document.querySelector('meta[name="apple-mobile-web-app-capable"]')){const m=document.createElement('meta');m.name='apple-mobile-web-app-capable';m.content='yes';document.head.appendChild(m)}
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('/service-worker.js').catch(()=>{});
+  let deferred=null;
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;showInstall()});
+  const showInstall=()=>{
+    if(document.getElementById('ederstone-install-app')||!deferred)return;
+    const b=document.createElement('button');b.id='ederstone-install-app';b.type='button';b.className='ederstone-install-app';b.innerHTML='<span>↥</span><b>INSTALL APP</b>';b.title='Install Ederstone as an app';b.setAttribute('aria-label','Install Ederstone as an app');
+    b.addEventListener('click',async()=>{if(!deferred)return;deferred.prompt();await deferred.userChoice;deferred=null;b.remove()});document.body.appendChild(b);
+  };
+  window.addEventListener('appinstalled',()=>{deferred=null;document.getElementById('ederstone-install-app')?.remove()});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initEderstoneInstall);else initEderstoneInstall();
