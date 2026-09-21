@@ -213,34 +213,33 @@ document.addEventListener('DOMContentLoaded',()=>{
  const cards=[...document.querySelectorAll('.poetry-section .poetry-card')].filter(c=>c.querySelector('.poem-collapsible'));
  const search=document.getElementById('poetry-search'), count=document.getElementById('poetry-count');
  const refresh=()=>{
-   const q=(search?.value||'').trim().toLowerCase(); let shown=0;
-   cards.forEach(c=>{const match=!q||c.innerText.toLowerCase().includes(q); c.closest('.poetry-section').style.display=match?'':'none'; if(match)shown++;});
+   const q=(search?.value||'').trim().toLowerCase();
+   let shown=0;
+   cards.forEach(c=>{
+     const match=!q||c.innerText.toLowerCase().includes(q);
+     c.closest('.poetry-section').style.display=match?'':'none';
+     if(match) shown++;
+   });
    if(count) count.textContent=`${shown} poem${shown===1?'':'s'} in view · ${cards.length} total`;
  };
  refresh();
  search?.addEventListener('input',refresh);
  document.getElementById('poetry-shuffle')?.addEventListener('click',()=>{
    const visible=cards.filter(c=>c.closest('.poetry-section').style.display!=='none');
-   if(!visible.length)return;
+   if(!visible.length) return;
    const card=visible[Math.floor(Math.random()*visible.length)];
    card.scrollIntoView({behavior:'smooth',block:'center'});
-   card.classList.add('poem-open');
-   const b=card.querySelector('.poem-toggle'); if(b)b.setAttribute('aria-expanded','true');
+   if(!card.classList.contains('poem-open')) card.querySelector('.poem-toggle')?.click();
  });
  document.getElementById('poetry-stop')?.addEventListener('click',()=>window.speechSynthesis?.cancel());
  document.querySelectorAll('[data-copy-target]').forEach(btn=>btn.addEventListener('click',async()=>{
-   const el=document.querySelector(btn.dataset.copyTarget); if(!el)return;
-   try{await navigator.clipboard.writeText(el.innerText); const s=btn.parentElement.querySelector('.reader-status'); if(s){s.textContent='Poem copied';setTimeout(()=>s.textContent='',1600)}}catch(e){}
- }));
- document.querySelectorAll('.poetry-card').forEach(card=>{
-   const poem=card.querySelector('.poem-collapsible'),btn=card.querySelector('.poem-toggle');
-   if(!poem||!btn)return;
-   btn.addEventListener('click',()=>{
-     const open=card.classList.toggle('poem-open');
-     btn.setAttribute('aria-expanded',String(open));
-     btn.firstChild.textContent=open?'Hide poem ':'Read poem ';
-     if(open&&navigator.vibrate)navigator.vibrate(10);
-   });
+   const el=document.querySelector(btn.dataset.copyTarget);
+   if(!el) return;
+   try{
+     await navigator.clipboard.writeText(el.innerText);
+     const status=btn.parentElement.querySelector('.reader-status');
+     if(status){status.textContent='Poem copied';setTimeout(()=>status.textContent='',1600);}
+   }catch(e){}
  });
 });
 </script></body></html>
