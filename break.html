@@ -210,37 +210,133 @@ Letting in enough light to challenge everything the darkness said.<br>
 I am not finished, not defeated, not the sum of what went wrong,<br>
 I am still here, still becoming, still learning how to carry on.</p></div><div class="poem-actions"><button class="poem-toggle poem-action" type="button" aria-expanded="false">Read poem <span aria-hidden="true">↓</span></button><button class="poem-action" type="button" data-speak-target="#poem-archive-9"><span class="reader-icon">◉</span><span class="reader-label">Read aloud</span></button><button class="poem-action" type="button" data-download-target="#poem-archive-9">⇩ Download PDF</button><span class="reader-status" aria-live="polite"></span></div><p class="poem-signature">EDERPOETRY · 22ND SEPTEMBER 2026 · 00:09 EAT</p></article></section><section class="poetry-section collection-tools"><article class="poetry-card"><p class="poetry-meta">EDER POETRY / COLLECTION TOOLS</p><h2 class="poem-title">Browse the archive.</h2><p class="poem-studio-copy">Search by title or theme, jump through the collection, shuffle the archive, and stop speech playback whenever you want.</p><div class="poem-actions"><input id="poetry-search" aria-label="Search poems" placeholder="Search titles or themes…" style="flex:2;min-width:220px;padding:11px 14px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:#050505;color:#fff"><button class="poem-action" id="poetry-shuffle" type="button">↝ Shuffle poem</button><button class="poem-action" id="poetry-stop" type="button">■ Stop voice</button></div><p class="reader-status" id="poetry-count" aria-live="polite"></p></article></section><section class="quote-section"><p class="eyebrow">THE OTHER SIDE OF BUILDING</p><blockquote>“Create things that give an idea somewhere to live.”</blockquote></section><section class="cta"><div><p class="eyebrow">NEXT STEP</p><h2>Bring an idea<br><em>into the world.</em></h2></div><a class="button" href="contact.html">Start a conversation ↗</a></section></main><footer class="site-footer"><span>© 2026 Ederstone</span><span>Mathematics × Code × Creation</span><a href="https://github.com/stonez254" target="_blank" rel="noopener">GitHub ↗</a></footer><script src="site-ui.js"></script><script>
 document.addEventListener('DOMContentLoaded', function () {
-  var cards = Array.prototype.slice.call(document.querySelectorAll('.poetry-section .poetry-card')).filter(function(c){ return c.querySelector('.poem-collapsible'); });
-  var search = document.getElementById('poetry-search'), count = document.getElementById('poetry-count');
-  function refresh(){
-    var q=search?search.value.trim().toLowerCase():'', shown=0;
-    cards.forEach(function(card){var sec=card.closest('.poetry-section'), ok=!q||card.innerText.toLowerCase().indexOf(q)!==-1; sec.style.display=ok?'':'none'; if(ok)shown++;});
-    if(count) count.textContent=shown+' poem'+(shown===1?'':'s')+' in view · '+cards.length+' total';
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.poetry-section .poetry-card')).filter(function(card){
+    return !!card.querySelector('.poem-collapsible');
+  });
+  var search = document.getElementById('poetry-search');
+  var count = document.getElementById('poetry-count');
+
+  function setPoemState(card, open) {
+    var poem = card.querySelector('.poem-collapsible');
+    var toggle = card.querySelector('.poem-toggle');
+    if (!poem || !toggle) return;
+
+    card.classList.toggle('poem-open', open);
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.innerHTML = open
+      ? 'Hide poem <span aria-hidden="true">↑</span>'
+      : 'Read poem <span aria-hidden="true">↓</span>';
+
+    // Explicitly control the animated dimensions. This avoids the
+    // max-height:0 rule in break.css from keeping poems invisible.
+    poem.style.setProperty('display', open ? 'block' : 'none', 'important');
+    if (open) {
+      poem.style.setProperty('max-height', poem.scrollHeight + 'px', 'important');
+      poem.style.setProperty('opacity', '1', 'important');
+    } else {
+      poem.style.setProperty('max-height', '0px', 'important');
+      poem.style.setProperty('opacity', '0', 'important');
+    }
   }
-  cards.forEach(function(card){
-    var poem=card.querySelector('.poem-collapsible'), toggle=card.querySelector('.poem-toggle');
-    if(toggle&&poem) toggle.addEventListener('click',function(e){
-      e.preventDefault(); e.stopPropagation();
-      var open=!card.classList.contains('poem-open'); card.classList.toggle('poem-open',open);
-      poem.style.display=open?'block':'none'; toggle.setAttribute('aria-expanded',open?'true':'false');
-      toggle.innerHTML=open?'Hide poem <span aria-hidden="true">↑</span>':'Read poem <span aria-hidden="true">↓</span>';
+
+  function refresh() {
+    var q = search ? search.value.trim().toLowerCase() : '';
+    var shown = 0;
+    cards.forEach(function(card) {
+      var section = card.closest('.poetry-section');
+      var matches = !q || card.innerText.toLowerCase().indexOf(q) !== -1;
+      if (section) section.style.display = matches ? '' : 'none';
+      if (matches) shown++;
     });
-    var dl=card.querySelector('[data-download-target]');
-    if(dl) dl.addEventListener('click',function(e){
+    if (count) {
+      count.textContent = shown + ' poem' + (shown === 1 ? '' : 's') +
+        ' in view · ' + cards.length + ' total';
+    }
+  }
+
+  // One delegated handler only. This prevents duplicate handlers from
+  // fighting each other and also covers every current/future poem card.
+  document.addEventListener('click', function(e) {
+    var toggle = e.target.closest ? e.target.closest('.poem-toggle') : null;
+    if (!toggle) return;
+    var card = toggle.closest('.poetry-card');
+    if (!card || !card.querySelector('.poem-collapsible')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setPoemState(card, !card.classList.contains('poem-open'));
+  });
+
+  cards.forEach(function(card) {
+    setPoemState(card, false);
+
+    var dl = card.querySelector('[data-download-target]');
+    if (dl) dl.addEventListener('click', function(e) {
       e.preventDefault();
-      var title=card.querySelector('.poem-title').innerText, meta=card.querySelector('.poem-meta').innerText, date=card.querySelector('.poem-author').innerText;
-      var paras=Array.prototype.slice.call(poem.querySelectorAll('.poem-stanza')).map(function(p){return '<p>'+p.innerText.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</p>';}).join('');
-      var w=window.open('','_blank');
-      if(!w){alert('Please allow pop-ups to print the poem as PDF.');return;}
-      w.document.write('<html><head><title>'+title+'</title><style>body{font-family:Georgia,serif;max-width:760px;margin:55px auto;padding:0 30px;color:#111}h1{font-size:30px}.meta,.date{font:12px Arial;color:#666;letter-spacing:.5px}p{font-size:17px;line-height:1.8;margin:0 0 22px}@media print{body{margin:25px auto}}</style></head><body><div class="meta">'+meta+'</div><h1>'+title+'</h1><div class="date">'+date+'</div>'+paras+'</body></html>');
-      w.document.close(); w.focus(); setTimeout(function(){w.print();},600);
+      var poem = card.querySelector('.poem-collapsible');
+      var titleEl = card.querySelector('.poem-title');
+      var metaEl = card.querySelector('.poem-meta');
+      var dateEl = card.querySelector('.poem-author');
+      if (!poem || !titleEl) return;
+
+      var title = titleEl.innerText;
+      var meta = metaEl ? metaEl.innerText : 'EDER POETRY';
+      var date = dateEl ? dateEl.innerText : '';
+      var paras = Array.prototype.slice.call(poem.querySelectorAll('.poem-stanza'))
+        .map(function(p) {
+          return '<p>' + p.innerText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</p>';
+        }).join('');
+
+      var w = window.open('', '_blank');
+      if (!w) {
+        alert('Please allow pop-ups to print the poem as PDF.');
+        return;
+      }
+      w.document.write('<!doctype html><html><head><title>' +
+        title.replace(/</g,'&lt;') +
+        '</title><style>body{font-family:Georgia,serif;max-width:760px;margin:55px auto;padding:0 30px;color:#111}.meta,.date{font:12px Arial;color:#666;letter-spacing:.5px}h1{font-size:30px}p{font-size:17px;line-height:1.8;margin:0 0 22px}@media print{body{margin:25px auto}}</style></head><body><div class="meta">' +
+        meta + '</div><h1>' + title + '</h1><div class="date">' + date +
+        '</div>' + paras + '</body></html>');
+      w.document.close();
+      w.focus();
+      setTimeout(function(){ w.print(); }, 600);
     });
   });
-  if(search) search.addEventListener('input',refresh);
-  var shuffle=document.getElementById('poetry-shuffle');
-  if(shuffle) shuffle.addEventListener('click',function(){var v=cards.filter(function(c){return c.closest('.poetry-section').style.display!== 'none';});if(!v.length)return;var c=v[Math.floor(Math.random()*v.length)];c.scrollIntoView({behavior:'smooth',block:'center'});if(!c.classList.contains('poem-open'))c.querySelector('.poem-toggle').click();});
-  var stop=document.getElementById('poetry-stop'); if(stop) stop.addEventListener('click',function(){if(window.speechSynthesis)window.speechSynthesis.cancel();});
-  document.querySelectorAll('[data-speak-target]').forEach(function(btn){btn.addEventListener('click',function(e){e.preventDefault();var el=document.querySelector(btn.getAttribute('data-speak-target'));if(!el||!window.speechSynthesis)return;window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(el.innerText);u.rate=.88;window.speechSynthesis.speak(u);});});
+
+  if (search) search.addEventListener('input', refresh);
+
+  var shuffle = document.getElementById('poetry-shuffle');
+  if (shuffle) shuffle.addEventListener('click', function() {
+    var visible = cards.filter(function(card) {
+      var section = card.closest('.poetry-section');
+      return section && section.style.display !== 'none';
+    });
+    if (!visible.length) return;
+    var card = visible[Math.floor(Math.random() * visible.length)];
+    card.scrollIntoView({behavior:'smooth', block:'center'});
+    if (!card.classList.contains('poem-open')) {
+      var toggle = card.querySelector('.poem-toggle');
+      if (toggle) toggle.click();
+    }
+  });
+
+  var stop = document.getElementById('poetry-stop');
+  if (stop) stop.addEventListener('click', function() {
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+  });
+
+  document.querySelectorAll('[data-speak-target]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      var selector = btn.getAttribute('data-speak-target');
+      var el = selector ? document.querySelector(selector) : null;
+      if (!el || !window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(el.innerText);
+      u.rate = 0.88;
+      window.speechSynthesis.speak(u);
+    });
+  });
+
   refresh();
 });
 </script></body></html>
