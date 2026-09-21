@@ -110,9 +110,11 @@ function initPoemReader(){
  try{Object.assign(state.settings,JSON.parse(localStorage.getItem(key)||'{}'))}catch(e){}
  const voices=()=>window.speechSynthesis.getVoices();
  const save=()=>localStorage.setItem(key,JSON.stringify(state.settings));
+ const ALLOWED_READER_LANGS=['en','zh','sw','fr','de'];
+ const isAllowedVoice=v=>{const lang=(v?.lang||'').toLowerCase();return ALLOWED_READER_LANGS.some(x=>lang===x||lang.startsWith(x+'-'));};
  const getVoiceOptions=()=>{
    const vs=voices();
-   return vs.map((v,i)=>({i,label:(v.name||'Voice')+' · '+v.lang}));
+   return vs.map((v,i)=>({v,i,label:(v.name||'Voice')+' · '+v.lang})).filter(x=>isAllowedVoice(x.v));
  };
  const stop=()=>{
    window.speechSynthesis.cancel();state.queue=[];
@@ -190,6 +192,14 @@ function initLanguageControl(){
   panel.querySelectorAll('[data-lang]').forEach(x=>x.addEventListener('click',()=>choose(x.dataset.lang)));
   panel.querySelector('[data-lang-reset]').addEventListener('click',()=>choose('en'));
   document.addEventListener('keydown',e=>{if(e.key==='Escape')panel.hidden=true});
+  /* Suppress third-party translation UI/popups; Ederstone owns the language controls. */
+  const blockExternalTranslationPopups=()=>{
+    const selectors=['.goog-te-banner-frame','.goog-te-balloon-frame','.goog-te-menu-frame','.goog-tooltip','.goog-te-spinner-pos','.goog-te-gadget','.goog-te-ftab','.goog-te-balloon'];
+    selectors.forEach(sel=>document.querySelectorAll(sel).forEach(el=>el.remove()));
+    document.querySelectorAll('iframe').forEach(frame=>{const src=(frame.src||'').toLowerCase();if(src.includes('translate.google.')||src.includes('translate.googleapis.'))frame.remove();});
+  };
+  blockExternalTranslationPopups();
+  new MutationObserver(blockExternalTranslationPopups).observe(document.documentElement,{childList:true,subtree:true});
   const script=document.createElement('script');
   script.src='https://translate.google.com/translate_a/element.js?cb=ederstoneGoogleTranslateInit';
   script.async=true;
