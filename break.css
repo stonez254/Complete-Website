@@ -217,3 +217,15 @@ html, body {
 .voice-close{position:absolute;right:14px;top:12px;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:#050505;color:#fff;cursor:pointer}
 .reader-kicker{font:700 .58rem "JetBrains Mono",monospace;letter-spacing:.18em;color:#00e5ff}.voice-panel h2{margin:8px 0;color:#fff}.voice-note{color:#cfc2c8;font-size:.78rem;line-height:1.55}.voice-panel label{display:block;margin-top:15px;color:#ffd400;font:700 .62rem "Space Grotesk",sans-serif;letter-spacing:.08em}.voice-panel select,.voice-panel input{width:100%;margin-top:7px;padding:10px;border:1px solid rgba(255,255,255,.16);border-radius:10px;background:#050505;color:#fff}.voice-controls{display:flex;gap:12px}.voice-controls label{flex:1}.voice-save{width:100%;margin-top:20px;padding:12px;border:1px solid #b52d4d;border-radius:10px;background:linear-gradient(60deg,#050505,#67142b,#ff7a18);color:#fff;font-weight:800;cursor:pointer}
 @media(max-width:600px){.voice-panel{padding:24px 18px}.voice-controls{display:block}}
+
+/* EDER POETRY COLLECTION / SPEECH STUDIO */
+.speech-studio-card{padding-top:10px}
+.speech-studio-card .poetry-card{border-color:rgba(0,229,255,.22);background:radial-gradient(circle at 90% 0%,rgba(0,229,255,.08),transparent 34%),linear-gradient(145deg,#141414,#0b0b0b)}
+.poem-studio-copy{position:relative;max-width:720px;color:#cfc7c9!important;font-size:.9rem!important;line-height:1.7}
+.studio-settings-trigger{position:relative;margin-top:18px;min-height:44px!important;width:auto!important;padding:10px 16px!important;border-color:rgba(0,229,255,.35)!important;background:rgba(0,229,255,.06)!important;color:#fff!important}
+.studio-settings-trigger:hover{border-color:#00e5ff!important;box-shadow:0 0 24px rgba(0,229,255,.1)!important}
+.poem-actions .poem-action{min-height:42px}
+.poem-actions .reader-settings-button{background:rgba(0,229,255,.04)!important}
+.poem-actions .reader-status{min-height:20px;color:#00e5ff;font-size:.68rem;letter-spacing:.04em}
+.poetry-section:nth-of-type(even) .poetry-card{border-color:rgba(255,122,24,.16)}
+@media(max-width:600px){.poem-actions{align-items:stretch}.poem-actions .poem-action{flex:1;min-width:135px}.poem-actions .reader-status{width:100%}.speech-studio-card .poetry-card{padding:24px 20px}.studio-settings-trigger{width:100%!important}}
