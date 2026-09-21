@@ -147,3 +147,18 @@ html.ui-light .button,html.ui-light button,html.ui-light .header-cta,html.ui-lig
 @media(prefers-reduced-motion:reduce){
  h1,h2,h3,h4,h5,h6,.hero h1,.closing h2,.poem-title,.home-poem-head h2,.core-wordmark,.cta h2{animation:none!important;background-position:50% 50%!important}
 }
+
+/* GLOBAL MARQUEE + CHROMATIC MICRO-DETAILS */
+.copyright-marquee{width:100%;overflow:hidden;border-block:1px solid rgba(181,45,77,.22);padding:7px 0;margin-bottom:10px;background:linear-gradient(60deg,rgba(5,5,5,.7),rgba(103,20,43,.22),rgba(255,255,255,.04));white-space:nowrap}
+.copyright-marquee span{display:inline-block;min-width:100%;font:800 .56rem "JetBrains Mono",monospace;letter-spacing:.3em;text-align:center;color:#fff;animation:copyrightMarquee 13s linear infinite}
+@keyframes copyrightMarquee{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
+.site-footer,.site-footer span,.site-footer a,footer,footer span,footer a{color:#f4edf0}
+footer a:hover{color:#00e5ff!important}
+html.ui-light .copyright-marquee{background:linear-gradient(60deg,rgba(255,255,255,.8),rgba(103,20,43,.1),rgba(5,5,5,.04))}
+html.ui-light .copyright-marquee span,html.ui-light footer,html.ui-light footer span,html.ui-light footer a{color:#240811}
+@media(prefers-reduced-motion:reduce){.copyright-marquee span{animation:none;transform:none}}
+/* BRIGHT DARK-THEME BODY COPY */
+body{color:#f7f2f4!important}
+body p,body li,body .intro,body .hero-text,body .lead,body .project p,body .service p,body .creative-copy,body .contact-grid p,body .timeline-item p{color:#ded3d8}
+html.ui-light body{color:#240811!important}
+html.ui-light body p,html.ui-light body li,html.ui-light body .intro,html.ui-light body .hero-text,html.ui-light body .lead,html.ui-light body .project p,html.ui-light body .service p,html.ui-light body .creative-copy,html.ui-light body .contact-grid p,html.ui-light body .timeline-item p{color:#420d1c!important}
