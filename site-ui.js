@@ -173,7 +173,7 @@ function initCopyrightMarquee(){
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initCopyrightMarquee);else initCopyrightMarquee();
 
 
-/* GLOBAL LANGUAGE CONTROL + ONE-MINUTE PRIVATE SESSION */
+/* GLOBAL LANGUAGE CONTROL + FIVE-MINUTE PRIVATE SESSION */
 function initLanguageControl(){
   if(document.getElementById('ederstone-language-button'))return;
   const wrap=document.createElement('div');
@@ -215,7 +215,7 @@ function initPrivateSessionGuard(){
   const start=Number(sessionStorage.getItem(key)||0);
   if(!start){location.replace('/auth.html');return}
   const expire=()=>{if(sessionStorage.getItem('ederstone-session-expired')==='1')return;sessionStorage.setItem('ederstone-session-expired','1');sessionStorage.removeItem('ederstone-session-start');fetch('/api/logout',{method:'POST',keepalive:true}).catch(()=>{});location.replace('/session-expired.html')};
-  fetch('/api/session',{credentials:'same-origin'}).then(r=>{if(!r.ok)expire()}).catch(()=>{});const ACCESS_DURATION=180000;
+  fetch('/api/session',{credentials:'same-origin'}).then(r=>{if(!r.ok)expire()}).catch(()=>{});const ACCESS_DURATION=300000;
   const remaining=ACCESS_DURATION-(Date.now()-start);
   if(remaining<=0){expire();return}
   
