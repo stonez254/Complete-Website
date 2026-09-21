@@ -1,9 +1,9 @@
 /* --- 0. General Setup and Variables --- */
 :root {
-    --primary-blue: #007bff;
-    --dark-slate: #2c3e50;
+    --primary-blue: #67142b;
+    --dark-slate: #420d1c;
     --light-gray: #ecf0f1;
-    --link-hover: #3498db;
+    --link-hover: #8b1b38;
     --nav-height: 60px;
 }
 
@@ -32,7 +32,7 @@ html, body {
     justify-content: flex-end;
     align-items: center;
     padding: 0 15px;
-    background: rgba(44, 62, 80, 0.95);
+    background: rgba(125,25,55, 0.95);
     backdrop-filter: blur(4px);
     z-index: 100;
     border-bottom: 2px solid var(--primary-blue);
@@ -82,7 +82,7 @@ html, body {
     padding: 25px 20px;
     border-radius: 10px;
     margin-bottom: 30px;
-    border: 1px solid rgba(0, 123, 255, 0.3);
+    border: 1px solid rgba(125,25,55, 0.3);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
