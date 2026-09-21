@@ -98,45 +98,70 @@ function initPortfolioLock(){const lock=document.getElementById('ui-logout');if(
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initPortfolioLock);else initPortfolioLock();
 
 
-/* ACCESSIBLE POEM READER · BROWSER SPEECH SYNTHESIS */
+
+/* ACCESSIBLE POEM READER · FOUR-VOICE STUDIO */
 function initPoemReader(){
-  const supported='speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
-  let activeButton=null;
-  let activeUtterance=null;
-  const stop=()=>{
-    if('speechSynthesis' in window) window.speechSynthesis.cancel();
-    if(activeButton){activeButton.classList.remove('is-speaking');activeButton.querySelector('.reader-label').textContent='Read aloud';}
-    activeButton=null;activeUtterance=null;
-  };
-  document.querySelectorAll('[data-speak-target]').forEach(button=>{
-    if(!supported){button.disabled=true;button.title='Speech reading is not supported by this browser';return}
-    button.addEventListener('click',()=>{
-      const selector=button.getAttribute('data-speak-target');
-      const target=document.querySelector(selector);
-      if(!target)return;
-      if(activeButton===button){stop();return}
-      stop();
-      const text=(target.innerText||target.textContent||'').replace(/\s+/g,' ').trim();
-      if(!text)return;
-      const utterance=new SpeechSynthesisUtterance(text);
-      utterance.rate=.9;
-      utterance.pitch=1;
-      utterance.volume=1;
-      const voices=window.speechSynthesis.getVoices();
-      const preferred=voices.find(v=>/^en(-|_)/i.test(v.lang)&&/google|microsoft|natural|english/i.test(v.name))||voices.find(v=>/^en/i.test(v.lang));
-      if(preferred)utterance.voice=preferred;
-      utterance.onstart=()=>{
-        activeButton=button;activeUtterance=utterance;button.classList.add('is-speaking');button.querySelector('.reader-label').textContent='Stop reading';
-        const status=button.parentElement.querySelector('.reader-status');if(status)status.textContent='Reading…';
-      };
-      utterance.onend=()=>{
-        if(activeButton===button){button.classList.remove('is-speaking');button.querySelector('.reader-label').textContent='Read aloud';const status=button.parentElement.querySelector('.reader-status');if(status)status.textContent='';}
-        activeButton=null;activeUtterance=null;
-      };
-      utterance.onerror=()=>{if(activeButton===button){button.classList.remove('is-speaking');button.querySelector('.reader-label').textContent='Read aloud';const status=button.parentElement.querySelector('.reader-status');if(status)status.textContent='Speech unavailable';}activeButton=null;activeUtterance=null};
-      window.speechSynthesis.speak(utterance);
-    });
-  });
-  window.addEventListener('pagehide',stop);
+ const supported='speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+ const buttons=[...document.querySelectorAll('[data-speak-target]')];
+ if(!buttons.length)return;
+ const state={button:null,queue:[],settings:{mode:'single',voiceIndexes:[null,null,null,null],rate:.9,pitch:1}};
+ const key='ederstone-reader-settings';
+ try{Object.assign(state.settings,JSON.parse(localStorage.getItem(key)||'{}'))}catch(e){}
+ const voices=()=>window.speechSynthesis.getVoices();
+ const save=()=>localStorage.setItem(key,JSON.stringify(state.settings));
+ const getVoiceOptions=()=>{
+   const vs=voices();
+   return vs.map((v,i)=>({i,label:(v.name||'Voice')+' · '+v.lang}));
+ };
+ const stop=()=>{
+   window.speechSynthesis.cancel();state.queue=[];
+   if(state.button){state.button.classList.remove('is-speaking');const l=state.button.querySelector('.reader-label');if(l)l.textContent='Read aloud';const s=state.button.parentElement.querySelector('.reader-status');if(s)s.textContent='';}
+   state.button=null;
+ };
+ const ensurePanel=()=>{
+   let panel=document.getElementById('voice-settings');
+   if(panel)return panel;
+   panel=document.createElement('div');panel.id='voice-settings';panel.className='voice-settings';panel.hidden=true;
+   panel.innerHTML='<div class="voice-backdrop" data-voice-close></div><section class="voice-panel" role="dialog" aria-modal="true" aria-labelledby="voice-title"><button class="voice-close" data-voice-close aria-label="Close speech settings">×</button><p class="reader-kicker">EDER POETRY / SPEECH STUDIO</p><h2 id="voice-title">Voice settings</h2><p class="voice-note">Choose up to four voices. Four-voice mode rotates them between stanzas so the poem feels performed rather than narrated by one voice.</p><label>Reading mode<select id="voice-mode"><option value="single">Single voice</option><option value="four">Four-voice rotation</option></select></label><div id="voice-slots"></div><div class="voice-controls"><label>Rate<input id="voice-rate" type="range" min=".6" max="1.2" step=".05"></label><label>Pitch<input id="voice-pitch" type="range" min=".7" max="1.3" step=".05"></label></div><button id="voice-save" class="voice-save">Save speech settings</button></section></div>';
+   document.body.appendChild(panel);
+   const render=()=>{
+     const vs=getVoiceOptions(),wrap=panel.querySelector('#voice-slots');wrap.innerHTML='';
+     for(let i=0;i<4;i++){const lab=document.createElement('label');lab.className='voice-slot';lab.innerHTML='<span>VOICE '+(i+1)+'</span>';const sel=document.createElement('select');sel.dataset.voiceSlot=i;sel.innerHTML='<option value="">Auto / browser default</option>'+vs.map(v=>'<option value="'+v.i+'">'+v.label.replace(/"/g,'&quot;')+'</option>').join('');if(state.settings.voiceIndexes[i]!=null)sel.value=state.settings.voiceIndexes[i];lab.appendChild(sel);wrap.appendChild(lab)}
+     panel.querySelector('#voice-mode').value=state.settings.mode||'single';panel.querySelector('#voice-rate').value=state.settings.rate||.9;panel.querySelector('#voice-pitch').value=state.settings.pitch||1;
+   };
+   panel.querySelectorAll('[data-voice-close]').forEach(x=>x.addEventListener('click',()=>panel.hidden=true));
+   panel.querySelector('#voice-save').addEventListener('click',()=>{state.settings.mode=panel.querySelector('#voice-mode').value;state.settings.rate=+panel.querySelector('#voice-rate').value;state.settings.pitch=+panel.querySelector('#voice-pitch').value;state.settings.voiceIndexes=[...panel.querySelectorAll('[data-voice-slot]')].map(s=>s.value===''?null:+s.value);save();panel.hidden=true});
+   window.speechSynthesis.addEventListener?.('voiceschanged',render);render();return panel;
+ };
+ const split=(target)=>{
+   const nodes=[...target.querySelectorAll('p')].map(x=>x.innerText.trim()).filter(Boolean);
+   return nodes.length?nodes:[(target.innerText||target.textContent||'').replace(/\s+/g,' ').trim()];
+ };
+ const speak=(button,target)=>{
+   stop();state.button=button;button.classList.add('is-speaking');const label=button.querySelector('.reader-label');if(label)label.textContent='Stop reading';
+   const parts=split(target);const vs=voices();let idx=0;
+   const next=()=>{
+     if(idx>=parts.length){stop();return}
+     const u=new SpeechSynthesisUtterance(parts[idx]);u.rate=state.settings.rate||.9;u.pitch=state.settings.pitch||1;u.volume=1;
+     let vi=state.settings.voiceIndexes?.[state.settings.mode==='four'?idx%4:0];if(vi!=null&&vs[vi])u.voice=vs[vi];
+     const s=button.parentElement.querySelector('.reader-status');if(s)s.textContent=state.settings.mode==='four'?('Voice '+((idx%4)+1)+' · Reading…'):'Reading…';
+     u.onend=()=>{idx++;next()};u.onerror=()=>stop();state.queue.push(u);window.speechSynthesis.speak(u);
+   };next();
+ };
+ buttons.forEach(button=>{
+   if(!supported){button.disabled=true;return}
+   button.addEventListener('click',()=>{const target=document.querySelector(button.dataset.speakTarget);if(!target)return;if(state.button===button){stop();return}speak(button,target)});
+   const settingsButton=document.createElement('button');settingsButton.type='button';settingsButton.className='poem-action reader-settings-button';settingsButton.innerHTML='<span>⚙</span><span>Speech settings</span>';settingsButton.addEventListener('click',()=>ensurePanel().hidden=false);button.parentElement.appendChild(settingsButton);
+ });
+ window.addEventListener('pagehide',stop);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initPoemReader);else initPoemReader();
+
+/* GLOBAL COPYRIGHT MARQUEE */
+function initCopyrightMarquee(){
+ document.querySelectorAll('footer').forEach(footer=>{
+   let m=footer.querySelector('.copyright-marquee');
+   if(!m){m=document.createElement('div');m.className='copyright-marquee';m.innerHTML='<span>EDERSTONE @2026</span><span>EDERSTONE @2026</span><span>EDERSTONE @2026</span>';footer.prepend(m)}
+ });
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initCopyrightMarquee);else initCopyrightMarquee();
