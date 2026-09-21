@@ -101,6 +101,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 /* ACCESSIBLE POEM READER · FOUR-VOICE STUDIO */
 function initPoemReader(){
+ if(location.pathname.endsWith('/index.html')||location.pathname==='/'||location.pathname.endsWith('/'))return;
  const supported='speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
  const buttons=[...document.querySelectorAll('[data-speak-target]')];
  if(!buttons.length)return;
