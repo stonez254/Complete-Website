@@ -682,6 +682,10 @@ function handleAction(el){
  if(a==='go-kitchen'){closeModal();return view('kitchen');}
  if(a==='go-unfinished'){closeModal();return view('unfinished');}
  if(a==='review-task')return reviewUnfinishedTask(el.getAttribute('data-id')||'');
+ if(a==='add-staff')return addStaff();
+ if(a==='edit-staff')return editStaff(Number(el.getAttribute('data-index')));
+ if(a==='save-staff')return saveStaff(Number(el.getAttribute('data-index')));
+ if(a==='delete-staff')return deleteStaff(Number(el.getAttribute('data-index')));
  if(a==='resolve-task'){closeUnfinishedTask(el.getAttribute('data-id')||'');return unfinishedTasks();}
  if(a==='toggle-collapse')return toggleCollapse(el.getAttribute('data-target'));
  if(a==='assign-chef')return assignChef(el.getAttribute('data-food')||'',Number(el.getAttribute('data-qty'))||0,el.getAttribute('data-chef')||'',el.getAttribute('data-task')||'');
