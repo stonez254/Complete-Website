@@ -1,0 +1,1 @@
+document.addEventListener('click',e=>{const b=e.target.closest('[data-ederstone-logout]');if(!b)return;e.preventDefault();window.EderStoneSession?.logout('manual');});
