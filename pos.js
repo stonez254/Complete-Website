@@ -1238,7 +1238,9 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 
 // Phase 4 role-aware UI helpers
-function currentEderStoneRole(){ return window.EderStoneAuth?.user?.role || sessionStorage.getItem('ederstone-role') || null; }
+function currentEderStoneRole(){
+  return window.EderStoneAuth?.user?.role || null;
+}
 function ederStoneCan(permission){ const role=currentEderStoneRole(); return role==='owner' || !!(window.EderStonePermissions?.can?.(role,permission)); }
 function applyEderStoneRoleUI(){
   const role=currentEderStoneRole(); if(!role) return;
