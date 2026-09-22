@@ -2,15 +2,15 @@
 
 /* EderStone transition from portfolio to Restaurant POS */
 .pos-launcher{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;background:radial-gradient(circle at 50% 50%,rgba(125,25,55,.32),transparent 35%),#050505;color:#fff;opacity:0;visibility:hidden;pointer-events:none}
-.pos-launcher.active{opacity:1;visibility:visible;pointer-events:auto;animation:posLaunchFade .9s ease both}
+.pos-launcher.active{opacity:1;visibility:visible;pointer-events:auto;animation:posLaunchFade 5s ease both}
 .pos-launcher .launch-core{display:grid;place-items:center;gap:14px;text-align:center}
-.pos-launcher .launch-mark{width:92px;height:92px;border:1px solid rgba(255,255,255,.18);border-radius:50%;display:grid;place-items:center;position:relative;animation:posLaunchSpin .9s ease both}
-.pos-launcher .launch-mark::before{content:'';position:absolute;inset:-13px;border:1px solid rgba(125,25,55,.55);border-left-color:transparent;border-radius:50%;animation:posLaunchOrbit .7s linear infinite}
+.pos-launcher .launch-mark{width:92px;height:92px;border:1px solid rgba(255,255,255,.18);border-radius:50%;display:grid;place-items:center;position:relative;animation:posLaunchSpin 5s ease both}
+.pos-launcher .launch-mark::before{content:'';position:absolute;inset:-13px;border:1px solid rgba(125,25,55,.55);border-left-color:transparent;border-radius:50%;animation:posLaunchOrbit 1.5s linear infinite}
 .pos-launcher .launch-mark b{font-size:27px;letter-spacing:.08em;background:linear-gradient(145deg,#8b1b3d,#d6a3b5);-webkit-background-clip:text;background-clip:text;color:transparent}
 .pos-launcher strong{font-size:13px;letter-spacing:.18em}
 .pos-launcher small{font-size:9px;color:#777;letter-spacing:.08em}
 @keyframes posLaunchFade{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:scale(1)}}
 @keyframes posLaunchSpin{from{transform:scale(.65) rotate(-80deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
 @keyframes posLaunchOrbit{to{transform:rotate(360deg)}}
-body.pos-launching>main,body.pos-launching>.site-header,body.pos-launching>.site-footer{animation:posExitFade .85s ease forwards}
+body.pos-launching>main,body.pos-launching>.site-header,body.pos-launching>.site-footer{animation:posExitFade 4.7s ease forwards}
 @keyframes posExitFade{to{opacity:0;transform:scale(.98);filter:blur(4px)}}
