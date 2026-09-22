@@ -524,13 +524,13 @@ function tables(){
 }
 
 function newOrder(){
- activeTable=null;cart=[];orderType='Takeaway';payment='M-Pesa';category='All';deliveryCustomer={name:'',phone:'',address:''};orderView();
+ activeTable=null;cart=[];orderType='Takeaway';payment='M-Pesa';category='All';deliveryCustomer={name:'',phone:'',address:''};view('orders');
 }
 function openTable(id){
  var t=db.tables[id-1];
  if(!t){toast('Table not found');return;}
  if(t.status==='Busy'&&t.paid){toast('Clear the paid table before starting another order');return;}
- activeTable=id;orderType='Dine-in';payment='M-Pesa';category='All';deliveryCustomer={name:'',phone:'',address:''};cart=copy(t.order||[]);orderView();
+ activeTable=id;orderType='Dine-in';payment='M-Pesa';category='All';deliveryCustomer={name:'',phone:'',address:''};cart=copy(t.order||[]);view('orders');
 }
 function subtotal(){return cart.reduce(function(a,x){return a+Number(x.price||0)*Number(x.qty||0);},0);}
 function grand(){return subtotal()*(1+(Number(db.settings.tax)||0)/100+(Number(db.settings.service)||0)/100);}
