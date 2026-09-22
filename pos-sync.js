@@ -16,7 +16,7 @@
   }));
 
   async function pullInternal() {
-    const response = await fetch('/api/pos', { cache: 'no-store' });
+    const response = await fetch('/api/pos', { cache: 'no-store', credentials: 'include' });
     const result = await response.json();
     if (!response.ok || !result.ok) throw new Error(result.error || 'Sync pull failed');
 
@@ -49,6 +49,7 @@
     try {
       const response = await fetch('/api/pos', {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ state, expectedVersion: serverVersion || null })
       });
