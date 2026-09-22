@@ -19,7 +19,8 @@ export async function GET() {
     if (!rows.length) return json({ ok: true, state: null, version: 0 });
     return json({ ok: true, state: rows[0].data, version: Number(rows[0].version), updatedAt: rows[0].updated_at });
   } catch (error) {
-    return json({ ok: false, error: error?.message || 'Database unavailable' }, 503);
+    console.error('POS database request failed:', error?.message || error);
+    return json({ ok: false, error: 'Database unavailable' }, 503);
   }
 }
 
