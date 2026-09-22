@@ -1,5 +1,6 @@
 import { requirePermission } from '../auth.js';
 import https from 'node:https';
+import { neon } from '@neondatabase/serverless';
 
 const json=(res,body,status=200)=>{res.setHeader('Cache-Control','no-store');return res.status(status).json(body)};
 const requestJson=(host,path,body,access)=>new Promise((resolve,reject)=>{
@@ -27,6 +28,8 @@ export default async function handler(req,res){
     const password=Buffer.from(process.env.MPESA_SHORTCODE+process.env.MPESA_PASSKEY+timestamp).toString('base64');
     const result=await requestJson(host,'/mpesa/stkpush/v1/processrequest',{BusinessShortCode:process.env.MPESA_SHORTCODE,Password:password,Timestamp:timestamp,TransactionType:'CustomerPayBillOnline',Amount:value,PartyA:normalized,PartyB:process.env.MPESA_SHORTCODE,PhoneNumber:normalized,CallBackURL:process.env.MPESA_CALLBACK_URL,AccountReference:reference,TransactionDesc:description},access_token);
     if(result.status<200||result.status>=300||result.data.ResponseCode!=='0')return json(res,{ok:false,error:'M-Pesa STK request was rejected'},400);
+    const sql=neon(process.env.DATABASE_URL);
+    await sql`INSERT INTO mpesa_transactions (checkout_request_id,merchant_request_id,phone,amount,account_reference,transaction_desc,status,created_by) VALUES (${result.data.CheckoutRequestID},${result.data.MerchantRequestID||null},${normalized},${value},${reference},${description},'pending',${auth.user.id==='legacy-owner'?null:auth.user.id}) ON CONFLICT (checkout_request_id) DO UPDATE SET merchant_request_id=EXCLUDED.merchant_request_id,updated_at=NOW()`;
     return json(res,{ok:true,checkoutRequestID:result.data.CheckoutRequestID,merchantRequestID:result.data.MerchantRequestID,customerMessage:result.data.CustomerMessage});
   }catch(e){console.error('M-Pesa STK request failed:',e?.message||e);return json(res,{ok:false,error:'Payment service unavailable'},503)}
 }
