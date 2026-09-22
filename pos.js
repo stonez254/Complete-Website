@@ -250,7 +250,11 @@ function kitchenChefs(){
 function deliveryStaff(){
  return db.staff.filter(function(x){return staffRole(x).toLowerCase()==='delivery staff';});
 }
-function deliveryBusy(name){return db.deliveryJobs.some(function(j){return j.driver===name&&j.status==='assigned';});}
+function deliveryBusy(name){
+ return db.deliveryJobs.some(function(j){
+   return j.driver===name&&String(j.status||'').toLowerCase()==='assigned';
+ });
+}
 function deliveryOrder(id){return db.orders.find(function(o){return o.id===id;});}
 function openDeliveryAssignment(orderId,taskId){
  var o=deliveryOrder(orderId);
@@ -288,7 +292,9 @@ function releaseDelivery(driver){
  if(t){closeModal();openDeliveryAssignment(j.orderId,t.id);}else{closeModal();toast(driver+' is available again');}
 }
 function chefBusy(name){
- return db.kitchenJobs.some(function(j){return j.chef===name&&j.status==='cooking';});
+ return db.kitchenJobs.some(function(j){
+   return j.chef===name&&String(j.status||'').toLowerCase()==='cooking';
+ });
 }
 function openChefAssignment(food,qty,taskId){
  var available=kitchenChefs().filter(function(x){return !chefBusy(x[0]);});
@@ -685,7 +691,6 @@ function stock(i,d){if(db.inventory[i]){db.inventory[i][2]=Math.max(0,Number(db.
 function foodStock(i,d){if(db.foodStock[i]){db.foodStock[i].qty=Math.max(0,Number(db.foodStock[i].qty)+Number(d));save();inventory();}}
 function staff(){
  var roles=['Kitchen Staff','Delivery Staff','Waiter'];
- var opts=roles.map(function(r){return '<option value="'+esc(r)+'">'+esc(r)+'</option>';}).join('');
  var grouped={};
  roles.forEach(function(r){grouped[r]=[];});
  db.staff.forEach(function(x,i){
@@ -699,11 +704,48 @@ function staff(){
    }).join('');
    return '<div class="staff-category"><div class="staff-category-head"><h3>'+esc(r)+'</h3><span>'+grouped[r].length+'</span></div><div class="staff-category-list">'+(cards||'<small class="muted">No staff added yet.</small>')+'</div></div>';
  }).join('');
- shell('Staff','Only Kitchen Staff, Delivery Staff and Waiter roles can be added. Availability is linked to active assignments.',
- '<div class="panel"><div class="section-head"><h3>Add staff</h3><span class="badge good">'+db.staff.length+' staff</span></div><form id="staffForm" class="form-grid"><div class="field"><label>NAME</label><input id="staffName" autocomplete="off" placeholder="e.g. Brian"></div><div class="field"><label>STAFF CATEGORY</label><select id="staffRole">'+opts+'</select></div><button type="submit" class="action primary big" id="addStaffBtn">＋ Add staff</button></form></div><div class="staff-category-grid">'+groups+'</div>');
- var form=document.getElementById('staffForm');
- if(form)form.addEventListener('submit',function(e){e.preventDefault();addStaff();});
-}function editStaff(i){toast('Staff editing is restricted to Admin access');}
+ shell('Staff','Only Kitchen Staff, Delivery Staff and Waiter roles can be added. Staff availability is calculated from active assignments.',
+ '<div class="panel"><div class="section-head"><h3>Staff management</h3><span class="badge good">'+db.staff.length+' staff</span></div><div class="actions"><button class="action primary big" data-action="add-staff">＋ Add staff</button></div></div><div class="staff-category-grid">'+groups+'</div>');
+}
+function openAddStaffModal(name,role){
+ var roles=['Kitchen Staff','Delivery Staff','Waiter'];
+ var opts=roles.map(function(r){return '<option value="'+esc(r)+'"'+(r===role?' selected':'')+'>'+esc(r)+'</option>';}).join('');
+ setModal('<div class="problem-modal"><div class="problem-icon">♙</div><div class="eyebrow">STAFF MANAGEMENT</div><h2>Add staff</h2><p class="problem-reason">Enter the staff member details, then save to review them before adding them to the system.</p><div class="form-grid" style="text-align:left"><div class="field"><label>STAFF NAME</label><input id="newStaffName" autocomplete="off" placeholder="e.g. Brian" value="'+esc(name||'')+'"></div><div class="field"><label>STAFF CATEGORY</label><select id="newStaffRole">'+opts+'</select></div></div><div class="problem-actions"><button class="action primary" data-action="save-staff-draft">Save</button><button class="action" data-action="close-modal">Cancel</button></div></div>');
+ setTimeout(function(){var input=document.getElementById('newStaffName');if(input)input.focus();},40);
+}
+function confirmAddStaff(name,role){
+ var clean=String(name||'').trim();
+ var cleanRole=['Kitchen Staff','Delivery Staff','Waiter'].indexOf(role)!==-1?role:'Waiter';
+ if(!clean){toast('Enter a staff name');openAddStaffModal(name,cleanRole);return;}
+ var duplicate=db.staff.some(function(s){return String(s[0]||'').trim().toLowerCase()===clean.toLowerCase();});
+ if(duplicate){toast('A staff member with that name already exists');openAddStaffModal(clean,cleanRole);return;}
+ setModal('<div class="problem-modal"><div class="problem-icon">✓</div><div class="eyebrow">CONFIRM DETAILS</div><h2>Confirm staff details</h2><div class="panel"><div class="order-line"><span>Name</span><b>'+esc(clean)+'</b></div><div class="order-line"><span>Category</span><b>'+esc(cleanRole)+'</b></div></div><p class="problem-reason">Save this staff member to the system?</p><div class="problem-actions"><button class="action primary" data-action="confirm-add-staff" data-name="'+esc(clean)+'" data-role="'+esc(cleanRole)+'">Yes, save</button><button class="action" data-action="edit-add-staff" data-name="'+esc(clean)+'" data-role="'+esc(cleanRole)+'">No, edit</button></div></div>');
+}
+function addStaff(){
+ openAddStaffModal('','Waiter');
+}
+function saveStaffDraft(){
+ var name=((document.getElementById('newStaffName')||{}).value||'').trim();
+ var role=(document.getElementById('newStaffRole')||{}).value||'Waiter';
+ confirmAddStaff(name,role);
+}
+function commitStaff(name,role){
+ var clean=String(name||'').trim();
+ var cleanRole=['Kitchen Staff','Delivery Staff','Waiter'].indexOf(role)!==-1?role:'Waiter';
+ if(!clean)return;
+ if(db.staff.some(function(s){return String(s[0]||'').trim().toLowerCase()===clean.toLowerCase();})){
+   toast('A staff member with that name already exists');
+   openAddStaffModal(clean,cleanRole);
+   return;
+ }
+ db.staff.push([clean,cleanRole,cleanRole,'added']);
+ save();
+ updateUnfinishedBadge();
+ closeModal();
+ staff();
+ toast(clean+' added as '+cleanRole);
+}
+function editStaff(i){toast('Staff editing is restricted to Admin access');}(i){toast('Staff editing is restricted to Admin access');}
 function saveStaff(i){toast('Staff editing is restricted to Admin access');}
 function deleteStaff(i){toast('Staff removal is restricted to Admin access');}
 function reports(){
@@ -763,6 +805,9 @@ function handleAction(el){
  if(a==='go-unfinished'){closeModal();return view('unfinished');}
  if(a==='review-task')return reviewUnfinishedTask(el.getAttribute('data-id')||'');
  if(a==='add-staff')return addStaff();
+ if(a==='save-staff-draft')return saveStaffDraft();
+ if(a==='confirm-add-staff')return commitStaff(el.getAttribute('data-name')||'',el.getAttribute('data-role')||'Waiter');
+ if(a==='edit-add-staff')return openAddStaffModal(el.getAttribute('data-name')||'',el.getAttribute('data-role')||'Waiter');
  if(a==='edit-staff')return editStaff(Number(el.getAttribute('data-index')));
  if(a==='save-staff')return saveStaff(Number(el.getAttribute('data-index')));
  if(a==='delete-staff')return deleteStaff(Number(el.getAttribute('data-index')));
