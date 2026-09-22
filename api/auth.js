@@ -110,7 +110,10 @@ export async function staffApi(request) {
     const rows = await sql`SELECT id, display_name, username, role, active, created_at, updated_at FROM users ORDER BY created_at DESC`;
     return json({ok:true,users:rows});
   }
-  const body = await request.json();
+  const raw = await request.text();
+  if (raw.length > 16384) return json({ok:false,error:'Request too large'},413);
+  let body;
+  try { body = raw ? JSON.parse(raw) : {}; } catch (_) { return json({ok:false,error:'Invalid JSON'},400); }
   if (request.method === 'POST') {
     const displayName=String(body?.displayName||'').trim(); const username=String(body?.username||'').trim().toLowerCase(); const password=String(body?.password||''); const role=String(body?.role||'viewer');
     const allowed=['manager','cashier','kitchen','waiter','delivery','viewer'];
@@ -121,13 +124,21 @@ export async function staffApi(request) {
   if (request.method === 'PATCH') {
     const id=String(body?.id||''), role=body?.role, active=body?.active;
     if(!id || (role!==undefined && !['manager','cashier','kitchen','waiter','delivery','viewer'].includes(role)) || (active!==undefined && typeof active!=='boolean')) return json({ok:false,error:'Invalid staff update'},400);
-    const rows=await sql`SELECT id, role FROM users WHERE id=${id} LIMIT 1`; if(!rows.length) return json({ok:false,error:'User not found'},404);
+    const rows=await sql`SELECT id, role, active FROM users WHERE id=${id} LIMIT 1`; if(!rows.length) return json({ok:false,error:'User not found'},404);
     if(rows[0].role==='owner') return json({ok:false,error:'Owner accounts cannot be modified through staff management'},403);
     if(user.role==='manager' && id===user.id) return json({ok:false,error:'You cannot modify your own staff account here'},403);
-    if(role!==undefined) await sql`UPDATE users SET role=${role}, updated_at=NOW() WHERE id=${id}`;
-    if(active!==undefined) await sql`UPDATE users SET active=${active}, updated_at=NOW() WHERE id=${id}`;
+    if(role===undefined && active===undefined) return json({ok:false,error:'No staff changes supplied'},400);
+    const updated=await sql`
+      UPDATE users
+      SET role=COALESCE(${role ?? null},role),
+          active=COALESCE(${active ?? null},active),
+          updated_at=NOW()
+      WHERE id=${id} AND role <> 'owner'
+      RETURNING id, display_name, username, role, active, updated_at
+    `;
+    if(!updated.length) return json({ok:false,error:'Staff update failed'},409);
     if(active===false) await sql`DELETE FROM sessions WHERE user_id=${id}`;
-    return json({ok:true});
+    return json({ok:true,user:updated[0]});
   }
   return json({ok:false,error:'Method not allowed'},405);
 }
