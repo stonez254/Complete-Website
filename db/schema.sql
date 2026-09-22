@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS pos_state (
 CREATE TABLE IF NOT EXISTS pos_events (
   id BIGSERIAL PRIMARY KEY,
   event_type TEXT NOT NULL,
-  payload JSONB NOT NULL CHECK (jsonb_typeof(payload) IN ('object','array')),
+  payload JSONB NOT NULL,
+  actor_user_id UUID REFERENCES users(id) ON DELETE SET NULL CHECK (jsonb_typeof(payload) IN ('object','array')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS pos_events_created_at_idx ON pos_events (created_at DESC);
