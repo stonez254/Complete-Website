@@ -264,8 +264,7 @@ function reviewUnfinishedTask(id){
  if(t.type==='order'){
    restorePendingOrder(t);
    closeUnfinishedTask(t.id);
-   view('orders');
-   orderView();
+   view('orderEntry');
    toast('Pending order restored');
  }else if(t.type==='delivery'){
    openDeliveryAssignment(t.data&&t.data.orderId,t.id);
@@ -551,7 +550,7 @@ function saveRecipeBuilder(food,qty,afterAction){
  save();
  closeModal();
  if(afterAction==='order'&&pendingCookOrder){
-   var pending=pendingCookOrder;pendingCookOrder=null;cart=copy(pending.cart);activeTable=pending.activeTable||null;orderType=pending.orderType||'Takeaway';payment=pending.payment||'M-Pesa';category='All';view('orders');orderView();
+   var pending=pendingCookOrder;pendingCookOrder=null;cart=copy(pending.cart);activeTable=pending.activeTable||null;orderType=pending.orderType||'Takeaway';payment=pending.payment||'M-Pesa';category='All';view('orderEntry');
    toast(food+' recipe saved. Choose the cooking quantity.');
    setTimeout(function(){openCookQuantity(food,'order');},60);
  }else{
@@ -630,13 +629,13 @@ function tables(){
 }
 
 function newOrder(){
- activeTable=null;cart=[];orderType='Takeaway';payment='M-Pesa';category='All';deliveryCustomer={name:'',phone:'',address:''};view('orders');
+ activeTable=null;cart=[];orderType='Takeaway';payment='M-Pesa';category='All';deliveryCustomer={name:'',phone:'',address:''};view('orderEntry');
 }
 function openTable(id){
  var t=db.tables[id-1];
  if(!t){toast('Table not found');return;}
  if(t.status==='Busy'&&t.paid){toast('Clear the paid table before starting another order');return;}
- activeTable=id;orderType='Dine-in';payment='M-Pesa';category='All';deliveryCustomer={name:'',phone:'',address:''};cart=copy(t.order||[]);view('orders');
+ activeTable=id;orderType='Dine-in';payment='M-Pesa';category='All';deliveryCustomer={name:'',phone:'',address:''};cart=copy(t.order||[]);view('orderEntry');
 }
 function subtotal(){return cart.reduce(function(a,x){return a+Number(x.price||0)*Number(x.qty||0);},0);}
 function grand(){return subtotal()*(1+(Number(db.settings.tax)||0)/100+(Number(db.settings.service)||0)/100);}
@@ -1052,7 +1051,7 @@ function resetPOS(){
  db=freshDB();cart=[];activeTable=null;orderType='Takeaway';payment='M-Pesa';category='All';viewStack=[];currentView='';save();view('dashboard');toast('POS data reset');
 }
 function goBack(){view(viewStack.pop()||'dashboard',true);}
-var VIEWS={dashboard:dashboard,tables:tables,orders:orders,menu:menu,kitchen:kitchen,unfinished:unfinishedTasks,inventory:inventory,staff:staff,reports:reports,settings:settings};
+var VIEWS={dashboard:dashboard,tables:tables,orders:orders,menu:menu,kitchen:kitchen,unfinished:unfinishedTasks,inventory:inventory,staff:staff,reports:reports,settings:settings,orderEntry:orderView};
 function updateUnfinishedBadge(){
  var b=document.getElementById('unfinishedCount');
  if(!b)return;
