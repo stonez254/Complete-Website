@@ -1,2 +1,2 @@
-import { currentUser } from './auth.js';
+import { requirePermission } from './auth.js';
 export default async function handler(req,res){const u=await currentUser(new Request('http://local/api/reports',{method:req.method,headers:req.headers}));if(!u)return res.status(401).json({ok:false,error:'Authentication required'});if(!['owner','manager','viewer'].includes(u.role))return res.status(403).json({ok:false,error:'Forbidden'});return res.status(200).json({ok:true,authorized:true,role:u.role});}
