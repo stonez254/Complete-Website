@@ -1101,6 +1101,7 @@ function handleAction(el){
  if(a==='view')return view(el.getAttribute('data-view'));
  if(a==='dashboard')return view('dashboard');
  if(a==='back')return goBack();
+ if(a==='toggle-sidebar')return toggleSidebar();
  if(a==='new-order'||a==='add-order')return newOrder();
  if(a==='open-table')return openTable(Number(el.getAttribute('data-id')));
  if(a==='clear-table')return clearTable(Number(el.getAttribute('data-id')));
@@ -1165,10 +1166,18 @@ function handleAction(el){
  if(a==='save-settings')return saveSettings();
  if(a==='reset')return resetPOS();
 }
+function setSidebarCollapsed(collapsed){
+ document.body.classList.toggle('sidebar-collapsed',!!collapsed);
+ var b=document.getElementById('sidebarToggle');
+ if(b){b.setAttribute('aria-expanded',String(!collapsed));b.setAttribute('aria-label',collapsed?'Expand sidebar':'Collapse sidebar');b.title=collapsed?'Expand sidebar':'Collapse sidebar';b.innerHTML=collapsed?'›':'‹';b.innerHTML+='<span>'+(collapsed?'Expand':'Collapse')+'</span>';}
+ try{localStorage.setItem(KEY+'-sidebar-collapsed',collapsed?'1':'0');}catch(e){}
+}
+function toggleSidebar(){setSidebarCollapsed(!document.body.classList.contains('sidebar-collapsed'));}
 function bind(){
  app=document.getElementById('app');
  modal=document.getElementById('modal');
  if(!app){console.error('EderStone POS: #app was not found');return;}
+ var sidebarCollapsed=false;try{sidebarCollapsed=localStorage.getItem(KEY+'-sidebar-collapsed')==='1';}catch(e){} setSidebarCollapsed(sidebarCollapsed);
  document.querySelectorAll('.nav').forEach(function(n){n.addEventListener('click',function(){view(n.getAttribute('data-view'));});});
  var logout=document.getElementById('logoutPos');if(logout)logout.addEventListener('click',function(){location.href='/projects';});
  var full=document.getElementById('fullscreenPos');if(full)full.addEventListener('click',async function(){try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else if(document.exitFullscreen)await document.exitFullscreen();}catch(e){toast('Full screen is unavailable on this device');}});
