@@ -267,7 +267,9 @@ function reviewUnfinishedTask(id){
    view('orderEntry');
    toast('Pending order restored');
  }else if(t.type==='delivery'){
-   openDeliveryAssignment(t.data&&t.data.orderId,t.id);
+   closeUnfinishedTask(t.id);
+   unfinishedTasks();
+   toast('Delivery task cleared. No delivery assignment was made.');
  }else if(t.type==='chef'){
    restorePendingOrder(t);
    view('kitchen');
@@ -822,20 +824,23 @@ async function pollMpesa(id,phone){
 }
 
 function receiptQrData(o){
- var lines=['EDERSTONE RESTAURANT POS','Receipt: '+o.id,'Date: '+o.time,'Type: '+o.type+(o.table?' / Table '+o.table:''),'Record: '+JSON.stringify({id:o.id,type:o.type,table:o.table||null,total:o.total,payment:o.payment,items:o.items||[]})];
- (o.items||[]).forEach(function(x){lines.push(x.name+' x'+x.qty+' = '+money(x.price*x.qty));});
- lines.push('TOTAL: '+money(o.total),'PAYMENT: '+o.payment,'© 2026 EderStone');
- if(o.mpesa&&o.mpesa.phone)lines.push('M-PESA: '+o.mpesa.phone);
- return lines.join('\n');
+ var items=(o.items||[]).map(function(x){return [String(x.name||''),Number(x.qty)||0,Number(x.price)||0];});
+ var data={brand:'EDERSTONE',receipt:String(o.id||''),date:String(o.time||''),type:String(o.type||'')+(o.table?' / Table '+o.table:''),items:items,subtotal:Number(o.subtotal)||0,total:Number(o.total)||0,payment:String(o.payment||'')};
+ if(o.customer)data.customer={name:String(o.customer.name||''),phone:String(o.customer.phone||''),address:String(o.customer.address||'')};
+ if(o.mpesa&&o.mpesa.phone)data.mpesa=String(o.mpesa.phone);
+ return JSON.stringify(data);
 }
 function receiptQrMarkup(o){
  try{
-   var qr=qrcode(0,'M');
-   qr.addData(receiptQrData(o));
+   if(typeof qrcode!=='function')throw new Error('QR library missing');
+   var qr=qrcode(0,'L');
+   qr.addData(receiptQrData(o),'Byte');
    qr.make();
-   return '<div class="receipt-qr">'+qr.createSvgTag({cellSize:3,margin:4,scalable:true,alt:{text:'QR code containing the itemized receipt for '+o.id}})+'<small>Scan to view the purchased items and receipt details</small></div>';
+   var svg=qr.createSvgTag({cellSize:3,margin:4,scalable:true,alt:{text:'QR code containing the complete itemized receipt for '+o.id}});
+   if(!svg||svg.indexOf('<svg')===-1)throw new Error('QR SVG generation failed');
+   return '<div class="receipt-qr">'+svg+'<small>Scan to view purchased items, quantities, customer details and payment record</small></div>';
  }catch(e){
-   return '<div class="receipt-qr receipt-qr-error"><small>QR code unavailable. Receipt details remain printed above.</small></div>';
+   return '<div class="receipt-qr receipt-qr-error"><small>QR generation failed for this receipt. The complete receipt details remain printed above.</small></div>';
  }
 }
 function showReceipt(o){
@@ -873,7 +878,10 @@ function unfinishedTasks(){
  var tasks=db.unfinishedTasks.filter(function(t){return t.status==='open';});
  var body=tasks.map(function(t){
    var icon=t.type==='chef'?'♨':t.type==='delivery'?'🛵':t.type==='order'?'🧾':'▤';
-   return '<div class="panel unfinished-card" data-task-search="'+esc((t.id+' '+t.title+' '+t.details+' '+t.created).toLowerCase())+'"><div class="section-head"><h3>'+icon+' '+esc(t.title)+'</h3><span class="badge warn">UNFINISHED</span></div><p class="muted">'+esc(t.details)+'<br>Created: '+esc(t.created)+'</p><div class="actions"><button class="action primary" data-action="review-task" data-id="'+esc(t.id)+'">Review</button><button class="action" data-action="resolve-task" data-id="'+esc(t.id)+'">Dismiss</button></div></div>';
+   var primary=t.type==='delivery'
+     ?'<button class="action primary" data-action="clear-delivery-task" data-id="'+esc(t.id)+'">Clear</button>'
+     :'<button class="action primary" data-action="review-task" data-id="'+esc(t.id)+'">Review</button>';
+   return '<div class="panel unfinished-card" data-task-search="'+esc((t.id+' '+t.title+' '+t.details+' '+t.created).toLowerCase())+'"><div class="section-head"><h3>'+icon+' '+esc(t.title)+'</h3><span class="badge warn">UNFINISHED</span></div><p class="muted">'+esc(t.details)+'<br>Created: '+esc(t.created)+'</p><div class="actions">'+primary+(t.type==='delivery'?'':'<button class="action" data-action="resolve-task" data-id="'+esc(t.id)+'">Dismiss</button>')+'</div></div>';
  }).join('')||'<div class="panel"><p class="muted">No unfinished tasks. Everything is up to date.</p></div>';
  shell('Unfinished Tasks','Tasks that could not be completed immediately and require operator review. Search the queue by order, food, staff or task ID.','<div class="panel"><input class="search" id="unfinishedSearch" placeholder="Search unfinished tasks..."></div>'+collapsible('Pending task queue',body,'unfinishedList',true));
  var search=document.getElementById('unfinishedSearch');
@@ -1114,6 +1122,7 @@ function handleAction(el){
  if(a==='save-staff')return saveStaff(Number(el.getAttribute('data-index')));
  if(a==='delete-staff')return deleteStaff(Number(el.getAttribute('data-index')));
  if(a==='resolve-task'){closeUnfinishedTask(el.getAttribute('data-id')||'');return unfinishedTasks();}
+ if(a==='clear-delivery-task'){closeUnfinishedTask(el.getAttribute('data-id')||'');return unfinishedTasks();}
  if(a==='toggle-collapse')return toggleCollapse(el.getAttribute('data-target'));
  if(a==='assign-chef')return assignChef(el.getAttribute('data-food')||'',Number(el.getAttribute('data-qty'))||0,el.getAttribute('data-chef')||'',el.getAttribute('data-task')||'');
  if(a==='assign-low-stock')return assignLowStock(el.getAttribute('data-food')||'');
