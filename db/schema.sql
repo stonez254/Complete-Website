@@ -14,6 +14,25 @@ CREATE TABLE IF NOT EXISTS pos_events (
 );
 CREATE INDEX IF NOT EXISTS pos_events_created_at_idx ON pos_events (created_at DESC);
 CREATE INDEX IF NOT EXISTS pos_events_type_created_at_idx ON pos_events (event_type, created_at DESC);
+CREATE TABLE IF NOT EXISTS mpesa_transactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  checkout_request_id TEXT NOT NULL UNIQUE,
+  merchant_request_id TEXT,
+  phone TEXT,
+  amount BIGINT NOT NULL CHECK (amount > 0),
+  account_reference TEXT NOT NULL,
+  transaction_desc TEXT,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','success','failed')),
+  result_code TEXT,
+  result_message TEXT,
+  mpesa_receipt TEXT,
+  created_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  completed_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS mpesa_transactions_status_idx ON mpesa_transactions (status, updated_at DESC);
+CREATE INDEX IF NOT EXISTS mpesa_transactions_created_at_idx ON mpesa_transactions (created_at DESC);
 
 
 -- Authentication and role foundation
