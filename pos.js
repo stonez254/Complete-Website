@@ -1131,9 +1131,24 @@ function saveStaff(i){toast('Staff editing is restricted to Admin access');}
  if(!ederStoneCan('staff.read')){toast('Staff management is restricted');return;}
 function deleteStaff(i){toast('Staff removal is restricted to Admin access');}
  if(!ederStoneCan('staff.read')){toast('Staff management is restricted');return;}
-function reports(){
+async function reports(){
  var s=db.orders.reduce(function(a,o){return a+Number(o.total||0);},0);
- shell('Reports','Sales performance from this register.','<div class="grid"><div class="stat"><small>GROSS SALES</small><strong>'+money(s)+'</strong></div><div class="stat"><small>AVERAGE TICKET</small><strong>'+money(db.orders.length?s/db.orders.length:0)+'</strong></div><div class="stat"><small>M-PESA</small><strong>'+money(db.orders.filter(function(o){return o.payment==='M-Pesa';}).reduce(function(a,o){return a+o.total;},0))+'</strong></div><div class="stat"><small>CASH</small><strong>'+money(db.orders.filter(function(o){return o.payment==='Cash';}).reduce(function(a,o){return a+o.total;},0))+'</strong></div></div>');
+ shell('Reports','Sales performance, payment reconciliation and audit activity.','<div class="grid"><div class="stat"><small>GROSS SALES</small><strong>'+money(s)+'</strong></div><div class="stat"><small>AVERAGE TICKET</small><strong>'+money(db.orders.length?s/db.orders.length:0)+'</strong></div><div class="stat"><small>M-PESA SALES</small><strong>'+money(db.orders.filter(function(o){return o.payment==='M-Pesa';}).reduce(function(a,o){return a+o.total;},0))+'</strong></div><div class="stat"><small>CASH</small><strong>'+money(db.orders.filter(function(o){return o.payment==='Cash';}).reduce(function(a,o){return a+o.total;},0))+'</strong></div></div><div id="paymentReconciliation" class="panel"><div class="section-head"><h3>Payment reconciliation</h3><span class="badge warn">Loading…</span></div><p class="muted">Checking server-confirmed M-Pesa payments and settlement records.</p></div>');
+ var box=document.getElementById('paymentReconciliation');
+ try{
+   var r=await fetch('/api/reports?limit=50',{credentials:'include',cache:'no-store'});
+   var d=await r.json();
+   if(!r.ok||!d.ok)throw new Error(d.error||'Could not load payment report');
+   var sm=d.paymentSummary||{};
+   var unmatched=Array.isArray(d.unmatched)?d.unmatched:[];
+   var payments=Array.isArray(d.payments)?d.payments:[];
+   var recent=payments.slice(0,10).map(function(p){
+     return '<div class="order-line"><span><b>'+esc(p.pos_order_id||'Unlinked payment')+'</b><small class="muted"> '+esc(p.checkout_request_id)+' · '+esc(p.status)+'</small></span><b>'+money(p.amount)+'</b></div>';
+   }).join('');
+   box.innerHTML='<div class="section-head"><h3>Payment reconciliation</h3><span class="badge '+(unmatched.length?'warn':'good')+'">'+(unmatched.length?unmatched.length+' UNMATCHED':'ALL RECENT PAYMENTS MATCHED')+'</span></div><div class="grid"><div class="stat"><small>TRANSACTIONS</small><strong>'+Number(sm.total||0)+'</strong></div><div class="stat"><small>SUCCESSFUL</small><strong>'+Number(sm.success||0)+'</strong></div><div class="stat"><small>PENDING</small><strong>'+Number(sm.pending||0)+'</strong></div><div class="stat"><small>FAILED</small><strong>'+Number(sm.failed||0)+'</strong></div></div>'+(unmatched.length?'<div class="panel"><b>Action required</b><p class="muted">'+unmatched.length+' successful M-Pesa payment(s) have no settlement record. Do not manually mark them paid without checking the transaction.</p></div>':'')+'<div class="panel"><h4>Recent M-Pesa activity</h4>'+(recent||'<p class="muted">No server-side M-Pesa transactions yet.</p>')+'</div>';
+ }catch(e){
+   box.innerHTML='<div class="section-head"><h3>Payment reconciliation</h3><span class="badge warn">SERVER UNAVAILABLE</span></div><p class="muted">Local sales remain available. Server payment reconciliation could not be loaded right now.</p>';
+ }
 }
 function settings(){
  shell('Settings','Configure the register.','<div class="panel"><div class="form-grid"><div class="field"><label>RESTAURANT NAME</label><input id="rn" value="'+esc(db.settings.name)+'"></div><div class="field"><label>TAX %</label><input id="tx" type="number" min="0" value="'+Number(db.settings.tax||0)+'"></div><div class="field"><label>SERVICE %</label><input id="sv" type="number" min="0" value="'+Number(db.settings.service||0)+'"></div></div><div class="actions"><button class="action primary" data-action="save-settings">Save settings</button><button class="action" data-action="reset">Reset POS data</button></div></div>');
