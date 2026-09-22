@@ -14,3 +14,8 @@
 @keyframes posLaunchOrbit{to{transform:rotate(360deg)}}
 body.pos-launching>main,body.pos-launching>.site-header,body.pos-launching>.site-footer{animation:posExitFade 4.7s ease forwards}
 @keyframes posExitFade{to{opacity:0;transform:scale(.98);filter:blur(4px)}}
+
+/* Mobile-safe POS transition layer */
+.pos-launcher{padding:18px;overflow:hidden}.pos-launcher .launch-core{width:min(92vw,430px);min-width:0}.pos-launcher .launch-mark{width:min(92px,24vw);height:min(92px,24vw)}.pos-launcher .launch-mark img{width:min(62px,17vw);height:min(62px,17vw)}
+@media(max-width:760px){.pos-launcher{padding:14px}.pos-launcher strong{font-size:clamp(10px,3vw,13px);letter-spacing:.12em}.pos-launcher small{font-size:clamp(8px,2.4vw,10px)}.pos-launcher .launch-core{gap:11px}.pos-launcher .launch-mark{width:min(78px,23vw);height:min(78px,23vw)}}
+@media(max-width:360px){.site-header{padding-inline:12px}.brand{font-size:.92rem}.hero h1{font-size:clamp(2.7rem,15vw,4rem)}main{padding-inline:12px}.project-grid{gap:10px}.card-body{padding:18px}.pos-launcher strong{max-width:80vw;text-align:center}}
