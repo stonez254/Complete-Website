@@ -352,6 +352,7 @@ function openDeliveryAssignment(orderId,taskId){
  setModal('<div class="problem-modal"><div class="problem-icon">🛵</div><div class="eyebrow">DELIVERY ASSIGNMENT</div><h2>Assign order '+esc(orderId)+'</h2><p class="problem-reason">'+(o.customer?esc(o.customer.name)+' · '+esc(o.customer.phone)+'<br>'+esc(o.customer.address):'Delivery details unavailable')+'</p><div class="problem-actions">'+buttons+'</div>'+(busyCards?'<div class="panel"><h3>Currently assigned drivers</h3>'+busyCards+'</div>':'')+'<button class="action problem-close" data-action="close-modal">Close</button></div>');
 }
 function assignDelivery(orderId,driver,taskId){
+ if(!ederStoneCan('delivery.update')){toast('Delivery assignment is restricted');return;}
  if(!orderId||!driver)return;
  if(deliveryBusy(driver)){toast(driver+' is already on a delivery');return;}
  db.deliveryJobs.push({id:'DJ-'+Date.now().toString().slice(-8),orderId:orderId,driver:driver,status:'assigned',assigned:new Date().toLocaleString()});
@@ -361,6 +362,7 @@ function assignDelivery(orderId,driver,taskId){
  toast(driver+' assigned to deliver '+orderId);
 }
 function releaseDelivery(driver){
+ if(!ederStoneCan('delivery.update')){toast('Delivery management is restricted');return;}
  var idx=db.deliveryJobs.findIndex(function(j){return j.driver===driver&&j.status==='assigned';});
  if(idx<0){toast(driver+' has no active delivery');return;}
  var j=db.deliveryJobs[idx];db.deliveryJobs.splice(idx,1);save();
@@ -373,6 +375,7 @@ function chefBusy(name){
  });
 }
 function releaseKitchenStaff(name){
+ if(!ederStoneCan('kitchen.manage')){toast('Kitchen management is restricted');return;}
  var removed=0;
  db.kitchenJobs=db.kitchenJobs.filter(function(j){
    var match=String(j.chef||'').trim()===String(name||'').trim()&&String(j.status||'').toLowerCase()==='cooking';
@@ -434,6 +437,7 @@ function assignChef(food,qty,chef,taskId){
  toast(chef+' assigned to cook '+qty+' '+food);
 }
 function finishKitchenJob(id){
+ if(!ederStoneCan('kitchen.manage')){toast('Kitchen management is restricted');return;}
  var j=db.kitchenJobs.find(function(x){return x.id===id&&x.status==='cooking';});
  if(!j)return;
  var check=ensureRecipeIngredients(j.food,j.qty);
@@ -661,6 +665,7 @@ function newOrder(){
  view('newOrder');
 }
 function openTable(id){
+ if(!ederStoneCan('pos.read')){toast('Opening tables is restricted');return;}
  var t=db.tables[id-1];
  if(!t){toast('Table not found');return;}
  if(t.status==='Busy'&&t.paid){toast('Clear the paid table before starting another order');return;}
@@ -732,6 +737,7 @@ function changeQty(i,d){
  if(d>0){var remaining=stock?Number(stock.qty||0)-Number(cart[i]&&cart[i].qty||0):null;if(stock&&remaining>=0&&remaining<=10)lowStockReminder(cart[i].name,remaining);}
 }
 function syncTable(){
+ if(!ederStoneCan('pos.write')){toast('Table changes are restricted');return;}
  if(activeTable){
    var t=db.tables[activeTable-1];
    t.order=copy(cart);t.status=cart.length?'Busy':'Open';t.paid=false;t.ready=false;save();
@@ -907,6 +913,7 @@ function showReceipt(o){
  '<div class="actions"><button class="action primary big" data-action="print">Print receipt</button><button class="action big" data-action="close-modal">Close</button></div>');
 }
 function clearTable(id){
+ if(!ederStoneCan('pos.write')){toast('Table changes are restricted');return;}
  var t=db.tables[id-1];if(!t||t.status!=='Busy')return;
  t.status='Open';t.order=[];t.paid=false;t.ready=false;delete t.lastPayment;save();tables();toast('Table '+id+' cleared and available');
 }
@@ -1081,6 +1088,7 @@ function saveStaffDraft(){
  confirmAddStaff(name,role);
 }
 function commitStaff(name,role){
+ if(!ederStoneCan('staff.read')){toast('Staff management is restricted');return;}
  var clean=String(name||'').trim();
  var cleanRole=['Kitchen Staff','Delivery Staff','Waiter'].indexOf(role)!==-1?role:'Waiter';
  if(!clean)return;
@@ -1098,7 +1106,9 @@ function commitStaff(name,role){
 }
 function editStaff(i){toast('Staff editing is restricted to Admin access');}
 function saveStaff(i){toast('Staff editing is restricted to Admin access');}
+ if(!ederStoneCan('staff.read')){toast('Staff management is restricted');return;}
 function deleteStaff(i){toast('Staff removal is restricted to Admin access');}
+ if(!ederStoneCan('staff.read')){toast('Staff management is restricted');return;}
 function reports(){
  var s=db.orders.reduce(function(a,o){return a+Number(o.total||0);},0);
  shell('Reports','Sales performance from this register.','<div class="grid"><div class="stat"><small>GROSS SALES</small><strong>'+money(s)+'</strong></div><div class="stat"><small>AVERAGE TICKET</small><strong>'+money(db.orders.length?s/db.orders.length:0)+'</strong></div><div class="stat"><small>M-PESA</small><strong>'+money(db.orders.filter(function(o){return o.payment==='M-Pesa';}).reduce(function(a,o){return a+o.total;},0))+'</strong></div><div class="stat"><small>CASH</small><strong>'+money(db.orders.filter(function(o){return o.payment==='Cash';}).reduce(function(a,o){return a+o.total;},0))+'</strong></div></div>');
@@ -1107,6 +1117,7 @@ function settings(){
  shell('Settings','Configure the register.','<div class="panel"><div class="form-grid"><div class="field"><label>RESTAURANT NAME</label><input id="rn" value="'+esc(db.settings.name)+'"></div><div class="field"><label>TAX %</label><input id="tx" type="number" min="0" value="'+Number(db.settings.tax||0)+'"></div><div class="field"><label>SERVICE %</label><input id="sv" type="number" min="0" value="'+Number(db.settings.service||0)+'"></div></div><div class="actions"><button class="action primary" data-action="save-settings">Save settings</button><button class="action" data-action="reset">Reset POS data</button></div></div>');
 }
 function saveSettings(){
+ if(!ederStoneCan('pos.write')){toast('Settings changes are restricted');return;}
  db.settings.name=(document.getElementById('rn')||{}).value||'Ederstone Restaurant';
  db.settings.tax=Math.max(0,Number((document.getElementById('tx')||{}).value)||0);
  db.settings.service=Math.max(0,Number((document.getElementById('sv')||{}).value)||0);
