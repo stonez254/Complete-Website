@@ -13,10 +13,24 @@ const verifyPassword = (password, stored) => {
   return actual.length === expected.length && crypto.timingSafeEqual(actual, expected);
 };
 const tokenHash = token => crypto.createHash('sha256').update(token).digest('hex');
+const legacyCookie = request => {
+  const raw = request.headers.get('cookie') || '';
+  const match = raw.match(/(?:^|;\\s*)__Host-ederstone_session=([^;]+)/);
+  if (!match) return null;
+  const [payload, signature] = decodeURIComponent(match[1]).split('.');
+  const secret = process.env.PORTFOLIO_AUTH_SECRET;
+  if (!secret || !payload || !signature) return null;
+  const expected = crypto.createHmac('sha256', secret).update(Buffer.from(payload, 'base64url').toString()).digest('base64url');
+  if (signature.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) return null;
+  const exp = Number(Buffer.from(payload, 'base64url').toString());
+  return Number.isFinite(exp) && exp > Date.now() ? exp : null;
+};
 const sessionToken = request => { const raw = request.headers.get('cookie') || ''; const match = raw.match(/(?:^|;\\s*)ederstone_session=([^;]+)/); return match ? decodeURIComponent(match[1]) : null; };
 const cookie = token => 'ederstone_session=' + encodeURIComponent(token) + '; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800';
 const clearCookie = 'ederstone_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0';
 async function currentUser(request) {
+  const legacyExp = legacyCookie(request);
+  if (legacyExp) return { id: 'legacy-owner', display_name: 'Owner', username: 'owner', role: 'owner', active: true, legacy: true };
   const token = sessionToken(request); if (!token) return null;
   const sql = db(); const hash = tokenHash(token);
   const rows = await sql`SELECT u.id, u.display_name, u.username, u.role, u.active FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ${hash} AND s.expires_at > NOW() AND u.active = TRUE LIMIT 1`;
@@ -27,7 +41,7 @@ export async function GET(request) { try { const user = await currentUser(reques
 export async function POST(request) {
   try {
     const body = await request.json(); const action = body?.action || 'login'; const sql = db();
-    if (action === 'logout') { const token=sessionToken(request); if(token) await sql`DELETE FROM sessions WHERE token_hash = ${tokenHash(token)}`; return json({ok:true,authenticated:false},200,{'set-cookie':clearCookie}); }
+    if (action === 'logout') { const token=sessionToken(request); if(token) await sql`DELETE FROM sessions WHERE token_hash = ${tokenHash(token)}`; return json({ok:true,authenticated:false},200,{'set-cookie': [clearCookie, '__Host-ederstone_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0'].join(', ')}); }
     if (action !== 'login') return json({ok:false,error:'Unsupported authentication action'},400);
     const username=String(body?.username||'').trim().toLowerCase(); const password=String(body?.password||'');
     if(!username||!password) return json({ok:false,error:'Username and password are required'},400);
