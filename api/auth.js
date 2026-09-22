@@ -119,7 +119,9 @@ export async function staffApi(request) {
   if (request.method === 'PATCH') {
     const id=String(body?.id||''), role=body?.role, active=body?.active;
     if(!id || (role!==undefined && !['manager','cashier','kitchen','waiter','delivery','viewer'].includes(role)) || (active!==undefined && typeof active!=='boolean')) return json({ok:false,error:'Invalid staff update'},400);
-    const rows=await sql`SELECT id FROM users WHERE id=${id} LIMIT 1`; if(!rows.length) return json({ok:false,error:'User not found'},404);
+    const rows=await sql`SELECT id, role FROM users WHERE id=${id} LIMIT 1`; if(!rows.length) return json({ok:false,error:'User not found'},404);
+    if(rows[0].role==='owner') return json({ok:false,error:'Owner accounts cannot be modified through staff management'},403);
+    if(user.role==='manager' && id===user.id) return json({ok:false,error:'You cannot modify your own staff account here'},403);
     if(role!==undefined) await sql`UPDATE users SET role=${role}, updated_at=NOW() WHERE id=${id}`;
     if(active!==undefined) await sql`UPDATE users SET active=${active}, updated_at=NOW() WHERE id=${id}`;
     if(active===false) await sql`DELETE FROM sessions WHERE user_id=${id}`;
