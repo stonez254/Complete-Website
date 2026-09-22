@@ -1131,7 +1131,16 @@ function saveStaff(i){toast('Staff editing is restricted to Admin access');}
  if(!ederStoneCan('staff.read')){toast('Staff management is restricted');return;}
 function deleteStaff(i){toast('Staff removal is restricted to Admin access');}
  if(!ederStoneCan('staff.read')){toast('Staff management is restricted');return;}
-async function reports(){
+async function syncConflictPanel(){
+ var conflicts=window.EderStonePOSSync?.conflicts?.()||[];
+ var host=document.getElementById('posSyncConflicts');
+ if(!host)return;
+ if(!conflicts.length){host.innerHTML='';return;}
+ host.innerHTML='<div class="panel"><div class="section-head"><h3>Offline sync conflicts</h3><span class="badge warn">'+conflicts.length+' NEED ATTENTION</span></div><p class="muted">A newer server version exists and local POS changes were preserved. Choose whether to restore a preserved local snapshot or discard it.</p>'+conflicts.map(function(item,i){return '<div class="order-line"><span><b>Conflict '+(i+1)+'</b><small class="muted"> '+new Date(item.createdAt||Date.now()).toLocaleString()+' · server v'+Number(item.serverVersion||0)+'</small></span><span><button class="btn small" data-sync-restore="'+esc(item.id)+'">Restore</button> <button class="btn small danger" data-sync-discard="'+esc(item.id)+'">Discard</button></span></div>';}).join('')+'</div>';
+ host.querySelectorAll('[data-sync-restore]').forEach(function(b){b.onclick=function(){window.EderStonePOSSync?.resolveConflict?.(b.dataset.syncRestore,'restore');syncConflictPanel();}});
+ host.querySelectorAll('[data-sync-discard]').forEach(function(b){b.onclick=function(){window.EderStonePOSSync?.resolveConflict?.(b.dataset.syncDiscard,'discard');syncConflictPanel();}});
+}
+function reports(){
  var s=db.orders.reduce(function(a,o){return a+Number(o.total||0);},0);
  shell('Reports','Sales performance, payment reconciliation and audit activity.','<div class="grid"><div class="stat"><small>GROSS SALES</small><strong>'+money(s)+'</strong></div><div class="stat"><small>AVERAGE TICKET</small><strong>'+money(db.orders.length?s/db.orders.length:0)+'</strong></div><div class="stat"><small>M-PESA SALES</small><strong>'+money(db.orders.filter(function(o){return o.payment==='M-Pesa';}).reduce(function(a,o){return a+o.total;},0))+'</strong></div><div class="stat"><small>CASH</small><strong>'+money(db.orders.filter(function(o){return o.payment==='Cash';}).reduce(function(a,o){return a+o.total;},0))+'</strong></div></div><div id="paymentReconciliation" class="panel"><div class="section-head"><h3>Payment reconciliation</h3><span class="badge warn">Loading…</span></div><p class="muted">Checking server-confirmed M-Pesa payments and settlement records.</p></div>');
  var box=document.getElementById('paymentReconciliation');
