@@ -140,7 +140,14 @@ function goKitchenForFood(name){
 }
 function receiveIngredient(i){var ing=db.inventory[i];if(!ing)return;var qty=Number(prompt('How much '+ing[0]+' received?','10'));if(!isFinite(qty)||qty<=0)return;ing[2]=Number(ing[2])+qty;save();inventory();toast(qty+' '+ing[0]+' added to kitchen inventory');}
 function money(n){return 'KSh '+Math.round(Number(n)||0).toLocaleString('en-KE');}
-function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function esc(v){
+ return String(v==null?'':v).replace(/[&<>"]/g,function(ch){
+  if(ch==='&')return '&amp;';
+  if(ch==='<')return '&lt;';
+  if(ch==='>')return '&gt;';
+  return '&quot;';
+ });
+}
 function toast(msg){
  var t=document.getElementById('toast'); if(!t)return;
  t.textContent=msg; t.classList.add('show');
