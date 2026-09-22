@@ -21,6 +21,7 @@ export default async function handler(req,res){
     const amount=value('Amount');
     const phone=value('PhoneNumber');
     const status=resultCode===0?'success':'failed';
+    const reference=metadata.length?String(value('AccountReference')||''):'';
     const rows=await sql`
       UPDATE mpesa_transactions
       SET status=${status},
