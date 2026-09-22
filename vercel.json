@@ -9,6 +9,7 @@
     {"source": "/break.html", "destination": "/creative", "permanent": true},
     {"source": "/contact.html", "destination": "/contact", "permanent": true},
     {"source": "/owner.html", "destination": "/owner", "permanent": true},
+    {"source": "/staff.html", "destination": "/staff", "permanent": true},
     {"source": "/pos.html", "destination": "/pos", "permanent": true},
     {"source": "/access-loader.html", "destination": "/access-loader", "permanent": true}
   ],
@@ -22,6 +23,7 @@
     {"source": "/creative", "destination": "/break.html"},
     {"source": "/contact", "destination": "/contact.html"},
     {"source": "/owner", "destination": "/owner.html"},
+    {"source": "/staff", "destination": "/staff.html"},
     {"source": "/pos", "destination": "/pos.html"},
     {"source": "/access-loader", "destination": "/access-loader.html"}
   ]
