@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = 'phase-1';
+  const APP_VERSION = 'phase-1.1';
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
