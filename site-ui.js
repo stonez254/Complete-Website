@@ -260,20 +260,60 @@ function initPrivateSessionGuard(){
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initPrivateSessionGuard);else initPrivateSessionGuard();
 
 
-/* PWA INSTALL — make Ederstone installable as an app */
+/* PWA INSTALL — unified Phase 1 app foundation */
 function initEderstoneInstall(){
-  if(document.querySelector('link[rel="manifest"]')){}
-  else{const m=document.createElement('link');m.rel='manifest';m.href='/manifest.json';document.head.appendChild(m)}
-  if(!document.querySelector('meta[name="mobile-web-app-capable"]')){const m=document.createElement('meta');m.name='mobile-web-app-capable';m.content='yes';document.head.appendChild(m)}
-  if(!document.querySelector('meta[name="apple-mobile-web-app-capable"]')){const m=document.createElement('meta');m.name='apple-mobile-web-app-capable';m.content='yes';document.head.appendChild(m)}
-  if('serviceWorker' in navigator) navigator.serviceWorker.register('/service-worker.js').catch(()=>{});
+  if(!document.querySelector('link[rel="manifest"]')){
+    const m=document.createElement('link');
+    m.rel='manifest';
+    m.href='/manifest.webmanifest';
+    document.head.appendChild(m);
+  }
+  if(!document.querySelector('meta[name="mobile-web-app-capable"]')){
+    const m=document.createElement('meta');
+    m.name='mobile-web-app-capable';
+    m.content='yes';
+    document.head.appendChild(m);
+  }
+  if(!document.querySelector('meta[name="apple-mobile-web-app-capable"]')){
+    const m=document.createElement('meta');
+    m.name='apple-mobile-web-app-capable';
+    m.content='yes';
+    document.head.appendChild(m);
+  }
+  if('serviceWorker' in navigator){
+    window.addEventListener('load',()=>{
+      navigator.serviceWorker.register('/sw.js',{scope:'/'}).catch(()=>{});
+    },{once:true});
+  }
   let deferred=null;
-  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;showInstall()});
   const showInstall=()=>{
     if(document.getElementById('ederstone-install-app')||!deferred)return;
-    const b=document.createElement('button');b.id='ederstone-install-app';b.type='button';b.className='ederstone-install-app';b.innerHTML='<span>↥</span><b>INSTALL APP</b>';b.title='Install Ederstone as an app';b.setAttribute('aria-label','Install Ederstone as an app');
-    b.addEventListener('click',async()=>{if(!deferred)return;deferred.prompt();await deferred.userChoice;deferred=null;b.remove()});document.body.appendChild(b);
+    const b=document.createElement('button');
+    b.id='ederstone-install-app';
+    b.type='button';
+    b.className='ederstone-install-app';
+    b.innerHTML='<span>↥</span><b>INSTALL APP</b>';
+    b.title='Install Ederstone as an app';
+    b.setAttribute('aria-label','Install Ederstone as an app');
+    b.addEventListener('click',async()=>{
+      if(!deferred)return;
+      deferred.prompt();
+      await deferred.userChoice;
+      deferred=null;
+      b.remove();
+    });
+    document.body.appendChild(b);
   };
-  window.addEventListener('appinstalled',()=>{deferred=null;document.getElementById('ederstone-install-app')?.remove()});
+  window.addEventListener('beforeinstallprompt',e=>{
+    e.preventDefault();
+    deferred=e;
+    showInstall();
+    window.__ederstoneInstallPrompt=e;
+    window.dispatchEvent(new CustomEvent('ederstone:install-ready'));
+  });
+  window.addEventListener('appinstalled',()=>{
+    deferred=null;
+    document.getElementById('ederstone-install-app')?.remove();
+  });
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initEderstoneInstall);else initEderstoneInstall();
