@@ -5,7 +5,7 @@
   let timer=null;
 
   const expiry=()=>Number(sessionStorage.getItem(KEY)||0);
-  const clear=()=>{sessionStorage.removeItem(KEY);sessionStorage.removeItem('ederstone-session-start');};
+  const clear=()=>{sessionStorage.removeItem(KEY);sessionStorage.removeItem('ederstone-session-start');sessionStorage.removeItem('ederstone-auth-user-v1');sessionStorage.removeItem('ederstone-role');};
 
   async function logout(reason='manual'){
     clear();
