@@ -117,10 +117,10 @@ function shortageText(missing){
  return missing.map(function(x){return x.name+': need '+x.need.toFixed(3)+' '+x.unit+', available '+x.have.toFixed(3)+' '+x.unit;}).join(' | ');
 }
 function openOrderStockProblem(name,available){
- problemModal('Order denied',name+' is out of stock. Only '+available+' pieces remain.',[{label:'Cook this food',action:'go-kitchen',primary:true}]);
+ setModal('<div class="problem-modal"><div class="problem-icon">!</div><div class="eyebrow">POS ACTION DENIED</div><h2>Order denied</h2><p class="problem-reason">'+esc(name)+' is out of stock. Only '+available+' pieces remain.</p><div class="problem-actions"><button class="action primary" data-action="go-kitchen" data-food="'+esc(name)+'">Cook this food</button><button class="action" data-action="close-modal">Close</button></div></div>');
 }
 function openIngredientProblem(name,missing){
- problemModal('Cooking denied','Not enough ingredients to prepare '+name+'. Missing: '+shortageText(missing),[{label:'Go to inventory',action:'go-inventory',primary:true}]);
+ setModal('<div class="problem-modal"><div class="problem-icon">!</div><div class="eyebrow">KITCHEN ACTION DENIED</div><h2>Cooking denied</h2><p class="problem-reason">Not enough ingredients to prepare '+esc(name)+'. Missing: '+esc(shortageText(missing))+'</p><div class="problem-actions"><button class="action primary" data-action="go-inventory">Order ingredients</button><button class="action" data-action="close-modal">Close</button></div></div>');
 }
 function setModal(html){
  if(!modal)return;
@@ -407,6 +407,13 @@ function resetPOS(){
  db=freshDB();cart=[];activeTable=null;orderType='Takeaway';payment='M-Pesa';category='All';viewStack=[];currentView='';save();view('dashboard');toast('POS data reset');
 }
 function goBack(){view(viewStack.pop()||'dashboard',true);}
+function goKitchenForFood(name){
+ closeModal(); view('kitchen');
+ setTimeout(function(){
+   var s=db.foodStock.find(function(x){return x.name===name;});
+   if(s){var q=Number(prompt('How many '+name+' pieces should the kitchen cook?','10'));if(isFinite(q)&&q>0)cookFood(db.foodStock.indexOf(s),q);}
+ },50);
+}
 var VIEWS={dashboard:dashboard,tables:tables,orders:orders,menu:menu,kitchen:kitchen,inventory:inventory,staff:staff,reports:reports,settings:settings};
 function view(v,fromBack){
  if(!VIEWS[v])v='dashboard';
@@ -434,7 +441,7 @@ function handleAction(el){
  if(a==='proceed-payment')return proceedPayment();
  if(a==='confirm-sale')return completeSale(payment);
  if(a==='close-modal')return closeModal();
- if(a==='go-kitchen'){closeModal();return view('inventory');}
+ if(a==='go-kitchen'){return goKitchenForFood(el.getAttribute('data-food')||'');}
  if(a==='go-inventory'){closeModal();return view('inventory');}
  if(a==='mpesa-send')return requestMpesa();
  if(a==='split-complete')return completeSplit();
