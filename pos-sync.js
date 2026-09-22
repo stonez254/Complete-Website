@@ -6,9 +6,10 @@
   const localState=()=>store()?.get(KEY,null);
   const readQueue=()=>{try{return JSON.parse(localStorage.getItem(QUEUE)||'[]')}catch(_){return[]}};
   const writeQueue=q=>{try{localStorage.setItem(QUEUE,JSON.stringify(q));return true}catch(_){return false}};
+  const MAX_QUEUE_ITEMS=5;
   const markQueued=()=>{queued=true;emit()};
   const emit=()=>window.dispatchEvent(new CustomEvent('ederstone:sync-status',{detail:{online:navigator.onLine,synced:serverVersion>0,syncing,queued,queueSize:readQueue().length,lastSyncAt,lastError,serverVersion}}));
-  const enqueue=()=>{const state=localState();if(!state)return;const q=readQueue();q.push({id:crypto.randomUUID?.()||String(Date.now()),state,createdAt:Date.now()});writeQueue(q);markQueued()};
+  const enqueue=()=>{const state=localState();if(!state)return;const q=readQueue();const serialized=JSON.stringify(state);const last=q[q.length-1];if(last&&JSON.stringify(last.state)===serialized){markQueued();return;}q.push({id:crypto.randomUUID?.()||String(Date.now()),state,createdAt:Date.now()});const trimmed=q.slice(-MAX_QUEUE_ITEMS);if(!writeQueue(trimmed)){lastError='Unable to persist offline sync queue';}markQueued()};
 
   async function pullInternal(){
     const response=await fetch('/api/pos',{cache:'no-store',credentials:'include'});
