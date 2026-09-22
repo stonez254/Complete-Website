@@ -359,6 +359,30 @@ function releaseKitchenStaff(name){
  if(removed){save();kitchen();staff();toast(name+' is available again');}
  else toast(name+' has no active cooking assignment');
 }
+function openCookQuantity(food,afterAction){
+ var s=db.foodStock.find(function(x){return x.name===food;});
+ if(!s){toast('Prepared food record not found');return;}
+ var current=Math.max(0,Number(s.qty||0));
+ var recipe=recipeFor(food);
+ var rows=recipe.map(function(r){
+   var ing=ingredientByName(r[0]),per=Number(r[2])||0,available=ing?Number(ing[2]):0;
+   return '<div class="order-line"><span>'+esc(r[0])+' · '+esc(r[1])+'<small class="muted"> '+per+' '+esc(r[1])+' per food</small></span><b>'+available+' '+esc(r[1])+' left</b></div>';
+ }).join('');
+ setModal('<div class="section-head"><div><div class="eyebrow">KITCHEN / COOK FOOD</div><h2>'+esc(food)+'</h2></div><button class="action" data-action="close-modal">×</button></div>'+
+ '<div class="panel"><div class="order-line"><span>Prepared stock now</span><b>'+current+' pieces</b></div></div>'+
+ '<div class="field"><label>NUMBER OF UNITS TO COOK</label><input id="cookQuantity" type="number" min="1" step="1" value="1" inputmode="numeric" placeholder="Enter quantity"></div>'+
+ (recipe.length?'<div class="panel"><h3>Inventory remaining</h3>'+rows+'</div>':'<div class="panel"><p class="muted">This food has no recipe yet. Set up its ingredients before cooking.</p></div>')+
+ '<div class="problem-actions"><button class="action primary big" data-action="confirm-cook-quantity" data-food="'+esc(food)+'" data-after="'+esc(afterAction||'')+'">Continue to Kitchen</button><button class="action" data-action="close-modal">Cancel</button></div>');
+ setTimeout(function(){var q=document.getElementById('cookQuantity');if(q){q.focus();q.select();}},40);
+}
+function confirmCookQuantity(food,afterAction){
+ var qEl=document.getElementById('cookQuantity'),qty=Math.floor(Number(qEl&&qEl.value)||0);
+ if(qty<=0){toast('Enter a valid whole number of units');return;}
+ if(!recipeFor(food).length){openRecipeBuilder(food,qty,afterAction);return;}
+ closeModal();
+ view('kitchen');
+ setTimeout(function(){openChefAssignment(food,qty,'');},60);
+}
 function openChefAssignment(food,qty,taskId){
  var available=kitchenChefs().filter(function(x){return !chefBusy(x[0]);});
  if(!available.length){
@@ -423,19 +447,13 @@ function lowStockReminder(name,remaining){
 }
 function cookFood(i,qty){
  var s=db.foodStock[i];if(!s)return;
- qty=Math.floor(Number(qty)||0);
- if(qty<=0){toast('Enter a valid quantity to cook');return;}
- if(!recipeFor(s.name).length){openRecipeBuilder(s.name,qty,'');return;}
- openChefAssignment(s.name,qty,'');
+ if(!recipeFor(s.name).length){openCookQuantity(s.name,'');return;}
+ openCookQuantity(s.name,'');
 }
 function cookFoodByName(name,qty){
  var s=db.foodStock.find(function(x){return x.name===name;});
  if(!s){toast('Prepared food record not found');return;}
- qty=Math.floor(Number(qty)||1);
- if(qty<=0)qty=1;
- if(!recipeFor(name).length){openRecipeBuilder(name,qty,'order');return;}
- view('kitchen');
- setTimeout(function(){openChefAssignment(name,qty,'');},60);
+ openCookQuantity(name,'order');
 }
 function receiveIngredient(i){
  var ing=db.inventory[i];if(!ing)return;
@@ -465,7 +483,13 @@ function toast(msg){
 }
 function problemModal(title,reason,actions){
  var buttons=actions||[];
- setModal('<div class="problem-modal"><div class="problem-icon">!</div><div class="eyebrow">POS ACTION DENIED</div><h2>'+esc(title)+'</h2><p class="problem-reason">'+esc(reason)+'</p><div class="problem-actions">'+buttons.map(function(a){return '<button class="action '+(a.primary?'primary':'')+'" data-action="'+a.action+'">'+esc(a.label)+'</button>';}).join('')+'</div><button class="action problem-close" data-action="close-modal">Close</button></div>');
+ setModal('<div class="problem-modal"><div class="problem-icon">!</div><div class="eyebrow">POS ACTION DENIED</div><h2>'+esc(title)+'</h2><p class="problem-reason">'+esc(reason)+'</p><div class="problem-actions">'+buttons.map(function(a){
+   var attrs=' data-action="'+esc(a.action)+'"';
+   if(a.food!=null)attrs+=' data-food="'+esc(a.food)+'"';
+   if(a.qty!=null)attrs+=' data-qty="'+esc(a.qty)+'"';
+   if(a.task!=null)attrs+=' data-task="'+esc(a.task)+'"';
+   return '<button class="action '+(a.primary?'primary':'')+'"'+attrs+'>'+esc(a.label)+'</button>';
+ }).join('')+'</div><button class="action problem-close" data-action="close-modal">Close</button></div>');
 }
 function shortageText(missing){
  return missing.map(function(x){return x.name+': need '+x.need.toFixed(3)+' '+x.unit+', available '+x.have.toFixed(3)+' '+x.unit;}).join(' | ');
@@ -526,10 +550,10 @@ function saveRecipeBuilder(food,qty,afterAction){
  closeModal();
  if(afterAction==='order'&&pendingCookOrder){
    var pending=pendingCookOrder;pendingCookOrder=null;cart=copy(pending.cart);activeTable=pending.activeTable||null;orderType=pending.orderType||'Takeaway';payment=pending.payment||'M-Pesa';category='All';view('orders');orderView();
-   toast(food+' recipe saved. Cook it, then it can be added to the order.');
-   setTimeout(function(){openChefAssignment(food,Number(qty)||1,'');},60);
+   toast(food+' recipe saved. Choose the cooking quantity.');
+   setTimeout(function(){openCookQuantity(food,'order');},60);
  }else{
-   openChefAssignment(food,Number(qty)||1,'');
+   openCookQuantity(food,'');
  }
 }
 function ensureRecipeIngredientsFromRecipe(recipe,qty){
@@ -1070,7 +1094,8 @@ function handleAction(el){
  if(a==='edit-menu')return editMenu(Number(el.getAttribute('data-index')));
  if(a==='stock')return stock(Number(el.getAttribute('data-index')),Number(el.getAttribute('data-delta')));
  if(a==='food-stock')return foodStock(Number(el.getAttribute('data-index')),Number(el.getAttribute('data-delta')));
- if(a==='cook-food'){var fi=Number(el.getAttribute('data-index'));var fq=Number(prompt('How many '+db.foodStock[fi].name+' pieces did you cook?','10'));if(isFinite(fq)&&fq>0)cookFood(fi,fq);return;}
+ if(a==='cook-food'){return cookFood(Number(el.getAttribute('data-index')));}
+ if(a==='confirm-cook-quantity')return confirmCookQuantity(el.getAttribute('data-food')||'',el.getAttribute('data-after')||'');
  if(a==='receive-ingredient')return receiveIngredient(Number(el.getAttribute('data-index')));
  if(a==='clear-restock-filter'){restockFilter=[];return inventory();}
  if(a==='save-settings')return saveSettings();
