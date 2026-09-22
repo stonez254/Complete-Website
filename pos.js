@@ -1141,6 +1141,8 @@ async function syncConflictPanel(){
  host.querySelectorAll('[data-sync-restore]').forEach(function(b){b.onclick=function(){window.EderStonePOSSync?.resolveConflict?.(b.dataset.syncRestore,'restore');syncConflictPanel();}});
  host.querySelectorAll('[data-sync-discard]').forEach(function(b){b.onclick=function(){window.EderStonePOSSync?.resolveConflict?.(b.dataset.syncDiscard,'discard');syncConflictPanel();}});
 }
+window.addEventListener('ederstone:sync-status',function(){syncConflictPanel();});
+
 function reports(){
  var s=db.orders.reduce(function(a,o){return a+Number(o.total||0);},0);
  shell('Reports','Sales performance, payment reconciliation and audit activity.','<div class="grid"><div class="stat"><small>GROSS SALES</small><strong>'+money(s)+'</strong></div><div class="stat"><small>AVERAGE TICKET</small><strong>'+money(db.orders.length?s/db.orders.length:0)+'</strong></div><div class="stat"><small>M-PESA SALES</small><strong>'+money(db.orders.filter(function(o){return o.payment==='M-Pesa';}).reduce(function(a,o){return a+o.total;},0))+'</strong></div><div class="stat"><small>CASH</small><strong>'+money(db.orders.filter(function(o){return o.payment==='Cash';}).reduce(function(a,o){return a+o.total;},0))+'</strong></div></div><div id="paymentReconciliation" class="panel"><div class="section-head"><h3>Payment reconciliation</h3><span class="badge warn">Loading…</span></div><p class="muted">Checking server-confirmed M-Pesa payments and settlement records.</p></div>');
