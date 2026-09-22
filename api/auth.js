@@ -28,6 +28,18 @@ const legacyCookie = request => {
 const sessionToken = request => { const raw = request.headers.get('cookie') || ''; const match = raw.match(/(?:^|;\\s*)ederstone_session=([^;]+)/); return match ? decodeURIComponent(match[1]) : null; };
 const cookie = token => 'ederstone_session=' + encodeURIComponent(token) + '; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800';
 const clearCookie = 'ederstone_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0';
+const authAttempts = new Map();
+function authClientKey(request) {
+  return String(request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown').split(',')[0].trim().slice(0,128) || 'unknown';
+}
+function authRateLimited(key) {
+  const now = Date.now(), windowMs = 10 * 60 * 1000, max = 10;
+  const attempts = (authAttempts.get(key) || []).filter(t => now - t < windowMs);
+  if (attempts.length >= max) { authAttempts.set(key, attempts); return true; }
+  attempts.push(now); authAttempts.set(key, attempts);
+  if (authAttempts.size > 5000) for (const [k, v] of authAttempts) if (!v.some(t => now - t < windowMs)) authAttempts.delete(k);
+  return false;
+}
 async function currentUser(request) {
   const legacyExp = legacyCookie(request);
   if (legacyExp) return { id: 'legacy-owner', display_name: 'Owner', username: 'owner', role: 'owner', active: true, legacy: true };
@@ -41,10 +53,13 @@ async function currentUser(request) {
 export async function GET(request) { try { const user = await currentUser(request); return json({ ok:true, authenticated:!!user, user:user || null }); } catch (error) { console.error('Auth check failed:', error?.message || error); return json({ok:false,error:'Authentication service unavailable'},503); } }
 export async function POST(request) {
   try {
+    if (request.method !== 'POST') return json({ok:false,error:'Method not allowed'},405);
     const raw = await request.text();
   if (raw.length > 16384) return json({ok:false,error:'Request too large'},413);
   let body;
-  try { body = raw ? JSON.parse(raw) : {}; } catch (_) { return json({ok:false,error:'Invalid JSON'},400); } const action = body?.action || 'login'; const sql = db();
+  try { body = raw ? JSON.parse(raw) : {}; } catch (_) { return json({ok:false,error:'Invalid JSON'},400); } const action = body?.action || 'login';
+    if (action === 'login' && authRateLimited(authClientKey(request))) return json({ok:false,error:'Too many attempts. Please try again later.'},429);
+    const sql = db();
     if (action === 'logout') { const token=sessionToken(request); if(token) await sql`DELETE FROM sessions WHERE token_hash = ${tokenHash(token)}`; return json({ok:true,authenticated:false},200,{'set-cookie': [clearCookie, '__Host-ederstone_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0'].join(', ')}); }
     if (action !== 'login') return json({ok:false,error:'Unsupported authentication action'},400);
     const username=String(body?.username||'').trim().toLowerCase(); const password=String(body?.password||'');
