@@ -107,7 +107,7 @@ function cookFood(i,qty,chef){
  if(!chef){openChefAssignment(s.name,qty);return;}
  assignChef(s.name,qty,chef);
 }
-function chefs(){return db.staff.filter(function(x){var r=String(x[1]).toLowerCase();return r.indexOf('kitchen')!==-1||r.indexOf('chef')!==-1;});}
+function chefs(){return db.staff.filter(function(x){var r=(String(x[1])+' '+String(x[2])+' '+String(x[0])).toLowerCase();return r.indexOf('kitchen')!==-1||r.indexOf('chef')!==-1||r.indexOf('cook')!==-1;});}
 function chefBusy(name){return db.kitchenJobs.some(function(j){return j.chef===name&&j.status==='cooking';});}
 function openChefAssignment(food,qty){
  var available=chefs().filter(function(x){return !chefBusy(x[0]);});
@@ -329,7 +329,7 @@ function completeSale(method,extra){
  cart.forEach(function(ci){var fs=db.foodStock.find(function(s){return s.name===ci.name;});if(fs)fs.qty=Math.max(0,Number(fs.qty)-Number(ci.qty));});
  db.orders.push(o);
  if(activeTable){var t=db.tables[activeTable-1];t.order=copy(cart);t.status='Busy';t.paid=true;t.ready=false;t.lastPayment=method;}
- var lowSale=cart.map(function(ci){var fs=db.foodStock.find(function(s){return s.name===ci.name;});return fs?{name:fs.name,qty:Number(fs.qty||0)}:null;}).filter(Boolean);cart=[];activeTable=null;save();orderView();showReceipt(o);setTimeout(function(){var alert=lowSale.find(function(x){return x.qty<=10;});if(alert)lowStockReminder(alert.name,alert.qty);},450);
+ var lowSale=cart.map(function(ci){var fs=db.foodStock.find(function(s){return s.name===ci.name;});return fs?{name:fs.name,qty:Number(fs.qty||0)}:null;}).filter(Boolean);cart=[];activeTable=null;save();orderView();showReceipt(o);setTimeout(function(){var alert=lowSale.find(function(x){return x.qty<=10;});if(alert)lowStockReminder(alert.name,alert.qty);},1200);
 }
 function openSplit(){
  setModal('<div class="section-head"><div><div class="eyebrow">SPLIT PAYMENT</div><h2>Complete split ticket</h2></div><button class="action" data-action="close-modal">Close</button></div>'+
