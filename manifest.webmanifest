@@ -1,0 +1,14 @@
+{
+  "name": "EderStone | Mathematics × Code × Creation",
+  "short_name": "EderStone",
+  "description": "EderStone portfolio and creative web application.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#050505",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/assets/icons/favicon-32.png", "sizes": "32x32", "type": "image/png", "purpose": "any" }
+  ]
+}
