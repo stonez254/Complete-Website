@@ -161,8 +161,14 @@ function loadDB(){
    var stockNames={}; d.foodStock.forEach(function(s){stockNames[s.name]=true;});
    d.menu.forEach(function(m){if(!stockNames[m[0]])d.foodStock.push({name:m[0],qty:100,reorder:10,unit:'pieces'});});
    if(!Array.isArray(d.staff)) d.staff=copy(SEED.staff);
+   d.staff=d.staff.map(function(s){
+     if(!Array.isArray(s))return ['Unnamed','Restaurant staff','Waiter','seed'];
+     if(!s[2]||s[2]==='Active')return [String(s[0]||'Unnamed'),String(s[1]||'Restaurant staff'),String(s[1]||'Waiter'),'seed'];
+     return [String(s[0]||'Unnamed'),String(s[1]||'Restaurant staff'),String(s[2]||'Waiter'),s[3]||'seed'];
+   });
    if(!Array.isArray(d.orders)) d.orders=[];
    if(!Array.isArray(d.kitchenJobs)) d.kitchenJobs=[];
+   if(!Array.isArray(d.deliveryJobs)) d.deliveryJobs=[];
    if(!Array.isArray(d.unfinishedTasks)) d.unfinishedTasks=[];
    return d;
  }catch(e){return freshDB();}
@@ -203,7 +209,9 @@ function closeUnfinishedTask(id){
 function reviewUnfinishedTask(id){
  var t=db.unfinishedTasks.find(function(x){return x.id===id&&x.status==='open';});
  if(!t)return;
- if(t.type==='chef'){
+ if(t.type==='delivery'){
+   openDeliveryAssignment(t.data&&t.data.orderId,t.id);
+ }else if(t.type==='chef'){
    view('kitchen');
    setTimeout(function(){openChefAssignment(t.data.food,Number(t.data.qty)||1,t.id);},60);
  }else if(t.type==='restock'){
@@ -221,11 +229,54 @@ function reviewUnfinishedTask(id){
    view('inventory');
  }
 }
+function staffRole(x){return String((x&&x[2])||((x&&x[1])||'')).trim();}
 function kitchenChefs(){
  return db.staff.filter(function(x){
-   var role=(String(x[1])+' '+String(x[0])).toLowerCase();
-   return role.indexOf('chef')!==-1||role.indexOf('kitchen')!==-1||role.indexOf('cook')!==-1;
+   var role=staffRole(x).toLowerCase();
+   return role==='chef'||role==='cook'||role==='kitchen staff'||role.indexOf('kitchen')!==-1||role.indexOf('cook')!==-1||role.indexOf('chef')!==-1;
  });
+}
+function deliveryStaff(){
+ return db.staff.filter(function(x){return staffRole(x).toLowerCase()==='delivery staff';});
+}
+function deliveryBusy(name){return db.deliveryJobs.some(function(j){return j.driver===name&&j.status==='assigned';});}
+function deliveryOrder(id){return db.orders.find(function(o){return o.id===id;});}
+function openDeliveryAssignment(orderId,taskId){
+ var o=deliveryOrder(orderId);
+ if(!o){if(taskId)closeUnfinishedTask(taskId);return;}
+ var available=deliveryStaff().filter(function(x){return !deliveryBusy(x[0]);});
+ var busy=deliveryStaff().filter(function(x){return deliveryBusy(x[0]);});
+ var busyCards=busy.map(function(x){
+   var job=db.deliveryJobs.find(function(j){return j.driver===x[0]&&j.status==='assigned';});
+   var ord=job&&deliveryOrder(job.orderId);
+   return '<div class="item"><div class="item-line"><div><b>'+esc(x[0])+'</b><div class="muted">'+esc(ord?('Order '+ord.id+' · '+(ord.customer?ord.customer.address:'')):'Active delivery')+'</div></div><span class="badge warn">BUSY</span></div><button class="action" data-action="release-delivery" data-driver="'+esc(x[0])+'">Clear / release</button></div>';
+ }).join('');
+ var buttons=available.map(function(x){return '<button class="action primary" data-action="assign-delivery" data-order="'+esc(orderId)+'" data-task="'+esc(taskId||'')+'" data-driver="'+esc(x[0])+'">Assign '+esc(x[0])+'</button>';}).join('');
+ if(!available.length){
+   if(!taskId)addUnfinishedTask('delivery','Deliver order '+orderId,'All delivery staff are currently assigned. Waiting for a driver.',{orderId:orderId});
+   problemModal('No delivery staff available','All delivery staff are currently assigned. Review this task when a driver is released.',[
+     {label:'Review delivery staff',action:'go-unfinished',primary:true},
+     {label:'Open Staff',action:'go-staff'}
+   ]);
+   return;
+ }
+ setModal('<div class="problem-modal"><div class="problem-icon">🛵</div><div class="eyebrow">DELIVERY ASSIGNMENT</div><h2>Assign order '+esc(orderId)+'</h2><p class="problem-reason">'+(o.customer?esc(o.customer.name)+' · '+esc(o.customer.phone)+'<br>'+esc(o.customer.address):'Delivery details unavailable')+'</p><div class="problem-actions">'+buttons+'</div>'+(busyCards?'<div class="panel"><h3>Currently assigned drivers</h3>'+busyCards+'</div>':'')+'<button class="action problem-close" data-action="close-modal">Close</button></div>');
+}
+function assignDelivery(orderId,driver,taskId){
+ if(!orderId||!driver)return;
+ if(deliveryBusy(driver)){toast(driver+' is already on a delivery');return;}
+ db.deliveryJobs.push({id:'DJ-'+Date.now().toString().slice(-8),orderId:orderId,driver:driver,status:'assigned',assigned:new Date().toLocaleString()});
+ var t=taskId&&db.unfinishedTasks.find(function(x){return x.id===taskId;});
+ if(t)t.status='resolved';
+ save();closeModal();updateUnfinishedBadge();
+ toast(driver+' assigned to deliver '+orderId);
+}
+function releaseDelivery(driver){
+ var idx=db.deliveryJobs.findIndex(function(j){return j.driver===driver&&j.status==='assigned';});
+ if(idx<0){toast(driver+' has no active delivery');return;}
+ var j=db.deliveryJobs[idx];db.deliveryJobs.splice(idx,1);save();
+ var t=db.unfinishedTasks.find(function(x){return x.status==='open'&&x.type==='delivery'&&x.data&&x.data.orderId===j.orderId;});
+ if(t){closeModal();openDeliveryAssignment(j.orderId,t.id);}else{closeModal();toast(driver+' is available again');}
 }
 function chefBusy(name){
  return db.kitchenJobs.some(function(j){return j.chef===name&&j.status==='cooking';});
@@ -254,7 +305,6 @@ function assignChef(food,qty,chef,taskId){
    started:new Date().toLocaleString(),finished:null
  });
  save();
- if(taskId)closeUnfinishedTask(taskId);
  closeModal();kitchen();
  toast(chef+' assigned to cook '+qty+' '+food);
 }
@@ -269,7 +319,9 @@ function finishKitchenJob(id){
  s.qty=Number(s.qty||0)+Number(j.qty);
  j.status='finished';
  j.finished=new Date().toLocaleString();
- save();kitchen();
+ var chefTask=db.unfinishedTasks.find(function(t){return t.status==='open'&&t.type==='chef'&&t.data&&t.data.food===j.food&&Number(t.data.qty)===Number(j.qty);});
+ if(chefTask){chefTask.status='resolved';chefTask.resolved=j.finished;}
+ save();updateUnfinishedBadge();kitchen();
  toast(j.qty+' '+j.food+' added to prepared stock. '+j.chef+' finished.');
 }
 function clearFinishedJob(id){
@@ -502,8 +554,10 @@ function completeSale(method,extra){
  if(orderType==='Delivery')o.customer={name:document.getElementById('customerName').value.trim(),phone:document.getElementById('customerPhone').value.trim(),address:document.getElementById('deliveryAddress').value.trim()};
  cart.forEach(function(ci){var fs=db.foodStock.find(function(s){return s.name===ci.name;});if(fs)fs.qty=Math.max(0,Number(fs.qty)-Number(ci.qty));});
  db.orders.push(o);
+ if(orderType==='Delivery')addUnfinishedTask('delivery','Deliver order '+o.id,'Delivery order for '+(o.customer?o.customer.name:'customer')+'.',{orderId:o.id});
  if(activeTable){var t=db.tables[activeTable-1];t.order=copy(cart);t.status='Busy';t.paid=true;t.ready=false;t.lastPayment=method;}
  cart=[];activeTable=null;save();orderView();showReceipt(o);
+ if(o.type==='Delivery')setTimeout(function(){openDeliveryAssignment(o.id,null);},500);
 }
 function openSplit(){
  setModal('<div class="section-head"><div><div class="eyebrow">SPLIT PAYMENT</div><h2>Complete split ticket</h2></div><button class="action" data-action="close-modal">Close</button></div>'+
@@ -614,10 +668,19 @@ function stock(i,d){if(db.inventory[i]){db.inventory[i][2]=Math.max(0,Number(db.
 function foodStock(i,d){if(db.foodStock[i]){db.foodStock[i].qty=Math.max(0,Number(db.foodStock[i].qty)+Number(d));save();inventory();}}
 function staff(){
  var roles=["Manager","Supervisor","Cashier","Waiter","Chef","Cook","Kitchen Staff","Bartender","Cleaner","Delivery Staff","Inventory Clerk","Accountant","Security"];
- var rows=db.staff.map(function(x,i){return '<div class="item"><div class="item-line"><div><b>'+esc(x[0])+'</b><div class="muted">'+esc(x[1])+'</div></div><span class="badge good">'+esc(x[2])+'</span></div><div class="actions"><button class="action" data-action="edit-staff" data-index="'+i+'">Edit</button><button class="action danger-btn" data-action="delete-staff" data-index="'+i+'">Remove</button></div></div>';}).join('')||'<p class="muted">No staff members yet.</p>';
  var opts=roles.map(function(r){return '<option value="'+esc(r)+'">'+esc(r)+'</option>';}).join('');
- shell('Staff','Add and manage staff. Kitchen roles automatically become available for chef assignments.', '<div class="two"><div class="panel"><div class="section-head"><h3>Add staff</h3></div><div class="form-grid"><div class="field"><label>NAME</label><input id="staffName" placeholder="e.g. Stone"></div><div class="field"><label>ROLE</label><select id="staffRole">'+opts+'</select></div></div><button class="action primary" data-action="add-staff">＋ Add staff</button></div><div class="panel"><div class="section-head"><h3>Team</h3><span class="badge good">'+db.staff.length+' staff</span></div><div class="list">'+rows+'</div></div></div>');
+ var grouped={};roles.forEach(function(r){grouped[r]=[];});
+ db.staff.forEach(function(x,i){var r=staffRole(x)||'Other';if(!grouped[r])grouped[r]=[];grouped[r].push({s:x,i:i});});
+ var groups=Object.keys(grouped).filter(function(r){return grouped[r].length;}).map(function(r){
+   var cards=grouped[r].map(function(v){return '<div class="item"><div class="item-line"><div><b>'+esc(v.s[0])+'</b><div class="muted">'+esc(v.s[1]||'Restaurant staff')+'</div></div><span class="badge good">AVAILABLE</span></div></div>';}).join('');
+   return collapsible(r+' · '+grouped[r].length, cards, 'staff_'+r.replace(/[^a-z0-9]/gi,'_'), false);
+ }).join('');
+ shell('Staff','Add staff by role. Existing staff records are protected from editing/removal here. Their roles automatically connect to Kitchen and Delivery workflows.', '<div class="panel"><div class="section-head"><h3>Add staff</h3><span class="badge good">'+db.staff.length+' staff</span></div><div class="form-grid"><div class="field"><label>NAME</label><input id="staffName" placeholder="e.g. Stone"></div><div class="field"><label>ROLE / CATEGORY</label><select id="staffRole">'+opts+'</select></div></div><button class="action primary big" data-action="add-staff">＋ Add staff</button></div><div class="panel"><div class="section-head"><h3>Staff categories</h3></div>'+groups+'</div>');
 }
+function editStaff(i){toast('Staff editing is reserved for Admin access');}
+function saveStaff(i){toast('Staff editing is reserved for Admin access');}
+function deleteStaff(i){toast('Staff removal is reserved for Admin access');}
+function addStaff(){var n=((document.getElementById('staffName')||{}).value||'').trim(),r=(document.getElementById('staffRole')||{}).value||'Waiter';if(!n){toast('Enter a staff name');return;}db.staff.push([n,'Added staff',r,'added']);save();staff();toast(n+' added as '+r);}
 function editStaff(i){
  var s=db.staff[i];if(!s)return;
  var roles=['Manager','Supervisor','Cashier','Waiter','Chef','Cook','Kitchen Staff','Bartender','Cleaner','Delivery Staff','Inventory Clerk','Accountant','Security'];
@@ -693,6 +756,9 @@ function handleAction(el){
  if(a==='finish-job')return finishKitchenJob(el.getAttribute('data-id')||'');
  if(a==='clear-job')return clearFinishedJob(el.getAttribute('data-id')||'');
  if(a==='go-inventory'){closeModal();restockFilter=[];return view('inventory');}
+ if(a==='go-staff'){closeModal();return view('staff');}
+ if(a==='assign-delivery')return assignDelivery(el.getAttribute('data-order')||'',el.getAttribute('data-driver')||'',el.getAttribute('data-task')||'');
+ if(a==='release-delivery')return releaseDelivery(el.getAttribute('data-driver')||'');
  if(a==='go-restock'){closeModal();return showRestockList();}
  if(a==='mpesa-send')return requestMpesa();
  if(a==='split-complete')return completeSplit();
