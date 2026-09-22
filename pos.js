@@ -12,7 +12,14 @@ var MENU=[
 ['Beef Samosa','Starters',120],['Chicken Wings','Starters',450],['Beef Sausage','Starters',180],['Vegetable Spring Rolls','Starters',250],
 ['Fresh Passion Juice','Drinks',180],['Fresh Mango Juice','Drinks',180],['Fresh Sugarcane Juice','Drinks',200],['Soda 500ml','Drinks',100],['Bottled Water','Drinks',80],['Tea','Drinks',100],['Coffee','Drinks',150],['Chai Latte','Drinks',220],
 ['Fruit Salad','Desserts',250],['Ice Cream','Desserts',220],['Chocolate Cake','Desserts',300],
-['Mandazi','Breakfast',80],['Spanish Omelette','Breakfast',350],['Pancakes','Breakfast',300],['Full Breakfast','Breakfast',500]
+['Mandazi','Breakfast',80],['Spanish Omelette','Breakfast',350],['Pancakes','Breakfast',300],['Full Breakfast','Breakfast',500],
+['Beef Curry','Mains',680],['Chicken Stew','Mains',680],['Fish Curry','Mains',750],['Vegetable Curry','Mains',550],['Coconut Fish','Mains',780],
+['Chicken Kebab','Grill',600],['Beef Kebab','Grill',650],['Grilled Chicken','Grill',750],['Grilled Beef','Grill',800],['Grilled Fish','Grill',850],['Chicken Tikka','Grill',700],['Beef Tikka','Grill',750],
+['Chapati Beef','Local',600],['Chapati Chicken','Local',600],['Beans Stew','Local',350],['Beef Beans','Local',550],['Chicken Beans','Local',580],['Rice & Beans','Local',400],['Pilau Plain','Local',450],
+['Chicken Pasta','Pasta',650],['Beef Pasta','Pasta',700],['Vegetable Pasta','Pasta',550],['Chicken Spaghetti','Pasta',650],['Beef Spaghetti','Pasta',700],['Vegetable Spaghetti','Pasta',550],
+['Fish Burger','Burgers',700],['Veggie Burger','Burgers',550],['Egg Sandwich','Fast Food',350],['Tuna Sandwich','Fast Food',500],['Beef Wrap','Fast Food',550],['Chicken Wrap','Fast Food',500],
+['Garlic Bread','Sides',250],['Masala Fries','Sides',350],['Vegetable Samosa','Starters',100],['Chicken Samosa','Starters',120],['Beef Meatballs','Starters',450],['Chicken Nuggets','Starters',450],['Garlic Chicken','Starters',500],
+['Hot Chocolate','Drinks',200],['Ginger Tea','Drinks',150],['Spiced Milk Tea','Drinks',180],['Lemonade','Drinks',150],['Banana Pancakes','Breakfast',350],['French Toast','Breakfast',320],['Eggs & Sausage','Breakfast',400],['Eggs & Toast','Breakfast',300],['Chapati','Breakfast',100],['Samosa Platter','Starters',350],['Mixed Grill','Grill',1200],['Fruit Smoothie','Drinks',300],['Banana Smoothie','Drinks',280],['Mango Smoothie','Drinks',280],['Avocado Smoothie','Drinks',300],['Carrot Juice','Drinks',180],['Ginger Lemon Tea','Drinks',180],['Rice Pudding','Desserts',280],['Banana Cake','Desserts',300],['Vanilla Cake','Desserts',300],['Carrot Cake','Desserts',320],['Banana Bread','Desserts',280],['Chicken Soup','Starters',400],['Beef Soup','Starters',450],['Vegetable Soup','Starters',350],['Tomato Soup','Starters',320],['Lentil Soup','Starters',350],['Coconut Rice','Local',500],['Egg Curry','Local',450],['Chicken Coconut Curry','Mains',750],['Beef Coconut Curry','Mains',780],['Spiced Rice','Local',450],['Vegetable Rice','Local',420],['Chicken Fried Rice','Mains',680],['Beef Fried Rice','Mains',720],['Vegetable Fried Rice','Mains',580]
 ];
 var RECIPES={
  'Chicken Pilau':[['Rice','kg',0.20],['Chicken','kg',0.15],['Cooking Oil','L',0.03],['Onions','kg',0.05],['Tomatoes','kg',0.03],['Salt','kg',0.005]],
@@ -52,13 +59,87 @@ var RECIPES={
  'Mandazi':[['Flour','kg',0.06],['Sugar','kg',0.015],['Cooking Oil','L',0.02]],
  'Spanish Omelette':[['Eggs','pieces',3],['Potatoes','kg',0.12],['Onions','kg',0.03],['Cooking Oil','L',0.02]],
  'Pancakes':[['Flour','kg',0.06],['Eggs','pieces',1],['Milk','L',0.10],['Sugar','kg',0.015],['Cooking Oil','L',0.01]],
- 'Full Breakfast':[['Eggs','pieces',2],['Sausage','pieces',2],['Bread','pieces',2],['Potatoes','kg',0.12],['Cooking Oil','L',0.02]]
+ 'Full Breakfast':[['Eggs','pieces',2],['Sausage','pieces',2],['Bread','pieces',2],['Potatoes','kg',0.12],['Cooking Oil','L',0.02]],
+ 'Beef Curry':[['Beef','kg',0.18],['Cooking Oil','L',0.03],['Onions','kg',0.05],['Tomatoes','kg',0.05],['Garlic','kg',0.008],['Ginger','kg',0.008],['Curry Powder','kg',0.006],['Salt','kg',0.003]],
+ 'Chicken Stew':[['Chicken','kg',0.18],['Cooking Oil','L',0.03],['Onions','kg',0.05],['Tomatoes','kg',0.05],['Garlic','kg',0.008],['Ginger','kg',0.008],['Black Pepper','kg',0.002],['Salt','kg',0.003]],
+ 'Fish Curry':[['Fish','kg',0.18],['Cooking Oil','L',0.03],['Onions','kg',0.05],['Tomatoes','kg',0.05],['Coconut Milk','L',0.05],['Turmeric','kg',0.003],['Cumin','kg',0.002],['Salt','kg',0.003]],
+ 'Vegetable Curry':[['Carrots','kg',0.05],['Cabbage','kg',0.06],['Green Pepper','kg',0.03],['Tomatoes','kg',0.05],['Onions','kg',0.04],['Cooking Oil','L',0.03],['Curry Powder','kg',0.005],['Salt','kg',0.003]],
+ 'Coconut Fish':[['Fish','kg',0.18],['Coconut Milk','L',0.10],['Onions','kg',0.04],['Tomatoes','kg',0.04],['Garlic','kg',0.006],['Ginger','kg',0.006],['Lemon','kg',0.01],['Salt','kg',0.003]],
+ 'Chicken Kebab':[['Chicken','kg',0.16],['Onions','kg',0.03],['Green Pepper','kg',0.03],['Cooking Oil','L',0.02],['Paprika','kg',0.003],['Salt','kg',0.003]],
+ 'Beef Kebab':[['Beef','kg',0.16],['Onions','kg',0.03],['Green Pepper','kg',0.03],['Cooking Oil','L',0.02],['Black Pepper','kg',0.003],['Salt','kg',0.003]],
+ 'Grilled Chicken':[['Chicken','kg',0.22],['Lemon','kg',0.01],['Garlic','kg',0.008],['Ginger','kg',0.006],['Paprika','kg',0.003],['Cooking Oil','L',0.02],['Salt','kg',0.003]],
+ 'Grilled Beef':[['Beef','kg',0.22],['Lemon','kg',0.01],['Garlic','kg',0.008],['Black Pepper','kg',0.003],['Cooking Oil','L',0.02],['Salt','kg',0.003]],
+ 'Grilled Fish':[['Fish','kg',0.22],['Lemon','kg',0.01],['Garlic','kg',0.006],['Black Pepper','kg',0.003],['Cooking Oil','L',0.02],['Salt','kg',0.003]],
+ 'Chicken Tikka':[['Chicken','kg',0.18],['Yoghurt','L',0.04],['Garlic','kg',0.006],['Ginger','kg',0.006],['Garam Masala','kg',0.004],['Paprika','kg',0.003],['Cooking Oil','L',0.02],['Salt','kg',0.003]],
+ 'Beef Tikka':[['Beef','kg',0.18],['Yoghurt','L',0.04],['Garlic','kg',0.006],['Ginger','kg',0.006],['Garam Masala','kg',0.004],['Paprika','kg',0.003],['Cooking Oil','L',0.02],['Salt','kg',0.003]],
+ 'Chapati Beef':[['Flour','kg',0.10],['Beef','kg',0.12],['Onions','kg',0.03],['Tomatoes','kg',0.03],['Cooking Oil','L',0.03],['Salt','kg',0.003]],
+ 'Chapati Chicken':[['Flour','kg',0.10],['Chicken','kg',0.12],['Onions','kg',0.03],['Tomatoes','kg',0.03],['Cooking Oil','L',0.03],['Salt','kg',0.003]],
+ 'Beans Stew':[['Beans','kg',0.18],['Tomatoes','kg',0.04],['Onions','kg',0.04],['Cooking Oil','L',0.02],['Garlic','kg',0.004],['Salt','kg',0.003]],
+ 'Beef Beans':[['Beans','kg',0.12],['Beef','kg',0.12],['Tomatoes','kg',0.04],['Onions','kg',0.04],['Cooking Oil','L',0.02],['Salt','kg',0.003]],
+ 'Chicken Beans':[['Beans','kg',0.12],['Chicken','kg',0.12],['Tomatoes','kg',0.04],['Onions','kg',0.04],['Cooking Oil','L',0.02],['Salt','kg',0.003]],
+ 'Rice & Beans':[['Rice','kg',0.18],['Beans','kg',0.10],['Onions','kg',0.03],['Cooking Oil','L',0.02],['Salt','kg',0.003]],
+ 'Pilau Plain':[['Rice','kg',0.22],['Onions','kg',0.06],['Cooking Oil','L',0.03],['Pilau Masala','kg',0.006],['Cinnamon','kg',0.002],['Cardamom','kg',0.001],['Cloves','kg',0.001],['Salt','kg',0.003]],
+ 'Chicken Pasta':[['Pasta','kg',0.16],['Chicken','kg',0.12],['Tomatoes','kg',0.04],['Onions','kg',0.03],['Garlic','kg',0.006],['Cooking Oil','L',0.02],['Salt','kg',0.003]],
+ 'Beef Pasta':[['Pasta','kg',0.16],['Beef','kg',0.12],['Tomatoes','kg',0.04],['Onions','kg',0.03],['Garlic','kg',0.006],['Cooking Oil','L',0.02],['Salt','kg',0.003]],
+ 'Vegetable Pasta':[['Pasta','kg',0.16],['Carrots','kg',0.04],['Cabbage','kg',0.04],['Green Pepper','kg',0.03],['Tomatoes','kg',0.04],['Cooking Oil','L',0.02],['Salt','kg',0.003]],
+ 'Chicken Spaghetti':[['Spaghetti','kg',0.16],['Chicken','kg',0.12],['Tomatoes','kg',0.04],['Onions','kg',0.03],['Garlic','kg',0.006],['Cooking Oil','L',0.02],['Salt','kg',0.003]],
+ 'Beef Spaghetti':[['Spaghetti','kg',0.16],['Beef','kg',0.12],['Tomatoes','kg',0.04],['Onions','kg',0.03],['Garlic','kg',0.006],['Cooking Oil','L',0.02],['Salt','kg',0.003]],
+ 'Vegetable Spaghetti':[['Spaghetti','kg',0.16],['Carrots','kg',0.04],['Green Pepper','kg',0.03],['Tomatoes','kg',0.04],['Onions','kg',0.03],['Cooking Oil','L',0.02],['Salt','kg',0.003]],
+ 'Fish Burger':[['Fish','kg',0.12],['Bread','pieces',1],['Eggs','pieces',1],['Breadcrumbs','kg',0.04],['Lettuce','kg',0.02],['Tomatoes','kg',0.02],['Cooking Oil','L',0.02]],
+ 'Veggie Burger':[['Flour','kg',0.04],['Carrots','kg',0.03],['Cabbage','kg',0.03],['Beans','kg',0.05],['Bread','pieces',1],['Cooking Oil','L',0.02],['Salt','kg',0.003]],
+ 'Egg Sandwich':[['Bread','pieces',2],['Eggs','pieces',2],['Tomatoes','kg',0.02],['Onions','kg',0.01],['Cooking Oil','L',0.01]],
+ 'Tuna Sandwich':[['Bread','pieces',2],['Tuna','kg',0.08],['Mayonnaise','L',0.02],['Lettuce','kg',0.02],['Tomatoes','kg',0.02]],
+ 'Beef Wrap':[['Flour','kg',0.06],['Beef','kg',0.10],['Lettuce','kg',0.02],['Tomatoes','kg',0.02],['Onions','kg',0.02],['Mayonnaise','L',0.01]],
+ 'Chicken Wrap':[['Flour','kg',0.06],['Chicken','kg',0.10],['Lettuce','kg',0.02],['Tomatoes','kg',0.02],['Onions','kg',0.02],['Mayonnaise','L',0.01]],
+ 'Garlic Bread':[['Bread','pieces',2],['Garlic','kg',0.006],['Butter','kg',0.02]],
+ 'Masala Fries':[['Potatoes','kg',0.25],['Cooking Oil','L',0.04],['Paprika','kg',0.003],['Curry Powder','kg',0.003],['Salt','kg',0.003]],
+ 'Vegetable Samosa':[['Flour','kg',0.025],['Carrots','kg',0.02],['Cabbage','kg',0.03],['Peas','kg',0.02],['Cooking Oil','L',0.02],['Salt','kg',0.002]],
+ 'Chicken Samosa':[['Chicken','kg',0.04],['Flour','kg',0.025],['Onions','kg',0.01],['Cooking Oil','L',0.02],['Cumin','kg',0.001],['Salt','kg',0.002]],
+ 'Beef Meatballs':[['Beef','kg',0.15],['Eggs','pieces',1],['Breadcrumbs','kg',0.03],['Onions','kg',0.02],['Garlic','kg',0.004],['Cooking Oil','L',0.02],['Salt','kg',0.003]],
+ 'Chicken Nuggets':[['Chicken','kg',0.14],['Flour','kg',0.04],['Eggs','pieces',1],['Breadcrumbs','kg',0.04],['Cooking Oil','L',0.03],['Salt','kg',0.003]],
+ 'Garlic Chicken':[['Chicken','kg',0.18],['Garlic','kg',0.012],['Ginger','kg',0.006],['Cooking Oil','L',0.03],['Soy Sauce','L',0.02],['Salt','kg',0.003]],
+ 'Hot Chocolate':[['Milk','L',0.20],['Cocoa','kg',0.015],['Sugar','kg',0.02],['Water','L',0.05]],
+ 'Ginger Tea':[['Tea Leaves','kg',0.005],['Ginger','kg',0.006],['Sugar','kg',0.02],['Water','L',0.20]],
+ 'Spiced Milk Tea':[['Tea Leaves','kg',0.005],['Milk','L',0.18],['Sugar','kg',0.02],['Ginger','kg',0.004],['Cinnamon','kg',0.001],['Cardamom','kg',0.001],['Water','L',0.12]],
+ 'Lemonade':[['Lemon Juice','L',0.04],['Sugar','kg',0.025],['Water','L',0.25]],
+ 'Banana Pancakes':[['Flour','kg',0.06],['Banana','kg',0.08],['Eggs','pieces',1],['Milk','L',0.08],['Sugar','kg',0.01],['Cooking Oil','L',0.01]],
+ 'French Toast':[['Bread','pieces',2],['Eggs','pieces',2],['Milk','L',0.08],['Sugar','kg',0.01],['Cooking Oil','L',0.01],['Cinnamon','kg',0.001]],
+ 'Eggs & Sausage':[['Eggs','pieces',2],['Sausage','pieces',2],['Cooking Oil','L',0.01],['Salt','kg',0.002]],
+ 'Eggs & Toast':[['Eggs','pieces',2],['Bread','pieces',2],['Cooking Oil','L',0.01],['Salt','kg',0.002]],
+ 'Chapati':[['Flour','kg',0.07],['Cooking Oil','L',0.02],['Salt','kg',0.002]],
+ 'Samosa Platter':[['Beef','kg',0.04],['Chicken','kg',0.04],['Flour','kg',0.05],['Onions','kg',0.02],['Cooking Oil','L',0.04],['Salt','kg',0.003]],
+ 'Mixed Grill':[['Chicken','kg',0.10],['Beef','kg',0.10],['Sausage','pieces',1],['Fish','kg',0.08],['Onions','kg',0.03],['Green Pepper','kg',0.03],['Cooking Oil','L',0.03],['Salt','kg',0.004]],
+ 'Fruit Smoothie':[['Mixed Fruit','kg',0.15],['Yoghurt','L',0.10],['Sugar','kg',0.015],['Water','L',0.10]],
+ 'Banana Smoothie':[['Banana','kg',0.15],['Milk','L',0.15],['Yoghurt','L',0.08],['Sugar','kg',0.015]],
+ 'Mango Smoothie':[['Mango','kg',0.15],['Milk','L',0.15],['Yoghurt','L',0.08],['Sugar','kg',0.015]],
+ 'Avocado Smoothie':[['Avocado','kg',0.15],['Milk','L',0.15],['Yoghurt','L',0.08],['Sugar','kg',0.015]],
+ 'Carrot Juice':[['Carrots','kg',0.12],['Lemon Juice','L',0.01],['Sugar','kg',0.015],['Water','L',0.15]],
+ 'Ginger Lemon Tea':[['Tea Leaves','kg',0.005],['Ginger','kg',0.006],['Lemon Juice','L',0.02],['Sugar','kg',0.015],['Water','L',0.20]],
+ 'Rice Pudding':[['Rice','kg',0.06],['Milk','L',0.15],['Sugar','kg',0.025],['Cinnamon','kg',0.001]],
+ 'Banana Cake':[['Flour','kg',0.06],['Banana','kg',0.08],['Eggs','pieces',1],['Sugar','kg',0.03],['Cooking Oil','L',0.02],['Baking Powder','kg',0.002]],
+ 'Vanilla Cake':[['Flour','kg',0.06],['Eggs','pieces',1],['Sugar','kg',0.03],['Milk','L',0.04],['Vanilla','L',0.002],['Baking Powder','kg',0.002]],
+ 'Carrot Cake':[['Flour','kg',0.06],['Carrots','kg',0.05],['Eggs','pieces',1],['Sugar','kg',0.03],['Cooking Oil','L',0.02],['Baking Powder','kg',0.002]],
+ 'Banana Bread':[['Flour','kg',0.06],['Banana','kg',0.08],['Eggs','pieces',1],['Sugar','kg',0.025],['Cooking Oil','L',0.02],['Baking Powder','kg',0.002]],
+ 'Chicken Soup':[['Chicken','kg',0.15],['Carrots','kg',0.03],['Onions','kg',0.03],['Garlic','kg',0.004],['Chicken Stock','L',0.20],['Ginger','kg',0.003],['Salt','kg',0.003]],
+ 'Beef Soup':[['Beef','kg',0.15],['Carrots','kg',0.03],['Onions','kg',0.03],['Garlic','kg',0.004],['Beef Stock','L',0.20],['Ginger','kg',0.003],['Salt','kg',0.003]],
+ 'Vegetable Soup':[['Carrots','kg',0.05],['Cabbage','kg',0.05],['Green Pepper','kg',0.03],['Onions','kg',0.03],['Vegetable Stock','L',0.20],['Salt','kg',0.003]],
+ 'Tomato Soup':[['Tomatoes','kg',0.12],['Onions','kg',0.03],['Garlic','kg',0.004],['Tomato Paste','kg',0.02],['Vegetable Stock','L',0.20],['Salt','kg',0.003]],
+ 'Lentil Soup':[['Lentils','kg',0.12],['Tomatoes','kg',0.04],['Onions','kg',0.03],['Garlic','kg',0.004],['Cumin','kg',0.002],['Vegetable Stock','L',0.20],['Salt','kg',0.003]],
+ 'Coconut Rice':[['Rice','kg',0.20],['Coconut Milk','L',0.10],['Onions','kg',0.03],['Salt','kg',0.003]],
+ 'Egg Curry':[['Eggs','pieces',2],['Tomatoes','kg',0.05],['Onions','kg',0.04],['Coconut Milk','L',0.05],['Curry Powder','kg',0.004],['Cooking Oil','L',0.02],['Salt','kg',0.003]],
+ 'Chicken Coconut Curry':[['Chicken','kg',0.18],['Coconut Milk','L',0.10],['Onions','kg',0.05],['Tomatoes','kg',0.04],['Garlic','kg',0.006],['Ginger','kg',0.006],['Curry Powder','kg',0.004],['Cooking Oil','L',0.03],['Salt','kg',0.003]],
+ 'Beef Coconut Curry':[['Beef','kg',0.18],['Coconut Milk','L',0.10],['Onions','kg',0.05],['Tomatoes','kg',0.04],['Garlic','kg',0.006],['Ginger','kg',0.006],['Curry Powder','kg',0.004],['Cooking Oil','L',0.03],['Salt','kg',0.003]],
+ 'Spiced Rice':[['Rice','kg',0.20],['Onions','kg',0.04],['Garlic','kg',0.004],['Cumin','kg',0.002],['Cinnamon','kg',0.001],['Cardamom','kg',0.001],['Cooking Oil','L',0.02],['Salt','kg',0.003]],
+ 'Vegetable Rice':[['Rice','kg',0.20],['Carrots','kg',0.04],['Peas','kg',0.03],['Green Pepper','kg',0.03],['Onions','kg',0.03],['Cooking Oil','L',0.02],['Salt','kg',0.003]],
+ 'Chicken Fried Rice':[['Rice','kg',0.20],['Chicken','kg',0.12],['Eggs','pieces',1],['Carrots','kg',0.03],['Peas','kg',0.02],['Soy Sauce','L',0.01],['Cooking Oil','L',0.03],['Onions','kg',0.03],['Salt','kg',0.003]],
+ 'Beef Fried Rice':[['Rice','kg',0.20],['Beef','kg',0.12],['Eggs','pieces',1],['Carrots','kg',0.03],['Peas','kg',0.02],['Soy Sauce','L',0.01],['Cooking Oil','L',0.03],['Onions','kg',0.03],['Salt','kg',0.003]],
+ 'Vegetable Fried Rice':[['Rice','kg',0.20],['Eggs','pieces',1],['Carrots','kg',0.03],['Peas','kg',0.03],['Green Pepper','kg',0.03],['Soy Sauce','L',0.01],['Cooking Oil','L',0.03],['Onions','kg',0.03],['Salt','kg',0.003]]
 };
 var SEED={
  settings:{name:'Ederstone Restaurant',tax:0,service:0},
  tables:Array.from({length:16},function(_,i){return {id:i+1,status:'Open',order:[],paid:false,ready:false};}),
  menu:MENU.map(function(x){return x.slice();}),
- inventory:[['Rice','kg',32,10],['Chicken','kg',18,6],['Beef','kg',22,7],['Fish','kg',10,3],['Cooking Oil','L',20,5],['Potatoes','kg',45,12],['Passion','kg',8,4],['Mango','kg',12,4],['Soda','bottles',48,12],['Flour','kg',30,8],['Sugar','kg',18,5],['Onions','kg',10,3],['Tomatoes','kg',10,3],['Sukuma','kg',8,2],['Maize','kg',15,4],['Beans','kg',15,4],['Cheese','kg',5,1],['Bread','pieces',60,12],['Eggs','pieces',120,20],['Carrots','kg',8,2],['Cabbage','kg',8,2],['Water','L',100,20],['Sugarcane','kg',20,5],['Tea Leaves','kg',3,1],['Milk','L',20,5],['Coffee','kg',3,1],['Mixed Fruit','kg',15,4],['Ice Cream Mix','kg',10,3],['Sausage','pieces',60,15]],
+ inventory:[['Rice','kg',32,10],['Chicken','kg',18,6],['Beef','kg',22,7],['Fish','kg',10,3],['Cooking Oil','L',20,5],['Potatoes','kg',45,12],['Passion','kg',8,4],['Mango','kg',12,4],['Soda','bottles',48,12],['Flour','kg',30,8],['Sugar','kg',18,5],['Onions','kg',10,3],['Tomatoes','kg',10,3],['Sukuma','kg',8,2],['Maize','kg',15,4],['Beans','kg',15,4],['Cheese','kg',5,1],['Bread','pieces',60,12],['Eggs','pieces',120,20],['Carrots','kg',8,2],['Cabbage','kg',8,2],['Water','L',100,20],['Sugarcane','kg',20,5],['Tea Leaves','kg',3,1],['Milk','L',20,5],['Coffee','kg',3,1],['Mixed Fruit','kg',15,4],['Ice Cream Mix','kg',10,3],['Sausage','pieces',60,15],['Salt','kg',5,1],['Ginger','kg',3,0.8],['Garlic','kg',3,0.8],['Cinnamon','kg',1,0.25],['Cardamom','kg',1,0.25],['Cumin','kg',1,0.25],['Coriander','kg',1,0.25],['Turmeric','kg',1,0.25],['Black Pepper','kg',1,0.25],['Paprika','kg',1,0.25],['Curry Powder','kg',2,0.5],['Pilau Masala','kg',2,0.5],['Garam Masala','kg',1,0.25],['Chilli','kg',2,0.5],['Lemon','kg',5,1],['Coconut Milk','L',8,2],['Tomato Paste','kg',3,0.8],['Soy Sauce','L',3,0.8],['Vinegar','L',3,0.8],['Pasta','kg',10,2],['Spaghetti','kg',10,2],['Tuna','kg',5,1],['Avocado','kg',8,2],['Banana','kg',10,2],['Lentils','kg',8,2],['Coconut','kg',5,1],['Breadcrumbs','kg',5,1],['Yoghurt','L',5,1],['Vanilla','L',1,0.2],['Cocoa','kg',3,0.8],['Baking Powder','kg',2,0.5],['Lemon Juice','L',3,0.8],['Peas','kg',5,1],['Green Pepper','kg',5,1],['Coriander Leaves','kg',2,0.5],['Mint','kg',2,0.5],['Lettuce','kg',5,1],['Mayonnaise','L',4,1],['Ketchup','L',4,1],['Chicken Stock','L',5,1],['Beef Stock','L',5,1],['Vegetable Stock','L',5,1],['Cream','L',5,1],['Chocolate','kg',5,1],['Cloves','kg',1,0.25],['Butter','kg',3,0.8]],
  foodStock:MENU.map(function(x){return {name:x[0],qty:100,reorder:10,unit:'pieces'}; }),
  staff:[['Stone','Owner','Active'],['Cashier 01','Cashier','Active'],['Kitchen 01','Kitchen','Active'],['Waiter 01','Waiter','Active']],
  orders:[]
@@ -74,6 +155,8 @@ function loadDB(){
    if(!Array.isArray(d.tables)||d.tables.length!==16) d.tables=copy(SEED.tables);
    if(!Array.isArray(d.menu)||!d.menu.length) d.menu=copy(SEED.menu);
    if(!Array.isArray(d.inventory)) d.inventory=copy(SEED.inventory);
+   var existingIngredients={};d.inventory.forEach(function(x){existingIngredients[x[0]]=true;});
+   SEED.inventory.forEach(function(x){if(!existingIngredients[x[0]])d.inventory.push(copy(x));});
    if(!Array.isArray(d.foodStock)) d.foodStock=copy(SEED.foodStock);
    var stockNames={}; d.foodStock.forEach(function(s){stockNames[s.name]=true;});
    d.menu.forEach(function(m){if(!stockNames[m[0]])d.foodStock.push({name:m[0],qty:100,reorder:10,unit:'pieces'});});
@@ -93,6 +176,7 @@ var currentView='';
 var viewStack=[];
 var app=null;
 var modal=null;
+var restockFilter=[];
 
 function save(){try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){}}
 function recipeFor(name){return RECIPES[name]||[];}
@@ -190,7 +274,11 @@ function openOrderStockProblem(name,available){
  problemModal('Order denied',name+' is out of stock. Only '+available+' pieces remain.',[{label:'Cook this food',action:'go-kitchen',primary:true}]);
 }
 function openIngredientProblem(name,missing){
- problemModal('Cooking denied','Not enough ingredients to prepare '+name+'. Missing: '+shortageText(missing),[{label:'Go to inventory',action:'go-inventory',primary:true}]);
+ restockFilter=missing.map(function(x){return x.name;});
+ problemModal('Cooking denied','Not enough ingredients to prepare '+name+'. Missing: '+shortageText(missing),[
+   {label:'View required restock',action:'go-restock',primary:true},
+   {label:'Go to inventory',action:'go-inventory'}
+ ]);
 }
 function collapsible(title,body,id,open){return '<div class="panel collapsible-panel"><button class="action collapse-toggle '+(open?'open':'')+'" data-action="toggle-collapse" data-target="'+id+'">'+esc(title)+' <span class="chevron">⌄</span></button><div id="'+id+'" class="collapsible-list '+(open?'open':'')+'">'+body+'</div></div>';}
 function toggleCollapse(id){var x=document.getElementById(id);if(!x)return;x.classList.toggle('open');var b=document.querySelector('[data-target="'+id+'"]');if(b)b.classList.toggle('open',x.classList.contains('open'));}
@@ -440,7 +528,18 @@ function editMenu(i){
  var p=Number(prompt('New price for '+db.menu[i][0],db.menu[i][2]));if(!p||p<0)return;
  db.menu[i][2]=p;save();menu();toast('Price updated');
 }
-function inventory(){var ingredients='<div class="list">'+db.inventory.map(function(x,i){var low=Number(x[2])<=Number(x[3]);return '<div class="item '+(low?'low-stock':'')+'"><div class="item-line"><b>'+esc(x[0])+'</b><strong>'+x[2]+' '+esc(x[1])+'</strong></div><div class="muted">'+(low?'⚠ Reorder now · ':'Reorder at ')+x[3]+' '+esc(x[1])+'</div><div class="actions"><button class="action" data-action="stock" data-index="'+i+'" data-delta="-1">− 1</button><button class="action" data-action="stock" data-index="'+i+'" data-delta="1">＋ 1</button><button class="action primary" data-action="receive-ingredient" data-index="'+i+'">＋ Receive stock</button></div></div>';}).join('')+'</div>';var foods='<div class="list">'+db.foodStock.map(function(s,i){return '<div class="item"><div class="item-line"><b>'+esc(s.name)+'</b><strong>'+s.qty+' pieces</strong></div><button class="action primary" data-action="cook-food" data-index="'+i+'">＋ Assign chef to cook</button></div>';}).join('')+'</div>';shell('Kitchen Inventory','Track raw ingredients and prepared food stock.',collapsible('Raw ingredients',ingredients,'ingredientsList',false)+collapsible('Prepared food stock',foods,'preparedFoodList',true));}
+function inventory(){
+ var filtered=restockFilter.length?db.inventory.filter(function(x){return restockFilter.indexOf(x[0])!==-1;}):db.inventory;
+ var ingredients='<div class="list">'+filtered.map(function(x){
+   var low=Number(x[2])<=Number(x[3]);
+   var idx=db.inventory.indexOf(x);
+   return '<div class="item '+(low?'low-stock':'')+'"><div class="item-line"><b>'+esc(x[0])+'</b><strong>'+x[2]+' '+esc(x[1])+'</strong></div><div class="muted">'+(low?'⚠ Reorder now · ':'Reorder at ')+x[3]+' '+esc(x[1])+'</div><div class="actions"><button class="action" data-action="stock" data-index="'+idx+'" data-delta="-1">− 1</button><button class="action" data-action="stock" data-index="'+idx+'" data-delta="1">＋ 1</button><button class="action primary" data-action="receive-ingredient" data-index="'+idx+'">＋ Receive stock</button></div></div>';
+ }).join('')||'<p class="muted">No ingredients currently require restocking.</p>';
+ var foods='<div class="list">'+db.foodStock.map(function(s,i){return '<div class="item"><div class="item-line"><b>'+esc(s.name)+'</b><strong>'+s.qty+' pieces</strong></div><button class="action primary" data-action="cook-food" data-index="'+i+'">＋ Assign chef to cook</button></div>';}).join('')+'</div>';
+ var filterNotice=restockFilter.length?'<div class="panel"><div class="section-head"><h3>Required restock only</h3><button class="action" data-action="clear-restock-filter">Show all</button></div><p class="muted">Only ingredients required for the blocked cooking task are shown below.</p></div>':'';
+ shell('Kitchen Inventory','Track raw ingredients and prepared food stock.',filterNotice+collapsible('Raw ingredients',ingredients,'ingredientsList',true)+collapsible('Prepared food stock',foods,'preparedFoodList',true));
+}
+function showRestockList(){view('inventory');}
 function stock(i,d){if(db.inventory[i]){db.inventory[i][2]=Math.max(0,Number(db.inventory[i][2])+Number(d));save();inventory();}}
 function foodStock(i,d){if(db.foodStock[i]){db.foodStock[i].qty=Math.max(0,Number(db.foodStock[i].qty)+Number(d));save();inventory();}}
 function staff(){
@@ -497,7 +596,8 @@ function handleAction(el){
  if(a==='assign-low-stock')return assignLowStock(el.getAttribute('data-food')||'');
  if(a==='finish-job')return finishKitchenJob(el.getAttribute('data-id')||'');
  if(a==='clear-job')return clearFinishedJob(el.getAttribute('data-id')||'');
- if(a==='go-inventory'){closeModal();return view('inventory');}
+ if(a==='go-inventory'){closeModal();restockFilter=[];return view('inventory');}
+ if(a==='go-restock'){closeModal();return showRestockList();}
  if(a==='mpesa-send')return requestMpesa();
  if(a==='split-complete')return completeSplit();
  if(a==='print')return window.print();
@@ -510,6 +610,7 @@ function handleAction(el){
  if(a==='food-stock')return foodStock(Number(el.getAttribute('data-index')),Number(el.getAttribute('data-delta')));
  if(a==='cook-food'){var fi=Number(el.getAttribute('data-index'));var fq=Number(prompt('How many '+db.foodStock[fi].name+' pieces did you cook?','10'));if(isFinite(fq)&&fq>0)cookFood(fi,fq);return;}
  if(a==='receive-ingredient')return receiveIngredient(Number(el.getAttribute('data-index')));
+ if(a==='clear-restock-filter'){restockFilter=[];return inventory();}
  if(a==='save-settings')return saveSettings();
  if(a==='reset')return resetPOS();
 }
