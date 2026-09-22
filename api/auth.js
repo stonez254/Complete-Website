@@ -45,9 +45,11 @@ async function currentUser(request) {
   if (legacyExp) return { id: 'legacy-owner', display_name: 'Owner', username: 'owner', role: 'owner', active: true, legacy: true };
   const token = sessionToken(request); if (!token) return null;
   const sql = db(); const hash = tokenHash(token);
-  await sql`DELETE FROM sessions WHERE expires_at <= NOW()`;
   const rows = await sql`SELECT u.id, u.display_name, u.username, u.role, u.active FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ${hash} AND s.expires_at > NOW() AND u.active = TRUE LIMIT 1`;
-  if (!rows.length) return null;
+  if (!rows.length) {
+    await sql`DELETE FROM sessions WHERE token_hash = ${hash} OR expires_at <= NOW()`;
+    return null;
+  }
   await sql`UPDATE sessions SET last_seen_at = NOW() WHERE token_hash = ${hash}`; return rows[0];
 }
 export async function GET(request) { try { const user = await currentUser(request); return json({ ok:true, authenticated:!!user, user:user || null }); } catch (error) { console.error('Auth check failed:', error?.message || error); return json({ok:false,error:'Authentication service unavailable'},503); } }
