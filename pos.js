@@ -1134,6 +1134,7 @@ function deleteStaff(i){toast('Staff removal is restricted to Admin access');}
 async function syncConflictPanel(){
  var conflicts=window.EderStonePOSSync?.conflicts?.()||[];
  var host=document.getElementById('posSyncConflicts');
+ if(!host){var shellHost=document.querySelector('.pos-shell,.page-shell,main');if(shellHost){host=document.createElement('div');host.id='posSyncConflicts';shellHost.prepend(host);}}
  if(!host)return;
  if(!conflicts.length){host.innerHTML='';return;}
  host.innerHTML='<div class="panel"><div class="section-head"><h3>Offline sync conflicts</h3><span class="badge warn">'+conflicts.length+' NEED ATTENTION</span></div><p class="muted">A newer server version exists and local POS changes were preserved. Choose whether to restore a preserved local snapshot or discard it.</p>'+conflicts.map(function(item,i){return '<div class="order-line"><span><b>Conflict '+(i+1)+'</b><small class="muted"> '+new Date(item.createdAt||Date.now()).toLocaleString()+' · server v'+Number(item.serverVersion||0)+'</small></span><span><button class="btn small" data-sync-restore="'+esc(item.id)+'">Restore</button> <button class="btn small danger" data-sync-discard="'+esc(item.id)+'">Discard</button></span></div>';}).join('')+'</div>';
