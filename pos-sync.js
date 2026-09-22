@@ -35,7 +35,22 @@
       const pending=readQueue();
       const batch=pending.length?pending[pending.length-1]:{state:local};
       const sent=await send(batch.state,serverVersion||null);
-      if(sent.response.status===409){await pullInternal();lastError='Conflict detected; server state restored locally';emit();return false}
+      if(sent.response.status===409){
+        const conflictState=batch.state;
+        const conflictQueue=readQueue();
+        const pulled=await pullInternal();
+        if(pulled){
+          const q=readQueue();
+          q.push({id:crypto.randomUUID?.()||String(Date.now()),state:conflictState,createdAt:Date.now(),reason:'version-conflict',serverVersion});
+          writeQueue(q);
+        } else {
+          writeQueue(conflictQueue.length?conflictQueue:[{id:crypto.randomUUID?.()||String(Date.now()),state:conflictState,createdAt:Date.now(),reason:'version-conflict',serverVersion}]);
+        }
+        queued=true;
+        lastError='Conflict detected; local changes preserved in sync queue';
+        emit();
+        return false;
+      }
       if(!sent.response.ok||!sent.result.ok)throw new Error(sent.result.error||'Sync push failed');
       serverVersion=Number(sent.result.version||serverVersion);lastSyncAt=Date.now();
       writeQueue([]);queued=false;lastError=null;emit();return true;
