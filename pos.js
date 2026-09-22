@@ -252,8 +252,18 @@ function deliveryStaff(){
 }
 function deliveryBusy(name){
  return db.deliveryJobs.some(function(j){
-   return j.driver===name&&String(j.status||'').toLowerCase()==='assigned';
+   return String(j.driver||'').trim()===String(name||'').trim()&&String(j.status||'').toLowerCase()==='assigned';
  });
+}
+function releaseDeliveryStaff(name){
+ var jobs=db.deliveryJobs.filter(function(j){
+   return String(j.driver||'').trim()===String(name||'').trim()&&String(j.status||'').toLowerCase()==='assigned';
+ });
+ if(!jobs.length){toast(name+' has no active delivery assignment');return;}
+ db.deliveryJobs=db.deliveryJobs.filter(function(j){
+   return !(String(j.driver||'').trim()===String(name||'').trim()&&String(j.status||'').toLowerCase()==='assigned');
+ });
+ save();updateUnfinishedBadge();staff();toast(name+' is available again');
 }
 function deliveryOrder(id){return db.orders.find(function(o){return o.id===id;});}
 function openDeliveryAssignment(orderId,taskId){
@@ -293,8 +303,18 @@ function releaseDelivery(driver){
 }
 function chefBusy(name){
  return db.kitchenJobs.some(function(j){
-   return j.chef===name&&String(j.status||'').toLowerCase()==='cooking';
+   return String(j.chef||'').trim()===String(name||'').trim()&&String(j.status||'').toLowerCase()==='cooking';
  });
+}
+function releaseKitchenStaff(name){
+ var removed=0;
+ db.kitchenJobs=db.kitchenJobs.filter(function(j){
+   var match=String(j.chef||'').trim()===String(name||'').trim()&&String(j.status||'').toLowerCase()==='cooking';
+   if(match)removed++;
+   return !match;
+ });
+ if(removed){save();kitchen();staff();toast(name+' is available again');}
+ else toast(name+' has no active cooking assignment');
 }
 function openChefAssignment(food,qty,taskId){
  var available=kitchenChefs().filter(function(x){return !chefBusy(x[0]);});
@@ -700,7 +720,10 @@ function staff(){
  var groups=roles.map(function(r){
    var cards=grouped[r].map(function(v){
      var busy=r==='Delivery Staff'?deliveryBusy(v.s[0]):r==='Kitchen Staff'?chefBusy(v.s[0]):false;
-     return '<div class="staff-person"><div><b>'+esc(v.s[0])+'</b><small>'+esc(r)+'</small></div><span class="badge '+(busy?'warn':'good')+'">'+(busy?'BUSY':'AVAILABLE')+'</span></div>';
+     var release=(busy&&r==='Delivery Staff')?'<button class="action" data-action="release-staff-delivery" data-staff="'+esc(v.s[0])+'">Release</button>':
+                 (busy&&r==='Kitchen Staff')?'<button class="action" data-action="release-staff-kitchen" data-staff="'+esc(v.s[0])+'">Release</button>':'';
+     return '<div class="staff-person"><div><b>'+esc(v.s[0])+'</b><small>'+esc(r)+'</small></div><div class="actions">'+
+       '<span class="badge '+(busy?'warn':'good')+'">'+(busy?'BUSY':'AVAILABLE')+'</span>'+release+'</div></div>';
    }).join('');
    return '<div class="staff-category"><div class="staff-category-head"><h3>'+esc(r)+'</h3><span>'+grouped[r].length+'</span></div><div class="staff-category-list">'+(cards||'<small class="muted">No staff added yet.</small>')+'</div></div>';
  }).join('');
@@ -821,6 +844,8 @@ function handleAction(el){
  if(a==='go-staff'){closeModal();return view('staff');}
  if(a==='assign-delivery')return assignDelivery(el.getAttribute('data-order')||'',el.getAttribute('data-driver')||'',el.getAttribute('data-task')||'');
  if(a==='release-delivery')return releaseDelivery(el.getAttribute('data-driver')||'');
+ if(a==='release-staff-delivery')return releaseDeliveryStaff(el.getAttribute('data-staff')||'');
+ if(a==='release-staff-kitchen')return releaseKitchenStaff(el.getAttribute('data-staff')||'');
  if(a==='go-restock'){closeModal();return showRestockList();}
  if(a==='mpesa-send')return requestMpesa();
  if(a==='split-complete')return completeSplit();
