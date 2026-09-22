@@ -126,16 +126,33 @@ export async function staffApi(request) {
     if(rows[0].role==='owner') return json({ok:false,error:'Owner accounts cannot be modified through staff management'},403);
     if(user.role==='manager' && id===user.id) return json({ok:false,error:'You cannot modify your own staff account here'},403);
     if(role===undefined && active===undefined) return json({ok:false,error:'No staff changes supplied'},400);
-    const updated=await sql`
-      UPDATE users
-      SET role=COALESCE(${role ?? null},role),
-          active=COALESCE(${active ?? null},active),
-          updated_at=NOW()
-      WHERE id=${id} AND role <> 'owner'
-      RETURNING id, display_name, username, role, active, updated_at
-    `;
+    const updated = active === false
+      ? await sql`
+          WITH updated AS (
+            UPDATE users
+            SET role=COALESCE(${role ?? null},role),
+                active=FALSE,
+                updated_at=NOW()
+            WHERE id=${id} AND role <> 'owner'
+            RETURNING id, display_name, username, role, active, updated_at
+          ),
+          revoked AS (
+            DELETE FROM sessions
+            WHERE user_id=${id}
+              AND EXISTS (SELECT 1 FROM updated)
+          )
+          SELECT id, display_name, username, role, active, updated_at
+          FROM updated
+        `
+      : await sql`
+          UPDATE users
+          SET role=COALESCE(${role ?? null},role),
+              active=COALESCE(${active ?? null},active),
+              updated_at=NOW()
+          WHERE id=${id} AND role <> 'owner'
+          RETURNING id, display_name, username, role, active, updated_at
+        `;
     if(!updated.length) return json({ok:false,error:'Staff update failed'},409);
-    if(active===false) await sql`DELETE FROM sessions WHERE user_id=${id}`;
     return json({ok:true,user:updated[0]});
   }
   return json({ok:false,error:'Method not allowed'},405);
