@@ -46,7 +46,7 @@ export async function PUT(request){
         ),
         logged AS (
           INSERT INTO pos_events(event_type,payload,actor_user_id)
-          SELECT 'pos.state.created', jsonb_build_object('version',version,'source','api'), ${user.id}::uuid
+          SELECT 'pos.state.created', jsonb_build_object('version',version,'source','api'), ${user.legacy?null:user.id}::uuid
           FROM inserted
           RETURNING 1
         )
@@ -68,7 +68,7 @@ export async function PUT(request){
       ),
       logged AS (
         INSERT INTO pos_events(event_type,payload,actor_user_id)
-        SELECT 'pos.state.updated', jsonb_build_object('version',version,'expectedVersion',${expectedVersion},'source','api'), ${user.id}::uuid
+        SELECT 'pos.state.updated', jsonb_build_object('version',version,'expectedVersion',${expectedVersion},'source','api'), ${user.legacy?null:user.id}::uuid
         FROM updated
         RETURNING 1
       )
