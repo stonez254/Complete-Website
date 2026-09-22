@@ -831,14 +831,27 @@ function receiptQrData(o){
  return JSON.stringify(data);
 }
 function receiptQrMarkup(o){
+ var svg='',fallback=false;
  try{
    if(typeof qrcode!=='function')throw new Error('QR library missing');
    var qr=qrcode(0,'L');
-   qr.addData(receiptQrData(o),'Byte');
-   qr.make();
-   var svg=qr.createSvgTag({cellSize:3,margin:4,scalable:true,alt:{text:'QR code containing the complete itemized receipt for '+o.id}});
+   try{
+     qr.addData(receiptQrData(o),'Byte');
+     qr.make();
+   }catch(fullError){
+     qr=qrcode(0,'L');
+     qr.addData(JSON.stringify({brand:'EDERSTONE',receipt:String(o.id||''),date:String(o.time||''),total:Number(o.total)||0,items:(o.items||[]).map(function(x){return [String(x.name||''),Number(x.qty)||0];})}),'Byte');
+     qr.make();
+     fallback=true;
+   }
+   svg=qr.createSvgTag({cellSize:3,margin:4,scalable:true,alt:{text:'QR code for receipt '+o.id}});
    if(!svg||svg.indexOf('<svg')===-1)throw new Error('QR SVG generation failed');
-   return '<div class="receipt-qr">'+svg+'<small>Scan to view purchased items, quantities, customer details and payment record</small></div>';
+   var table=qr.createTableTag(2,4);
+   return '<div class="receipt-qr">'+
+     '<div class="receipt-qr-screen">'+svg+'</div>'+
+     '<div class="receipt-qr-print" aria-hidden="true">'+table+'</div>'+
+     '<small>'+(fallback?'QR contains a compact receipt record with the receipt number, date, total and items.':'Scan to view the itemized receipt record.')+'</small>'+
+     '</div>';
  }catch(e){
    return '<div class="receipt-qr receipt-qr-error"><small>QR generation failed for this receipt. The complete receipt details remain printed above.</small></div>';
  }
