@@ -99,7 +99,7 @@ function ingredientByName(name){return db.inventory.find(function(x){return x[0]
 function ensureRecipeIngredients(name,qty){var recipe=recipeFor(name),missing=[];recipe.forEach(function(r){var ing=ingredientByName(r[0]),need=Number(r[2])*qty,have=ing?Number(ing[2]):0;if(!ing||have+1e-9<need)missing.push({name:r[0],need:need,have:have,unit:r[1]});});return {ok:!missing.length,missing:missing};}
 function consumeRecipe(name,qty){recipeFor(name).forEach(function(r){var ing=ingredientByName(r[0]);if(ing)ing[2]=Math.max(0,Number(ing[2])-Number(r[2])*qty);});}
 function formatMissing(m){return m.map(function(x){return x.name+' ('+x.have.toFixed(3)+' '+x.unit+' left; need '+x.need.toFixed(3)+')';}).join(', ');}
-function cookFood(i,qty){var s=db.foodStock[i];if(!s)return;qty=Math.floor(Number(qty)||0);if(qty<=0){toast('Enter a valid quantity to cook');return;}var check=ensureRecipeIngredients(s.name,qty);if(!check.ok){toast('Cannot cook '+s.name+'. Missing: '+formatMissing(check.missing));return;}consumeRecipe(s.name,qty);s.qty=Number(s.qty||0)+qty;save();inventory();toast(qty+' '+s.name+' added to prepared stock');}
+function cookFood(i,qty){var s=db.foodStock[i];if(!s)return;qty=Math.floor(Number(qty)||0);if(qty<=0){toast('Enter a valid quantity to cook');return;}var check=ensureRecipeIngredients(s.name,qty);if(!check.ok){openIngredientProblem(s.name,check.missing);return;}consumeRecipe(s.name,qty);s.qty=Number(s.qty||0)+qty;save();inventory();toast(qty+' '+s.name+' added to prepared stock');}
 function receiveIngredient(i){var ing=db.inventory[i];if(!ing)return;var qty=Number(prompt('How much '+ing[0]+' received?','10'));if(!isFinite(qty)||qty<=0)return;ing[2]=Number(ing[2])+qty;save();inventory();toast(qty+' '+ing[0]+' added to kitchen inventory');}
 function money(n){return 'KSh '+Math.round(Number(n)||0).toLocaleString('en-KE');}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
@@ -108,6 +108,19 @@ function toast(msg){
  t.textContent=msg; t.classList.add('show');
  clearTimeout(window.__ederToast);
  window.__ederToast=setTimeout(function(){t.classList.remove('show');},2400);
+}
+function problemModal(title,reason,actions){
+ var buttons=actions||[];
+ setModal('<div class="problem-modal"><div class="problem-icon">!</div><div class="eyebrow">POS ACTION DENIED</div><h2>'+esc(title)+'</h2><p class="problem-reason">'+esc(reason)+'</p><div class="problem-actions">'+buttons.map(function(a){return '<button class="action '+(a.primary?'primary':'')+'" data-action="'+a.action+'">'+esc(a.label)+'</button>';}).join('')+'</div><button class="action problem-close" data-action="close-modal">Close</button></div>');
+}
+function shortageText(missing){
+ return missing.map(function(x){return x.name+': need '+x.need.toFixed(3)+' '+x.unit+', available '+x.have.toFixed(3)+' '+x.unit;}).join(' | ');
+}
+function openOrderStockProblem(name,available){
+ problemModal('Order denied',name+' is out of stock. Only '+available+' pieces remain.',[{label:'Cook this food',action:'go-kitchen',primary:true}]);
+}
+function openIngredientProblem(name,missing){
+ problemModal('Cooking denied','Not enough ingredients to prepare '+name+'. Missing: '+shortageText(missing),[{label:'Go to inventory',action:'go-inventory',primary:true}]);
 }
 function setModal(html){
  if(!modal)return;
@@ -204,13 +217,13 @@ function addItem(i){
  var stock=db.foodStock.find(function(s){return s.name===x[0];});
  var found=cart.find(function(c){return c.name===x[0];});
  var requested=(found?found.qty:0)+1;
- if(stock&&requested>Number(stock.qty||0)){toast(x[0]+' is not available. Only '+stock.qty+' '+stock.unit+' remaining.');return;}
+ if(stock&&requested>Number(stock.qty||0)){openOrderStockProblem(x[0],Number(stock.qty||0));return;}
  if(found)found.qty++;else cart.push({name:x[0],price:Number(x[2]),qty:1});
  syncTable();orderView();toast(x[0]+' added');
 }
 function changeQty(i,d){
  if(!cart[i])return;
- if(d>0){var stock=db.foodStock.find(function(s){return s.name===cart[i].name;});if(stock&&cart[i].qty+d>Number(stock.qty||0)){toast(cart[i].name+' is not available beyond '+stock.qty+' '+stock.unit+'.');return;}}
+ if(d>0){var stock=db.foodStock.find(function(s){return s.name===cart[i].name;});if(stock&&cart[i].qty+d>Number(stock.qty||0)){openOrderStockProblem(cart[i].name,Number(stock.qty||0));return;}}
  cart[i].qty+=d;if(cart[i].qty<=0)cart.splice(i,1);
  syncTable();orderView();
 }
@@ -261,7 +274,7 @@ function validateDelivery(){
 function completeSale(method,extra){
  if(!cart.length){toast('No items to complete');return;}
  if(!validateDelivery())return;
- for(var si=0;si<cart.length;si++){var fs=db.foodStock.find(function(s){return s.name===cart[si].name;});if(fs&&cart[si].qty>Number(fs.qty||0)){toast(cart[si].name+' is no longer available. Only '+fs.qty+' '+fs.unit+' remaining.');orderView();return;}}
+ for(var si=0;si<cart.length;si++){var fs=db.foodStock.find(function(s){return s.name===cart[si].name;});if(fs&&cart[si].qty>Number(fs.qty||0)){openOrderStockProblem(cart[si].name,Number(fs.qty||0));return;}}
  var o={id:'ORD-'+Date.now().toString().slice(-6),table:activeTable,type:orderType,payment:method,total:grand(),subtotal:subtotal(),items:copy(cart),status:'Paid',time:new Date().toLocaleString(),customer:null,mpesa:extra||{}};
  if(orderType==='Delivery')o.customer={name:document.getElementById('customerName').value.trim(),phone:document.getElementById('customerPhone').value.trim(),address:document.getElementById('deliveryAddress').value.trim()};
  cart.forEach(function(ci){var fs=db.foodStock.find(function(s){return s.name===ci.name;});if(fs)fs.qty=Math.max(0,Number(fs.qty)-Number(ci.qty));});
@@ -421,6 +434,8 @@ function handleAction(el){
  if(a==='proceed-payment')return proceedPayment();
  if(a==='confirm-sale')return completeSale(payment);
  if(a==='close-modal')return closeModal();
+ if(a==='go-kitchen'){closeModal();return view('inventory');}
+ if(a==='go-inventory'){closeModal();return view('inventory');}
  if(a==='mpesa-send')return requestMpesa();
  if(a==='split-complete')return completeSplit();
  if(a==='print')return window.print();
