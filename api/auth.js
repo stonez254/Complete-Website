@@ -53,4 +53,32 @@ export async function POST(request) {
     return json({ok:true,authenticated:true,user:{id:user.id,display_name:user.display_name,username:user.username,role:user.role}},200,{'set-cookie':cookie(token)});
   } catch(error) { console.error('Auth request failed:',error?.message||error); return json({ok:false,error:'Authentication service unavailable'},503); }
 }
-export { hashPassword };
+export async function staffApi(request) {
+  const user = await currentUser(request);
+  if (!user || !['owner','manager'].includes(user.role)) return json({ok:false,error:'Forbidden'},403);
+  const sql = db();
+  if (request.method === 'GET') {
+    const rows = await sql`SELECT id, display_name, username, role, active, created_at, updated_at FROM users ORDER BY created_at DESC`;
+    return json({ok:true,users:rows});
+  }
+  const body = await request.json();
+  if (request.method === 'POST') {
+    const displayName=String(body?.displayName||'').trim(); const username=String(body?.username||'').trim().toLowerCase(); const password=String(body?.password||''); const role=String(body?.role||'viewer');
+    const allowed=['manager','cashier','kitchen','waiter','delivery','viewer'];
+    if(!displayName||!username||password.length<8||!allowed.includes(role)) return json({ok:false,error:'Valid name, username, password (8+ chars), and staff role are required'},400);
+    try { const rows=await sql`INSERT INTO users (display_name,username,password_hash,role) VALUES (${displayName},${username},${hashPassword(password)},${role}) RETURNING id,display_name,username,role,active,created_at`; return json({ok:true,user:rows[0]},201); }
+    catch(e){ if(String(e?.message||'').toLowerCase().includes('unique')) return json({ok:false,error:'Username already exists'},409); throw e; }
+  }
+  if (request.method === 'PATCH') {
+    const id=String(body?.id||''), role=body?.role, active=body?.active;
+    if(!id || (role!==undefined && !['manager','cashier','kitchen','waiter','delivery','viewer'].includes(role)) || (active!==undefined && typeof active!=='boolean')) return json({ok:false,error:'Invalid staff update'},400);
+    const rows=await sql`SELECT id FROM users WHERE id=${id} LIMIT 1`; if(!rows.length) return json({ok:false,error:'User not found'},404);
+    if(role!==undefined) await sql`UPDATE users SET role=${role}, updated_at=NOW() WHERE id=${id}`;
+    if(active!==undefined) await sql`UPDATE users SET active=${active}, updated_at=NOW() WHERE id=${id}`;
+    if(active===false) await sql`DELETE FROM sessions WHERE user_id=${id}`;
+    return json({ok:true});
+  }
+  return json({ok:false,error:'Method not allowed'},405);
+}
+
+export { hashPassword, currentUser, staffApi };
