@@ -6,15 +6,26 @@ function database(){const url=process.env.DATABASE_URL;if(!url)throw new Error('
 function validatePOSState(state){
   const required=['orders','tables','foodStock'];
   for(const key of required)if(!(key in state)||!Array.isArray(state[key]))return 'Invalid POS state structure';
-  for(const item of state.foodStock){
-    if(!item||typeof item!=='object'||typeof item.name!=='string'||item.name.length>160)return 'Invalid food stock entry';
-    const qty=Number(item.qty);
-    if(!Number.isFinite(qty)||qty<0||qty>1e9)return 'Invalid food stock quantity';
-  }
+  if(state.orders.length>10000||state.tables.length>500||state.foodStock.length>5000)return 'POS state contains too many records';
+
+  const orderIds=new Set();
   for(const order of state.orders){
     if(!order||typeof order!=='object'||typeof order.id!=='string'||order.id.length<1||order.id.length>120)return 'Invalid order entry';
+    if(orderIds.has(order.id))return 'Duplicate order ID';
+    orderIds.add(order.id);
     const total=Number(order.total);
     if(!Number.isFinite(total)||total<0||total>1e9)return 'Invalid order total';
+  }
+
+  const stockNames=new Set();
+  for(const item of state.foodStock){
+    if(!item||typeof item!=='object'||typeof item.name!=='string'||item.name.length>160)return 'Invalid food stock entry';
+    const stockName=item.name.trim().toLowerCase();
+    if(!stockName)return 'Invalid food stock name';
+    if(stockNames.has(stockName))return 'Duplicate food stock item';
+    stockNames.add(stockName);
+    const qty=Number(item.qty);
+    if(!Number.isFinite(qty)||qty<0||qty>1e9)return 'Invalid food stock quantity';
   }
   return null;
 }
