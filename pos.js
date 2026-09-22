@@ -187,10 +187,13 @@ function consumeRecipe(name,qty){recipeFor(name).forEach(function(r){var ing=ing
 function formatMissing(m){return m.map(function(x){return x.name+' ('+x.have.toFixed(3)+' '+x.unit+' left; need '+x.need.toFixed(3)+')';}).join(', ');}
 function addUnfinishedTask(type,title,details,data){
  var key=type+'|'+title+'|'+JSON.stringify(data||{});
- var exists=db.unfinishedTasks.some(function(t){return t.key===key&&t.status==='open';});
- if(exists)return;
- db.unfinishedTasks.push({id:'UT-'+Date.now().toString().slice(-8)+'-'+Math.floor(Math.random()*100),key:key,type:type,title:title,details:details||'',data:data||{},status:'open',created:new Date().toLocaleString()});
+ var exists=db.unfinishedTasks.find(function(t){return t.key===key&&t.status==='open';});
+ if(exists)return exists;
+ var task={id:'UT-'+Date.now().toString().slice(-8)+'-'+Math.floor(Math.random()*100),key:key,type:type,title:title,details:details||'',data:data||{},status:'open',created:new Date().toLocaleString()};
+ db.unfinishedTasks.push(task);
  save();
+ updateUnfinishedBadge();
+ return task;
 }
 function closeUnfinishedTask(id){
  var t=db.unfinishedTasks.find(function(x){return x.id===id;});
@@ -204,7 +207,17 @@ function reviewUnfinishedTask(id){
    view('kitchen');
    setTimeout(function(){openChefAssignment(t.data.food,Number(t.data.qty)||1,t.id);},60);
  }else if(t.type==='restock'){
-   restockFilter=(t.data.ingredients||[]).slice();
+   var needed=t.data&&Array.isArray(t.data.missing)?t.data.missing:[];
+   var stillMissing=needed.filter(function(m){
+     var current=db.inventory.find(function(x){return x[0]===m.name;});
+     return !current||Number(current[2])<Number(m.need);
+   });
+   if(!stillMissing.length){
+     closeUnfinishedTask(t.id);
+     toast('Restock task is already complete');
+     return unfinishedTasks();
+   }
+   restockFilter=stillMissing.map(function(x){return x.name;});
    view('inventory');
  }
 }
@@ -271,9 +284,9 @@ function assignLowStock(name){
  closeModal();
  var s=db.foodStock.find(function(x){return x.name===name;});
  var qty=Math.max(10,Number(s&&s.reorder||10));
- addUnfinishedTask('chef','Cook '+name+' ×'+qty,'Prepared stock reached the low-stock threshold.',{food:name,qty:qty});
+ var task=addUnfinishedTask('chef','Cook '+name+' ×'+qty,'Prepared stock reached the low-stock threshold.',{food:name,qty:qty});
  view('kitchen');
- setTimeout(function(){openChefAssignment(name,10);},60);
+ setTimeout(function(){openChefAssignment(name,qty,task&&task.id);},60);
 }
 function lowStockReminder(name,remaining){
  if(Number(remaining)>10||Number(remaining)<0)return;
@@ -285,7 +298,24 @@ function cookFood(i,qty){
  if(qty<=0){toast('Enter a valid quantity to cook');return;}
  openChefAssignment(s.name,qty);
 }
-function receiveIngredient(i){var ing=db.inventory[i];if(!ing)return;var qty=Number(prompt('How much '+ing[0]+' received?','10'));if(!isFinite(qty)||qty<=0)return;ing[2]=Number(ing[2])+qty;save();inventory();toast(qty+' '+ing[0]+' added to kitchen inventory');}
+function receiveIngredient(i){
+ var ing=db.inventory[i];if(!ing)return;
+ var qty=Number(prompt('How much '+ing[0]+' received?','10'));
+ if(!isFinite(qty)||qty<=0)return;
+ ing[2]=Number(ing[2])+qty;
+ var resolved=0;
+ db.unfinishedTasks.forEach(function(t){
+   if(t.status!=='open'||t.type!=='restock')return;
+   var needed=t.data&&Array.isArray(t.data.missing)?t.data.missing:[];
+   var stillMissing=needed.some(function(m){
+     var current=db.inventory.find(function(x){return x[0]===m.name;});
+     return !current||Number(current[2])<Number(m.need);
+   });
+   if(!stillMissing){t.status='resolved';t.resolved=new Date().toLocaleString();resolved++;}
+ });
+ save();inventory();updateUnfinishedBadge();
+ toast(qty+' '+ing[0]+' added to kitchen inventory'+(resolved?' · '+resolved+' restock task completed':''));
+}
 function money(n){return 'KSh '+Math.round(Number(n)||0).toLocaleString('en-KE');}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function toast(msg){
@@ -604,11 +634,19 @@ function resetPOS(){
 }
 function goBack(){view(viewStack.pop()||'dashboard',true);}
 var VIEWS={dashboard:dashboard,tables:tables,orders:orders,menu:menu,kitchen:kitchen,inventory:inventory,staff:staff,reports:reports,settings:settings};
+function updateUnfinishedBadge(){
+ var b=document.getElementById('unfinishedCount');
+ if(!b)return;
+ var n=Array.isArray(db.unfinishedTasks)?db.unfinishedTasks.filter(function(t){return t.status==='open';}).length:0;
+ b.textContent=n;
+ b.hidden=n===0;
+}
 function view(v,fromBack){
  if(!VIEWS[v])v='dashboard';
  if(!fromBack&&currentView&&currentView!==v)viewStack.push(currentView);
  currentView=v;
  document.querySelectorAll('.nav').forEach(function(n){n.classList.toggle('active',n.getAttribute('data-view')===v);});
+ updateUnfinishedBadge();
  VIEWS[v]();
 }
 function handleAction(el){
