@@ -790,6 +790,10 @@ function validateDelivery(){
 function completeSale(method,extra){
  if(!ederStoneCan('pos.write')){toast('Your role cannot complete sales');return;}
  if(!cart.length){toast('No items to complete');return;}
+ if(extra&&extra.orderId){
+   var existingOrder=db.orders.find(function(x){return x.id===String(extra.orderId);});
+   if(existingOrder){cart=[];activeTable=null;save();orderView();showReceipt(existingOrder);toast('Sale already recorded. Receipt restored.');return;}
+ }
  if(orderType==='Delivery')currentDeliveryCustomer();
  if(!validateDelivery())return;
  for(var si=0;si<cart.length;si++){
@@ -797,7 +801,8 @@ function completeSale(method,extra){
    if(!fs){fs={name:cart[si].name,qty:0,reorder:10,unit:'pieces'};db.foodStock.push(fs);save();}
    if(cart[si].qty>Number(fs.qty||0)){openOrderStockProblem(cart[si].name,Number(fs.qty||0),copy(cart));return;}
  }
- var o={id:'ORD-'+Date.now().toString().slice(-6),table:activeTable,type:orderType,payment:method,total:grand(),subtotal:subtotal(),items:copy(cart),status:'Paid',time:new Date().toLocaleString(),customer:null,mpesa:extra||{}};
+ var saleId=(extra&&extra.orderId)?String(extra.orderId):'ORD-'+Date.now().toString().slice(-6);
+ var o={id:saleId,table:activeTable,type:orderType,payment:method,total:grand(),subtotal:subtotal(),items:copy(cart),status:'Paid',time:new Date().toLocaleString(),customer:null,mpesa:extra||{}};
  if(orderType==='Delivery')o.customer={name:document.getElementById('customerName').value.trim(),phone:document.getElementById('customerPhone').value.trim(),address:document.getElementById('deliveryAddress').value.trim()};
  var committed=window.EderStonePOSData&&window.EderStonePOSData.recordSale
    ?window.EderStonePOSData.recordSale(o,cart,activeTable)
@@ -834,27 +839,38 @@ function openMpesa(){
 }
 async function requestMpesa(){
  var input=document.getElementById('mpesaPhone');if(!input)return;
+ var posOrderId='ORD-'+Date.now().toString().slice(-6);
  var phone=(input.value||'').replace(/\s+/g,'');
  if(/^0[17]\d{8}$/.test(phone))phone='254'+phone.slice(1);
  if(!/^254[17]\d{8}$/.test(phone)){toast('Enter a valid Kenyan M-Pesa number');return;}
  var status=document.getElementById('mpesaStatus'),btn=document.getElementById('mpesaSend');
  btn.disabled=true;btn.textContent='Sending prompt…';status.textContent='Connecting to Safaricom…';
  try{
-  var r=await fetch('/api/mpesa/stkpush',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:phone,amount:Math.max(1,Math.round(grand())),accountReference:'Ederstone-'+(activeTable?'T'+activeTable:'POS'),transactionDesc:'Restaurant food payment'})});
+  var r=await fetch('/api/mpesa/stkpush',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:phone,amount:Math.max(1,Math.round(grand())),accountReference:posOrderId.slice(0,12),transactionDesc:'Restaurant food payment',posOrderId:posOrderId})});
   var data=await r.json();
   if(!r.ok||data.error)throw new Error(data.error||'M-Pesa request failed');
   status.innerHTML='<span class="success">✓ Prompt sent. Waiting for confirmation…</span>';
-  pollMpesa(data.checkoutRequestID,phone);
+  pollMpesa(data.checkoutRequestID,phone,posOrderId);
  }catch(e){status.innerHTML='<span class="danger">✕ '+esc(e.message||'Could not send prompt')+'</span><small>Configure Daraja environment variables on Vercel for live M-Pesa.</small>';btn.disabled=false;btn.textContent='📲 Retry prompt';}
 }
-async function pollMpesa(id,phone){
+async function pollMpesa(id,phone,posOrderId){
  var status=document.getElementById('mpesaStatus'),started=Date.now();
  while(Date.now()-started<120000){
   await new Promise(function(r){setTimeout(r,3000);});
   try{
    var r=await fetch('/api/mpesa/query',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({checkoutRequestID:id})});
    var d=await r.json();
-   if(d.status==='success'){status.innerHTML='<span class="success">✓ Payment confirmed by M-Pesa.</span>';setTimeout(function(){completeSale('M-Pesa',{phone:phone,checkoutRequestID:id});},500);return;}
+   if(d.status==='success'){
+    status.textContent='Payment confirmed. Finalizing the sale securely…';
+    try{
+     var settle=await fetch('/api/mpesa/settle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({checkoutRequestID:id,posOrderId:posOrderId,amount:Math.max(1,Math.round(grand()))})});
+     var settled=await settle.json();
+     if(!settle.ok||settled.error)throw new Error(settled.error||'Payment settlement failed');
+     status.innerHTML='<span class="success">✓ Payment confirmed and linked to sale '+esc(posOrderId)+'.</span>';
+     setTimeout(function(){completeSale('M-Pesa',{phone:phone,checkoutRequestID:id,orderId:posOrderId,mpesaReceipt:settled.mpesaReceipt||null});},350);
+    }catch(e){status.innerHTML='<span class="danger">Payment received, but sale finalization is waiting for reconciliation.</span><small>'+esc(e.message||'Settlement failed')+'</small>';return;}
+    return;
+   }
    if(d.status==='failed'){status.innerHTML='<span class="danger">✕ Payment cancelled or failed.</span>';var b=document.getElementById('mpesaSend');if(b){b.disabled=false;b.textContent='📲 Retry prompt';}return;}
    status.textContent='Waiting for the customer to complete the M-Pesa prompt…';
   }catch(e){status.innerHTML='<span class="danger">Payment status check failed. Do not assume payment was received.</span>';return;}
