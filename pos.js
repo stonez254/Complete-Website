@@ -801,7 +801,7 @@ function completeSale(method,extra){
    if(!fs){fs={name:cart[si].name,qty:0,reorder:10,unit:'pieces'};db.foodStock.push(fs);save();}
    if(cart[si].qty>Number(fs.qty||0)){openOrderStockProblem(cart[si].name,Number(fs.qty||0),copy(cart));return;}
  }
- var saleId=(extra&&extra.orderId)?String(extra.orderId):'ORD-'+Date.now().toString().slice(-6);
+ var saleId=(extra&&extra.orderId)?String(extra.orderId):'ORD-'+Date.now().toString(36)+'-'+(crypto.randomUUID?crypto.randomUUID().replace(/-/g,'').slice(0,10):Math.random().toString(36).slice(2,12));
  var o={id:saleId,table:activeTable,type:orderType,payment:method,total:grand(),subtotal:subtotal(),items:copy(cart),status:'Paid',time:new Date().toLocaleString(),customer:null,mpesa:extra||{}};
  if(orderType==='Delivery')o.customer={name:document.getElementById('customerName').value.trim(),phone:document.getElementById('customerPhone').value.trim(),address:document.getElementById('deliveryAddress').value.trim()};
  var committed=window.EderStonePOSData&&window.EderStonePOSData.recordSale
@@ -839,7 +839,7 @@ function openMpesa(){
 }
 async function requestMpesa(){
  var input=document.getElementById('mpesaPhone');if(!input)return;
- var posOrderId='ORD-'+Date.now().toString().slice(-6);
+ var posOrderId='ORD-'+Date.now().toString(36)+'-'+(crypto.randomUUID?crypto.randomUUID().replace(/-/g,'').slice(0,10):Math.random().toString(36).slice(2,12));
  var phone=(input.value||'').replace(/\s+/g,'');
  if(/^0[17]\d{8}$/.test(phone))phone='254'+phone.slice(1);
  if(!/^254[17]\d{8}$/.test(phone)){toast('Enter a valid Kenyan M-Pesa number');return;}
