@@ -670,9 +670,14 @@ function orderView(){
 function addItem(i){
  var x=db.menu[i];if(!x)return;
  var stock=db.foodStock.find(function(s){return s.name===x[0];});
+ if(!stock){
+   stock={name:x[0],qty:0,reorder:10,unit:'pieces'};
+   db.foodStock.push(stock);
+   save();
+ }
  var found=cart.find(function(c){return c.name===x[0];});
  var requested=(found?found.qty:0)+1;
- if(stock&&requested>Number(stock.qty||0)){
+ if(requested>Number(stock.qty||0)){
    var pendingCart=copy(cart);
    var pendingLine=pendingCart.find(function(q){return q.name===x[0];});
    if(pendingLine)pendingLine.qty=requested;else pendingCart.push({name:x[0],price:Number(x[2]),qty:1});
@@ -740,7 +745,11 @@ function completeSale(method,extra){
  if(!cart.length){toast('No items to complete');return;}
  if(orderType==='Delivery')currentDeliveryCustomer();
  if(!validateDelivery())return;
- for(var si=0;si<cart.length;si++){var fs=db.foodStock.find(function(s){return s.name===cart[si].name;});if(fs&&cart[si].qty>Number(fs.qty||0)){openOrderStockProblem(cart[si].name,Number(fs.qty||0));return;}}
+ for(var si=0;si<cart.length;si++){
+   var fs=db.foodStock.find(function(s){return s.name===cart[si].name;});
+   if(!fs){fs={name:cart[si].name,qty:0,reorder:10,unit:'pieces'};db.foodStock.push(fs);save();}
+   if(cart[si].qty>Number(fs.qty||0)){openOrderStockProblem(cart[si].name,Number(fs.qty||0),copy(cart));return;}
+ }
  var o={id:'ORD-'+Date.now().toString().slice(-6),table:activeTable,type:orderType,payment:method,total:grand(),subtotal:subtotal(),items:copy(cart),status:'Paid',time:new Date().toLocaleString(),customer:null,mpesa:extra||{}};
  if(orderType==='Delivery')o.customer={name:document.getElementById('customerName').value.trim(),phone:document.getElementById('customerPhone').value.trim(),address:document.getElementById('deliveryAddress').value.trim()};
  cart.forEach(function(ci){var fs=db.foodStock.find(function(s){return s.name===ci.name;});if(fs)fs.qty=Math.max(0,Number(fs.qty)-Number(ci.qty));});
