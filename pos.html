@@ -12,7 +12,7 @@
 </div>
 <div class="pos-shell">
 <header class="pos-header"><a class="pos-brand" href="projects.html"><span>ES</span> EDERSTONE <small>RESTAURANT POS</small></a><div class="pos-status"><span class="dot"></span><b id="clock">--:--</b><span>OFFLINE-READY</span></div><div class="header-actions"><button class="icon-btn" id="fullscreenPos" title="Full screen">⛶ <span>Full screen</span></button><button class="icon-btn" id="logoutPos" title="Exit POS">⏻ <span>Exit</span></button></div></header>
-<div class="sync-pill" id="syncStatus" role="status" aria-live="polite" title="Synchronization status"><span class="sync-dot"></span><span class="sync-label">Checking sync…</span></div><div class="pos-layout">
+<div class="sync-pill" id="syncStatus" role="status" aria-live="polite" title="Synchronization status"><span class="sync-dot"></span><span class="sync-label">Checking sync…</span><button class="sync-action" id="syncNow" type="button" aria-label="Sync now" title="Sync now">↻</button></div><div class="pos-layout">
 <aside class="sidebar" id="sidebar"><button class="sidebar-toggle" id="sidebarToggle" data-action="toggle-sidebar" aria-label="Collapse sidebar" aria-expanded="true" title="Collapse sidebar">‹<span>Collapse</span></button>
 <button class="nav active" data-view="dashboard">▦ <span>Dashboard</span></button>
 <button class="nav" data-view="tables" data-permission="pos.read">▥ <span>Tables</span></button>
@@ -57,5 +57,12 @@ document.addEventListener('ederstone:sync-status',e=>{
  el.classList.toggle('is-conflict',label==='Conflict');
  const text=el.querySelector('.sync-label');
  if(text)text.textContent=label+(d.queueSize?' · '+d.queueSize+' queued':'');
+});
+</script><script>
+document.addEventListener('click',e=>{
+ const b=e.target.closest('#syncNow'); if(!b)return;
+ if(!window.EderStonePOSSync)return;
+ b.disabled=true;
+ Promise.resolve(window.EderStonePOSSync.pull()).then(()=>window.EderStonePOSSync.push()).finally(()=>{b.disabled=false});
 });
 </script><script src="pos.js"></script></body></html>
