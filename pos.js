@@ -1236,3 +1236,17 @@ function bind(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
 })();
+
+// Phase 4 role-aware UI helpers
+function currentEderStoneRole(){ return window.EderStoneAuth?.user?.role || sessionStorage.getItem('ederstone-role') || null; }
+function ederStoneCan(permission){ const role=currentEderStoneRole(); return role==='owner' || !!(window.EderStonePermissions?.can?.(role,permission)); }
+function applyEderStoneRoleUI(){
+  const role=currentEderStoneRole(); if(!role) return;
+  document.documentElement.dataset.ederstoneRole=role;
+  document.querySelectorAll('[data-permission]').forEach(el=>{
+    const allowed=ederStoneCan(el.dataset.permission);
+    el.hidden=!allowed; el.setAttribute('aria-hidden',String(!allowed));
+  });
+}
+window.EderStonePOSPermissions=Object.freeze({role:currentEderStoneRole,can:ederStoneCan,refresh:applyEderStoneRoleUI});
+document.addEventListener('DOMContentLoaded',()=>setTimeout(applyEderStoneRoleUI,0));
