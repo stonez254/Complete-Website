@@ -63,7 +63,30 @@
     }catch(e){lastError=e?.message||'Sync push failed';if(!readQueue().length)enqueue();else markQueued();return false}
     finally{syncing=false;emit()}
   }
-  window.EderStonePOSSync=Object.freeze({pull,push,status:()=>({online:navigator.onLine,synced:serverVersion>0,syncing,queued,queueSize:readQueue().length,lastSyncAt,lastError,serverVersion}),clearQueue:()=>{writeQueue([]);queued=false;emit()}});
+  const conflicts=()=>readQueue().filter(item=>item.reason==='version-conflict').map(item=>({id:item.id,createdAt:item.createdAt,serverVersion:item.serverVersion||0,state:item.state}));
+  const resolveConflict=(id,mode)=>{
+    const q=readQueue();
+    const item=q.find(x=>x.id===id&&x.reason==='version-conflict');
+    if(!item)return false;
+    if(mode==='discard'){
+      writeQueue(q.filter(x=>x.id!==id));queued=readQueue().length>0;lastError=null;emit();return true;
+    }
+    if(mode==='restore'){
+      suppressPush=true;
+      try{store()?.set(KEY,item.state)}finally{suppressPush=false}
+      writeQueue(q.filter(x=>x.id!==id));queued=readQueue().length>0;lastError=null;emit();
+      setTimeout(push,0);
+      return true;
+    }
+    return false;
+  };
+  window.EderStonePOSSync=Object.freeze({
+    pull,push,
+    status:()=>({online:navigator.onLine,synced:serverVersion>0,syncing,queued,queueSize:readQueue().length,lastSyncAt,lastError,serverVersion}),
+    conflicts,
+    resolveConflict,
+    clearQueue:()=>{writeQueue([]);queued=false;lastError=null;emit()}
+  });
   window.addEventListener('offline',()=>{markQueued();});
   window.addEventListener('online',async()=>{
     try{await window.EderStoneAuthSession?.refresh?.();}catch(_){}
