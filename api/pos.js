@@ -3,12 +3,18 @@ import { currentUser } from './auth.js';
 
 const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store'}});
 function database(){const url=process.env.DATABASE_URL;if(!url)throw new Error('DATABASE_URL is not configured');return neon(url);}
-function hasPermission(user,p){return user?.role==='owner'||(user?.role==='manager'&&['pos.read','pos.write'].includes(p));}
+async function hasPermission(user,p){
+  if(!user?.active)return false;
+  if(user.role==='owner')return true;
+  const sql=database();
+  const rows=await sql`SELECT 1 FROM role_permissions WHERE role=${user.role} AND (permission=${p} OR permission='*') LIMIT 1`;
+  return rows.length>0;
+}
 
 export async function GET(request){
   try{
     const user=await currentUser(request);
-    if(!user||!hasPermission(user,'pos.read'))return json({ok:false,error:'Forbidden'},403);
+    if(!user||!(await hasPermission(user,'pos.read')))return json({ok:false,error:'Forbidden'},403);
     const sql=database();
     const rows=await sql`SELECT data, version, updated_at FROM pos_state WHERE id=1 LIMIT 1`;
     if(!rows.length)return json({ok:true,state:null,version:0});
@@ -22,7 +28,7 @@ export async function GET(request){
 export async function PUT(request){
   try{
     const user=await currentUser(request);
-    if(!user||!hasPermission(user,'pos.write'))return json({ok:false,error:'Forbidden'},403);
+    if(!user||!(await hasPermission(user,'pos.write')))return json({ok:false,error:'Forbidden'},403);
     const raw=await request.text();
     if(raw.length>2_000_000)return json({ok:false,error:'Request too large'},413);
     let body;try{body=JSON.parse(raw)}catch(_){return json({ok:false,error:'Invalid JSON'},400)}
