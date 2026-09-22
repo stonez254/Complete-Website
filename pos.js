@@ -629,7 +629,13 @@ function tables(){
 }
 
 function newOrder(){
- activeTable=null;cart=[];orderType='Takeaway';payment='M-Pesa';category='All';deliveryCustomer={name:'',phone:'',address:''};view('orderEntry');
+ activeTable=null;
+ cart=[];
+ orderType='Takeaway';
+ payment='M-Pesa';
+ category='All';
+ deliveryCustomer={name:'',phone:'',address:''};
+ view('newOrder');
 }
 function openTable(id){
  var t=db.tables[id-1];
@@ -1051,7 +1057,7 @@ function resetPOS(){
  db=freshDB();cart=[];activeTable=null;orderType='Takeaway';payment='M-Pesa';category='All';viewStack=[];currentView='';save();view('dashboard');toast('POS data reset');
 }
 function goBack(){view(viewStack.pop()||'dashboard',true);}
-var VIEWS={dashboard:dashboard,tables:tables,orders:orders,menu:menu,kitchen:kitchen,unfinished:unfinishedTasks,inventory:inventory,staff:staff,reports:reports,settings:settings,orderEntry:orderView};
+var VIEWS={dashboard:dashboard,tables:tables,orders:orders,menu:menu,kitchen:kitchen,unfinished:unfinishedTasks,inventory:inventory,staff:staff,reports:reports,settings:settings,newOrder:orderView,orderEntry:orderView};
 function updateUnfinishedBadge(){
  var b=document.getElementById('unfinishedCount');
  if(!b)return;
@@ -1061,7 +1067,7 @@ function updateUnfinishedBadge(){
 }
 function view(v,fromBack){
  if(!VIEWS[v])v='dashboard';
- if(!fromBack&&currentView==='orders'&&cart.length&&v!=='orders')savePendingOrder('Order screen left before payment',false);
+ if(!fromBack&&(currentView==='orderEntry'||currentView==='newOrder')&&cart.length&&v!=='orderEntry'&&v!=='newOrder')savePendingOrder('Order screen left before payment',false);
  if(!fromBack&&currentView&&currentView!==v)viewStack.push(currentView);
  currentView=v;
  document.querySelectorAll('.nav').forEach(function(n){n.classList.toggle('active',n.getAttribute('data-view')===v);});
@@ -1074,7 +1080,7 @@ function handleAction(el){
  if(a==='view')return view(el.getAttribute('data-view'));
  if(a==='dashboard')return view('dashboard');
  if(a==='back')return goBack();
- if(a==='new-order')return newOrder();
+ if(a==='new-order'||a==='add-order')return newOrder();
  if(a==='open-table')return openTable(Number(el.getAttribute('data-id')));
  if(a==='clear-table')return clearTable(Number(el.getAttribute('data-id')));
  if(a==='add-item')return addItem(Number(el.getAttribute('data-index')));
