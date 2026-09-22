@@ -633,7 +633,7 @@ function resetPOS(){
  db=freshDB();cart=[];activeTable=null;orderType='Takeaway';payment='M-Pesa';category='All';viewStack=[];currentView='';save();view('dashboard');toast('POS data reset');
 }
 function goBack(){view(viewStack.pop()||'dashboard',true);}
-var VIEWS={dashboard:dashboard,tables:tables,orders:orders,menu:menu,kitchen:kitchen,inventory:inventory,staff:staff,reports:reports,settings:settings};
+var VIEWS={dashboard:dashboard,tables:tables,orders:orders,menu:menu,kitchen:kitchen,unfinished:unfinishedTasks,inventory:inventory,staff:staff,reports:reports,settings:settings};
 function updateUnfinishedBadge(){
  var b=document.getElementById('unfinishedCount');
  if(!b)return;
