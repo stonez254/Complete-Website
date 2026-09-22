@@ -700,7 +700,7 @@ function bind(){
  modal=document.getElementById('modal');
  if(!app){console.error('EderStone POS: #app was not found');return;}
  document.querySelectorAll('.nav').forEach(function(n){n.addEventListener('click',function(){view(n.getAttribute('data-view'));});});
- var logout=document.getElementById('logoutPos');if(logout)logout.addEventListener('click',function(){location.href='projects.html';});
+ var logout=document.getElementById('logoutPos');if(logout)logout.addEventListener('click',function(){location.href='/projects';});
  var full=document.getElementById('fullscreenPos');if(full)full.addEventListener('click',async function(){try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else if(document.exitFullscreen)await document.exitFullscreen();}catch(e){toast('Full screen is unavailable on this device');}});
  app.addEventListener('click',function(e){var el=e.target.closest('[data-action]');if(el)handleAction(el);});
  if(modal){
