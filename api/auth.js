@@ -85,17 +85,15 @@ export async function requireRole(request, roles = []) {
 
 export async function requirePermission(request, permission) {
   const user = await currentUser(request);
-  const matrix = {
-    owner: ['*'],
-    manager: ['pos.read','pos.write','menu.manage','inventory.manage','reports.read','staff.read'],
-    cashier: ['pos.read','pos.write','receipts.read'],
-    kitchen: ['pos.read','kitchen.manage'],
-    waiter: ['pos.read','orders.create'],
-    delivery: ['delivery.read','delivery.update'],
-    viewer: ['reports.read']
-  };
-  const permissions = matrix[user?.role] || [];
-  if (!user || !user.active || (!permissions.includes('*') && !permissions.includes(permission))) {
+  if (!user || !user.active) {
+    return { ok: false, user: null, response: json({ ok: false, error: 'Forbidden' }, 403) };
+  }
+  // Keep authorization server-side and derive it from the same role_permissions
+  // table used by database administration. Owner remains the explicit superuser.
+  if (user.role === 'owner') return { ok: true, user, response: null };
+  const sql = db();
+  const rows = await sql`SELECT 1 FROM role_permissions WHERE role = ${user.role} AND (permission = ${permission} OR permission = '*') LIMIT 1`;
+  if (!rows.length) {
     return { ok: false, user: null, response: json({ ok: false, error: 'Forbidden' }, 403) };
   }
   return { ok: true, user, response: null };
