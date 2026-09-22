@@ -14,11 +14,52 @@ var MENU=[
 ['Fruit Salad','Desserts',250],['Ice Cream','Desserts',220],['Chocolate Cake','Desserts',300],
 ['Mandazi','Breakfast',80],['Spanish Omelette','Breakfast',350],['Pancakes','Breakfast',300],['Full Breakfast','Breakfast',500]
 ];
+var RECIPES={
+ 'Chicken Pilau':[['Rice','kg',0.20],['Chicken','kg',0.15],['Cooking Oil','L',0.03],['Onions','kg',0.05],['Tomatoes','kg',0.03],['Salt','kg',0.005]],
+ 'Beef Pilau':[['Rice','kg',0.20],['Beef','kg',0.15],['Cooking Oil','L',0.03],['Onions','kg',0.05],['Tomatoes','kg',0.03],['Salt','kg',0.005]],
+ 'Chicken Biryani':[['Rice','kg',0.22],['Chicken','kg',0.16],['Cooking Oil','L',0.04],['Onions','kg',0.06],['Tomatoes','kg',0.03],['Salt','kg',0.005]],
+ 'Beef Biryani':[['Rice','kg',0.22],['Beef','kg',0.16],['Cooking Oil','L',0.04],['Onions','kg',0.06],['Tomatoes','kg',0.03],['Salt','kg',0.005]],
+ 'Chicken Curry':[['Chicken','kg',0.18],['Cooking Oil','L',0.03],['Onions','kg',0.05],['Tomatoes','kg',0.05],['Salt','kg',0.005]],
+ 'Beef Stew':[['Beef','kg',0.18],['Cooking Oil','L',0.03],['Onions','kg',0.05],['Tomatoes','kg',0.05],['Salt','kg',0.005]],
+ 'Fish & Chips':[['Fish','kg',0.18],['Potatoes','kg',0.25],['Cooking Oil','L',0.05],['Salt','kg',0.005]],
+ 'Chicken Burger':[['Chicken','kg',0.12],['Flour','kg',0.06],['Cooking Oil','L',0.02],['Onions','kg',0.02]],
+ 'Beef Burger':[['Beef','kg',0.12],['Flour','kg',0.06],['Cooking Oil','L',0.02],['Onions','kg',0.02]],
+ 'Cheese Burger':[['Beef','kg',0.10],['Cheese','kg',0.03],['Flour','kg',0.06],['Cooking Oil','L',0.02]],
+ 'Club Sandwich':[['Bread','pieces',3],['Chicken','kg',0.08],['Eggs','pieces',1],['Tomatoes','kg',0.03]],
+ 'Chicken Shawarma':[['Chicken','kg',0.12],['Flour','kg',0.06],['Onions','kg',0.02],['Tomatoes','kg',0.03]],
+ 'Beef Shawarma':[['Beef','kg',0.12],['Flour','kg',0.06],['Onions','kg',0.02],['Tomatoes','kg',0.03]],
+ 'Chips Plain':[['Potatoes','kg',0.25],['Cooking Oil','L',0.04],['Salt','kg',0.003]],
+ 'Chips Masala':[['Potatoes','kg',0.25],['Cooking Oil','L',0.04],['Tomatoes','kg',0.03],['Salt','kg',0.003]],
+ 'Ugali & Sukuma':[['Flour','kg',0.20],['Sukuma','kg',0.15],['Cooking Oil','L',0.02],['Salt','kg',0.003]],
+ 'Ugali & Beef':[['Flour','kg',0.20],['Beef','kg',0.15],['Cooking Oil','L',0.02],['Onions','kg',0.04],['Salt','kg',0.003]],
+ 'Githeri Special':[['Maize','kg',0.12],['Beans','kg',0.10],['Cooking Oil','L',0.02],['Onions','kg',0.03],['Salt','kg',0.003]],
+ 'Mukimo & Beef':[['Potatoes','kg',0.18],['Maize','kg',0.06],['Beans','kg',0.05],['Beef','kg',0.15],['Cooking Oil','L',0.02],['Salt','kg',0.003]],
+ 'Beef Samosa':[['Beef','kg',0.04],['Flour','kg',0.025],['Cooking Oil','L',0.02],['Onions','kg',0.01]],
+ 'Chicken Wings':[['Chicken','kg',0.20],['Flour','kg',0.03],['Cooking Oil','L',0.03],['Salt','kg',0.003]],
+ 'Beef Sausage':[['Beef','kg',0.08],['Cooking Oil','L',0.01]],
+ 'Vegetable Spring Rolls':[['Flour','kg',0.025],['Carrots','kg',0.03],['Cabbage','kg',0.04],['Cooking Oil','L',0.02]],
+ 'Fresh Passion Juice':[['Passion','kg',0.10],['Sugar','kg',0.02],['Water','L',0.25]],
+ 'Fresh Mango Juice':[['Mango','kg',0.10],['Sugar','kg',0.02],['Water','L',0.25]],
+ 'Fresh Sugarcane Juice':[['Sugarcane','kg',0.25],['Water','L',0.05]],
+ 'Soda 500ml':[['Soda','bottles',1]],
+ 'Bottled Water':[['Water','L',0.5]],
+ 'Tea':[['Tea Leaves','kg',0.005],['Sugar','kg',0.02],['Milk','L',0.15],['Water','L',0.20]],
+ 'Coffee':[['Coffee','kg',0.008],['Sugar','kg',0.02],['Milk','L',0.15],['Water','L',0.15]],
+ 'Chai Latte':[['Tea Leaves','kg',0.005],['Sugar','kg',0.02],['Milk','L',0.20],['Water','L',0.10]],
+ 'Fruit Salad':[['Mixed Fruit','kg',0.20]],
+ 'Ice Cream':[['Ice Cream Mix','kg',0.12]],
+ 'Chocolate Cake':[['Flour','kg',0.06],['Sugar','kg',0.03],['Eggs','pieces',1],['Cooking Oil','L',0.02]],
+ 'Mandazi':[['Flour','kg',0.06],['Sugar','kg',0.015],['Cooking Oil','L',0.02]],
+ 'Spanish Omelette':[['Eggs','pieces',3],['Potatoes','kg',0.12],['Onions','kg',0.03],['Cooking Oil','L',0.02]],
+ 'Pancakes':[['Flour','kg',0.06],['Eggs','pieces',1],['Milk','L',0.10],['Sugar','kg',0.015],['Cooking Oil','L',0.01]],
+ 'Full Breakfast':[['Eggs','pieces',2],['Sausage','pieces',2],['Bread','pieces',2],['Potatoes','kg',0.12],['Cooking Oil','L',0.02]]
+};
 var SEED={
  settings:{name:'Ederstone Restaurant',tax:0,service:0},
  tables:Array.from({length:16},function(_,i){return {id:i+1,status:'Open',order:[],paid:false,ready:false};}),
  menu:MENU.map(function(x){return x.slice();}),
- inventory:[['Rice','kg',32,10],['Chicken','kg',18,6],['Beef','kg',22,7],['Cooking Oil','L',20,5],['Potatoes','kg',45,12],['Passion','kg',8,4],['Mango','kg',12,4],['Soda','bottles',48,12],['Flour','kg',30,8],['Sugar','kg',18,5]],\n foodStock:MENU.map(function(x){return {name:x[0],qty:100,reorder:10,unit:'pieces'}; }),
+ inventory:[['Rice','kg',32,10],['Chicken','kg',18,6],['Beef','kg',22,7],['Fish','kg',10,3],['Cooking Oil','L',20,5],['Potatoes','kg',45,12],['Passion','kg',8,4],['Mango','kg',12,4],['Soda','bottles',48,12],['Flour','kg',30,8],['Sugar','kg',18,5],['Onions','kg',10,3],['Tomatoes','kg',10,3],['Sukuma','kg',8,2],['Maize','kg',15,4],['Beans','kg',15,4],['Cheese','kg',5,1],['Bread','pieces',60,12],['Eggs','pieces',120,20],['Carrots','kg',8,2],['Cabbage','kg',8,2],['Water','L',100,20],['Sugarcane','kg',20,5],['Tea Leaves','kg',3,1],['Milk','L',20,5],['Coffee','kg',3,1],['Mixed Fruit','kg',15,4],['Ice Cream Mix','kg',10,3],['Sausage','pieces',60,15]],
+ foodStock:MENU.map(function(x){return {name:x[0],qty:100,reorder:10,unit:'pieces'}; }),
  staff:[['Stone','Owner','Active'],['Cashier 01','Cashier','Active'],['Kitchen 01','Kitchen','Active'],['Waiter 01','Waiter','Active']],
  orders:[]
 };
@@ -32,7 +73,10 @@ function loadDB(){
    if(!d.settings||typeof d.settings!=='object') d.settings=copy(SEED.settings);
    if(!Array.isArray(d.tables)||d.tables.length!==16) d.tables=copy(SEED.tables);
    if(!Array.isArray(d.menu)||!d.menu.length) d.menu=copy(SEED.menu);
-   if(!Array.isArray(d.inventory)) d.inventory=copy(SEED.inventory);\n   if(!Array.isArray(d.foodStock)) d.foodStock=copy(SEED.foodStock);\n   var stockNames={}; d.foodStock.forEach(function(s){stockNames[s.name]=true;});\n   d.menu.forEach(function(m){if(!stockNames[m[0]])d.foodStock.push({name:m[0],qty:100,reorder:10,unit:'pieces'});});
+   if(!Array.isArray(d.inventory)) d.inventory=copy(SEED.inventory);
+   if(!Array.isArray(d.foodStock)) d.foodStock=copy(SEED.foodStock);
+   var stockNames={}; d.foodStock.forEach(function(s){stockNames[s.name]=true;});
+   d.menu.forEach(function(m){if(!stockNames[m[0]])d.foodStock.push({name:m[0],qty:100,reorder:10,unit:'pieces'});});
    if(!Array.isArray(d.staff)) d.staff=copy(SEED.staff);
    if(!Array.isArray(d.orders)) d.orders=[];
    return d;
@@ -50,6 +94,13 @@ var app=null;
 var modal=null;
 
 function save(){try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){}}
+function recipeFor(name){return RECIPES[name]||[];}
+function ingredientByName(name){return db.inventory.find(function(x){return x[0]===name;});}
+function ensureRecipeIngredients(name,qty){var recipe=recipeFor(name),missing=[];recipe.forEach(function(r){var ing=ingredientByName(r[0]),need=Number(r[2])*qty,have=ing?Number(ing[2]):0;if(!ing||have+1e-9<need)missing.push({name:r[0],need:need,have:have,unit:r[1]});});return {ok:!missing.length,missing:missing};}
+function consumeRecipe(name,qty){recipeFor(name).forEach(function(r){var ing=ingredientByName(r[0]);if(ing)ing[2]=Math.max(0,Number(ing[2])-Number(r[2])*qty);});}
+function formatMissing(m){return m.map(function(x){return x.name+' ('+x.have.toFixed(3)+' '+x.unit+' left; need '+x.need.toFixed(3)+')';}).join(', ');}
+function cookFood(i,qty){var s=db.foodStock[i];if(!s)return;qty=Math.floor(Number(qty)||0);if(qty<=0){toast('Enter a valid quantity to cook');return;}var check=ensureRecipeIngredients(s.name,qty);if(!check.ok){toast('Cannot cook '+s.name+'. Missing: '+formatMissing(check.missing));return;}consumeRecipe(s.name,qty);s.qty=Number(s.qty||0)+qty;save();inventory();toast(qty+' '+s.name+' added to prepared stock');}
+function receiveIngredient(i){var ing=db.inventory[i];if(!ing)return;var qty=Number(prompt('How much '+ing[0]+' received?','10'));if(!isFinite(qty)||qty<=0)return;ing[2]=Number(ing[2])+qty;save();inventory();toast(qty+' '+ing[0]+' added to kitchen inventory');}
 function money(n){return 'KSh '+Math.round(Number(n)||0).toLocaleString('en-KE');}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function toast(msg){
@@ -150,12 +201,16 @@ function orderView(){
 }
 function addItem(i){
  var x=db.menu[i];if(!x)return;
+ var stock=db.foodStock.find(function(s){return s.name===x[0];});
  var found=cart.find(function(c){return c.name===x[0];});
+ var requested=(found?found.qty:0)+1;
+ if(stock&&requested>Number(stock.qty||0)){toast(x[0]+' is not available. Only '+stock.qty+' '+stock.unit+' remaining.');return;}
  if(found)found.qty++;else cart.push({name:x[0],price:Number(x[2]),qty:1});
  syncTable();orderView();toast(x[0]+' added');
 }
 function changeQty(i,d){
  if(!cart[i])return;
+ if(d>0){var stock=db.foodStock.find(function(s){return s.name===cart[i].name;});if(stock&&cart[i].qty+d>Number(stock.qty||0)){toast(cart[i].name+' is not available beyond '+stock.qty+' '+stock.unit+'.');return;}}
  cart[i].qty+=d;if(cart[i].qty<=0)cart.splice(i,1);
  syncTable();orderView();
 }
@@ -206,8 +261,10 @@ function validateDelivery(){
 function completeSale(method,extra){
  if(!cart.length){toast('No items to complete');return;}
  if(!validateDelivery())return;
+ for(var si=0;si<cart.length;si++){var fs=db.foodStock.find(function(s){return s.name===cart[si].name;});if(fs&&cart[si].qty>Number(fs.qty||0)){toast(cart[si].name+' is no longer available. Only '+fs.qty+' '+fs.unit+' remaining.');orderView();return;}}
  var o={id:'ORD-'+Date.now().toString().slice(-6),table:activeTable,type:orderType,payment:method,total:grand(),subtotal:subtotal(),items:copy(cart),status:'Paid',time:new Date().toLocaleString(),customer:null,mpesa:extra||{}};
  if(orderType==='Delivery')o.customer={name:document.getElementById('customerName').value.trim(),phone:document.getElementById('customerPhone').value.trim(),address:document.getElementById('deliveryAddress').value.trim()};
+ cart.forEach(function(ci){var fs=db.foodStock.find(function(s){return s.name===ci.name;});if(fs)fs.qty=Math.max(0,Number(fs.qty)-Number(ci.qty));});
  db.orders.push(o);
  if(activeTable){var t=db.tables[activeTable-1];t.order=copy(cart);t.status='Busy';t.paid=true;t.ready=false;t.lastPayment=method;}
  cart=[];activeTable=null;save();orderView();showReceipt(o);
@@ -298,7 +355,9 @@ function addMenu(){
  var n=prompt('Food/drink name');if(!n)return;
  var p=Number(prompt('Price in KSh'));if(!p||p<0)return;
  var c=prompt('Category','Mains')||'Mains';
- db.menu.push([n.trim(),c.trim(),p]);\n db.foodStock.push({name:n.trim(),qty:100,reorder:10,unit:'pieces'});\n save();menu();toast('Menu item added with 100 pieces opening stock');
+ db.menu.push([n.trim(),c.trim(),p]);
+ db.foodStock.push({name:n.trim(),qty:0,reorder:10,unit:'pieces'});
+ save();menu();toast('Menu item added. Cook stock before selling it.');
 }
 function editMenu(i){
  if(!db.menu[i])return;
@@ -307,9 +366,9 @@ function editMenu(i){
 }
 function inventory(){
  var ingredients='<div class="panel"><div class="section-head"><div><h3>Kitchen ingredients</h3><p class="muted">Raw cooking materials used by the kitchen.</p></div></div><div class="list">'+
- db.inventory.map(function(x,i){var low=Number(x[2])<=Number(x[3]);return '<div class="item '+(low?'low-stock':'')+'"><div class="item-line"><b>'+esc(x[0])+'</b><strong>'+x[2]+' '+esc(x[1])+'</strong></div><div class="muted">'+(low?'⚠ Reorder now · ':'Reorder at ')+x[3]+' '+esc(x[1])+'</div><div class="actions"><button class="action" data-action="stock" data-index="'+i+'" data-delta="-1">− 1</button><button class="action" data-action="stock" data-index="'+i+'" data-delta="1">＋ 1</button></div></div>';}).join('')+'</div></div>';
- var foods='<div class="panel"><div class="section-head"><div><h3>Prepared food stock</h3><p class="muted">Sellable food quantities. A paid order automatically deducts the quantity here.</p></div></div><div class="list">'+
- db.foodStock.map(function(s,i){var low=Number(s.qty)<=Number(s.reorder);return '<div class="item '+(low?'low-stock':'')+'"><div class="item-line"><b>'+esc(s.name)+'</b><strong>'+s.qty+' '+esc(s.unit)+'</strong></div><div class="muted">'+(low?'⚠ Reorder now · ':'Reorder at ')+s.reorder+' '+esc(s.unit)+'</div><div class="actions"><button class="action" data-action="food-stock" data-index="'+i+'" data-delta="-1">− 1</button><button class="action" data-action="food-stock" data-index="'+i+'" data-delta="1">＋ 1</button></div></div>';}).join('')+'</div></div>';
+ db.inventory.map(function(x,i){var low=Number(x[2])<=Number(x[3]);return '<div class="item '+(low?'low-stock':'')+'"><div class="item-line"><b>'+esc(x[0])+'</b><strong>'+x[2]+' '+esc(x[1])+'</strong></div><div class="muted">'+(low?'⚠ Reorder now · ':'Reorder at ')+x[3]+' '+esc(x[1])+'</div><div class="actions"><button class="action" data-action="stock" data-index="'+i+'" data-delta="-1">− 1</button><button class="action" data-action="stock" data-index="'+i+'" data-delta="1">＋ 1</button><button class="action primary" data-action="receive-ingredient" data-index="'+i+'">＋ Receive stock</button></div></div>';}).join('')+'</div></div>';
+ var foods='<div class="panel"><div class="section-head"><div><h3>Prepared food stock</h3><p class="muted">Cooking a food item adds sellable pieces and automatically consumes its recipe ingredients.</p></div></div><div class="list">'+
+ db.foodStock.map(function(s,i){var low=Number(s.qty)<=Number(s.reorder);return '<div class="item '+(low?'low-stock':'')+'"><div class="item-line"><b>'+esc(s.name)+'</b><strong>'+s.qty+' '+esc(s.unit)+'</strong></div><div class="muted">'+(low?'⚠ Reorder now · ':'Reorder at ')+s.reorder+' '+esc(s.unit)+'</div><div class="actions"><button class="action" data-action="food-stock" data-index="'+i+'" data-delta="-1">− 1</button><button class="action primary" data-action="cook-food" data-index="'+i+'">＋ Cook stock</button></div></div>';}).join('')+'</div></div>';
  shell('Kitchen Inventory','Track raw ingredients and the quantity of each sellable food item remaining.',ingredients+foods);
 }
 function stock(i,d){if(db.inventory[i]){db.inventory[i][2]=Math.max(0,Number(db.inventory[i][2])+Number(d));save();inventory();}}
@@ -370,7 +429,10 @@ function handleAction(el){
  if(a==='unready')return unready(Number(el.getAttribute('data-id')));
  if(a==='add-menu')return addMenu();
  if(a==='edit-menu')return editMenu(Number(el.getAttribute('data-index')));
- if(a==='stock')return stock(Number(el.getAttribute('data-index')),Number(el.getAttribute('data-delta')));\n if(a==='food-stock')return foodStock(Number(el.getAttribute('data-index')),Number(el.getAttribute('data-delta')));
+ if(a==='stock')return stock(Number(el.getAttribute('data-index')),Number(el.getAttribute('data-delta')));
+ if(a==='food-stock')return foodStock(Number(el.getAttribute('data-index')),Number(el.getAttribute('data-delta')));
+ if(a==='cook-food'){var fi=Number(el.getAttribute('data-index'));var fq=Number(prompt('How many '+db.foodStock[fi].name+' pieces did you cook?','10'));if(isFinite(fq)&&fq>0)cookFood(fi,fq);return;}
+ if(a==='receive-ingredient')return receiveIngredient(Number(el.getAttribute('data-index')));
  if(a==='save-settings')return saveSettings();
  if(a==='reset')return resetPOS();
 }
