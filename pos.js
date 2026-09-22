@@ -143,6 +143,7 @@ var SEED={
  foodStock:MENU.map(function(x){return {name:x[0],qty:100,reorder:10,unit:'pieces'}; }),
  staff:[['Kitchen 01','Kitchen Staff','Kitchen Staff','seed'],['Delivery 01','Delivery Staff','Delivery Staff','seed'],['Waiter 01','Waiter','Waiter','seed']],
  orders:[],
+ recipes:{},
  kitchenJobs:[],
  deliveryJobs:[],
  unfinishedTasks:[]
@@ -175,6 +176,7 @@ function loadDB(){
    }).filter(function(s){return !!s;});
    if(!d.staff.length)d.staff=copy(SEED.staff);
    if(!Array.isArray(d.orders)) d.orders=[];
+   if(!d.recipes||typeof d.recipes!=='object') d.recipes={};
    if(!Array.isArray(d.kitchenJobs)) d.kitchenJobs=[];
    if(!Array.isArray(d.deliveryJobs)) d.deliveryJobs=[];
    if(!Array.isArray(d.unfinishedTasks)) d.unfinishedTasks=[];
@@ -192,9 +194,10 @@ var viewStack=[];
 var app=null;
 var modal=null;
 var restockFilter=[];
+var deliveryCustomer={name:'',phone:'',address:''};
 
 function save(){try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){}}
-function recipeFor(name){return RECIPES[name]||[];}
+function recipeFor(name){return (db&&db.recipes&&db.recipes[name])||RECIPES[name]||[];}
 function ingredientByName(name){return db.inventory.find(function(x){return x[0]===name;});}
 function ensureRecipeIngredients(name,qty){var recipe=recipeFor(name),missing=[];recipe.forEach(function(r){var ing=ingredientByName(r[0]),need=Number(r[2])*qty,have=ing?Number(ing[2]):0;if(!ing||have+1e-9<need)missing.push({name:r[0],need:need,have:have,unit:r[1]});});return {ok:!missing.length,missing:missing};}
 function consumeRecipe(name,qty){recipeFor(name).forEach(function(r){var ing=ingredientByName(r[0]);if(ing)ing[2]=Math.max(0,Number(ing[2])-Number(r[2])*qty);});}
@@ -209,20 +212,59 @@ function addUnfinishedTask(type,title,details,data){
  updateUnfinishedBadge();
  return task;
 }
+function currentDeliveryCustomer(){
+ var name=((document.getElementById('customerName')||{}).value||deliveryCustomer.name||'').trim();
+ var phone=((document.getElementById('customerPhone')||{}).value||deliveryCustomer.phone||'').trim();
+ var address=((document.getElementById('deliveryAddress')||{}).value||deliveryCustomer.address||'').trim();
+ deliveryCustomer={name:name,phone:phone,address:address};
+ return copy(deliveryCustomer);
+}
+function savePendingOrder(reason,clearAfter){
+ if(!cart.length)return null;
+ var customer=orderType==='Delivery'?currentDeliveryCustomer():null;
+ var data={cart:copy(cart),activeTable:activeTable,orderType:orderType,payment:payment,customer:customer,reason:reason||'Order left unfinished'};
+ var title=(activeTable?'Table '+activeTable+' ':'')+'Pending order';
+ var details=cart.map(function(x){return x.name+' ×'+x.qty;}).join(', ');
+ var task=addUnfinishedTask('order',title,'Order left unfinished: '+details,data);
+ if(clearAfter){
+   if(activeTable){
+     var t=db.tables[activeTable-1];
+     if(t){t.order=copy(cart);t.status='Busy';t.paid=false;t.ready=false;}
+   }
+   cart=[];activeTable=null;deliveryCustomer={name:'',phone:'',address:''};save();
+ }
+ return task;
+}
+function restorePendingOrder(task){
+ if(!task||!task.data||!Array.isArray(task.data.cart))return false;
+ cart=copy(task.data.cart);
+ activeTable=task.data.activeTable||null;
+ orderType=task.data.orderType||'Takeaway';
+ payment=task.data.payment||'M-Pesa';
+ category='All';
+ deliveryCustomer=task.data.customer||{name:'',phone:'',address:''};
+ return true;
+}
+function saveCurrentOrder(){
+ if(!cart.length){toast('There is no unfinished order to save');return;}
+ var task=savePendingOrder('Saved by operator',true);
+ if(task){closeModal();view('unfinished');toast('Order saved under Unfinished Tasks');}
+}
 function closeUnfinishedTask(id){
  var t=db.unfinishedTasks.find(function(x){return x.id===id;});
  if(!t)return;
  t.status='resolved';t.resolved=new Date().toLocaleString();save();
 }
-function restorePendingOrder(task){
- if(!task||!task.data||!Array.isArray(task.data.cart))return false;
- cart=copy(task.data.cart);activeTable=task.data.activeTable||null;orderType=task.data.orderType||'Takeaway';payment=task.data.payment||'M-Pesa';category='All';
- return true;
-}
 function reviewUnfinishedTask(id){
  var t=db.unfinishedTasks.find(function(x){return x.id===id&&x.status==='open';});
  if(!t)return;
- if(t.type==='delivery'){
+ if(t.type==='order'){
+   restorePendingOrder(t);
+   closeUnfinishedTask(t.id);
+   view('orders');
+   orderView();
+   toast('Pending order restored');
+ }else if(t.type==='delivery'){
    openDeliveryAssignment(t.data&&t.data.orderId,t.id);
  }else if(t.type==='chef'){
    restorePendingOrder(t);
@@ -473,20 +515,22 @@ function tableCard(t){
 function tables(){
  var busy=db.tables.filter(function(t){return t.status==='Busy';});
  var open=db.tables.filter(function(t){return t.status!=='Busy';});
- shell('Tables','Busy tables stay occupied until explicitly cleared.',
- '<div class="table-summary"><span>🟢 '+open.length+' available</span><span>🟠 '+busy.length+' occupied</span></div>'+
+ shell('Tables','Busy tables stay occupied until explicitly cleared. Search by table number or food item.',
+ '<div class="panel"><input class="search" id="tableSearch" placeholder="Search tables or food..."></div><div id="tableBoard"><div class="table-summary"><span>🟢 '+open.length+' available</span><span>🟠 '+busy.length+' occupied</span></div>'+
  '<h3 class="table-section-title">Occupied tables</h3><div class="table-grid">'+(busy.map(tableCard).join('')||'<p class="muted">No occupied tables.</p>')+'</div>'+
- '<h3 class="table-section-title">Available tables</h3><div class="table-grid">'+(open.map(tableCard).join('')||'<p class="muted">No available tables.</p>')+'</div>');
+ '<h3 class="table-section-title">Available tables</h3><div class="table-grid">'+(open.map(tableCard).join('')||'<p class="muted">No available tables.</p>')+'</div></div>');
+ var search=document.getElementById('tableSearch');
+ if(search)search.addEventListener('input',function(){var q=search.value.toLowerCase().trim();document.querySelectorAll('#tableBoard .table-card').forEach(function(card){card.style.display=!q||String(card.textContent||'').toLowerCase().indexOf(q)!==-1?'':'none';});});
 }
 
 function newOrder(){
- activeTable=null;cart=[];orderType='Takeaway';payment='M-Pesa';category='All';orderView();
+ activeTable=null;cart=[];orderType='Takeaway';payment='M-Pesa';category='All';deliveryCustomer={name:'',phone:'',address:''};orderView();
 }
 function openTable(id){
  var t=db.tables[id-1];
  if(!t){toast('Table not found');return;}
  if(t.status==='Busy'&&t.paid){toast('Clear the paid table before starting another order');return;}
- activeTable=id;orderType='Dine-in';payment='M-Pesa';category='All';cart=copy(t.order||[]);orderView();
+ activeTable=id;orderType='Dine-in';payment='M-Pesa';category='All';deliveryCustomer={name:'',phone:'',address:''};cart=copy(t.order||[]);orderView();
 }
 function subtotal(){return cart.reduce(function(a,x){return a+Number(x.price||0)*Number(x.qty||0);},0);}
 function grand(){return subtotal()*(1+(Number(db.settings.tax)||0)/100+(Number(db.settings.service)||0)/100);}
@@ -501,10 +545,11 @@ function orderView(){
  var filtered=category==='All'?db.menu:db.menu.filter(function(x){return x[1]===category;});
  var catButtons=cats.map(function(c){return '<button class="filter '+(category===c?'active':'')+'" data-action="category" data-category="'+esc(c)+'">'+esc(c)+'</button>';}).join('');
  var rows=cart.map(function(x,i){return '<div class="cart-row"><div><b>'+esc(x.name)+'</b><div class="muted">'+money(x.price)+' × '+x.qty+'</div></div><div class="qty"><button data-action="qty" data-index="'+i+'" data-delta="-1">−</button><b>'+x.qty+'</b><button data-action="qty" data-index="'+i+'" data-delta="1">+</button></div></div>';}).join('');
- var delivery=orderType==='Delivery'?'<div class="delivery-box"><input id="customerName" placeholder="Customer name"><input id="customerPhone" inputmode="tel" placeholder="07XXXXXXXX"><input id="deliveryAddress" placeholder="Delivery address"></div>':'';
+ var customer=deliveryCustomer||{name:'',phone:'',address:''};
+ var delivery=orderType==='Delivery'?'<div class="delivery-box"><input id="customerName" placeholder="Customer name" value="'+esc(customer.name||'')+'"><input id="customerPhone" inputmode="tel" placeholder="07XXXXXXXX" value="'+esc(customer.phone||'')+'"><input id="deliveryAddress" placeholder="Delivery address" value="'+esc(customer.address||'')+'"></div>':'';
  shell(activeTable?'Table '+activeTable+' Order':'New Order',activeTable?'Add items, choose service type, then pay.':'Walk-in order for takeaway or delivery.',
  '<div class="order-layout"><div class="panel"><div class="order-tools"><input class="search" id="menuSearch" placeholder="Search '+db.menu.length+' menu items"><div class="chips">'+catButtons+'</div></div><div class="menu-grid" id="menuGrid">'+menuCards(filtered)+'</div></div>'+
- '<div class="panel cart"><div class="section-head"><h3>Current Ticket</h3><button class="action" data-action="clear-cart">Clear order</button></div>'+
+ '<div class="panel cart"><div class="section-head"><h3>Current Ticket</h3><div class="actions"><button class="action" data-action="save-unfinished">Save unfinished</button><button class="action" data-action="clear-cart">Clear order</button></div></div>'+
  '<div class="chips type-switch">'+
  '<button class="filter '+(orderType==='Dine-in'?'active':'')+'" data-action="type" data-type="Dine-in">🍽 Dine-in</button>'+
  '<button class="filter '+(orderType==='Takeaway'?'active':'')+'" data-action="type" data-type="Takeaway">🥡 Takeaway</button>'+
@@ -553,8 +598,8 @@ function syncTable(){
 }
 function clearCart(){cart=[];syncTable();orderView();}
 function setCategory(c){category=c;orderView();}
-function setType(t){orderType=t;orderView();}
-function setPay(p){payment=p;orderView();}
+function setType(t){if(orderType==='Delivery')currentDeliveryCustomer();orderType=t;orderView();}
+function setPay(p){if(orderType==='Delivery')currentDeliveryCustomer();payment=p;orderView();}
 
 function checkout(){
  if(!cart.length){toast('Add food before payment');return;}
@@ -591,6 +636,7 @@ function validateDelivery(){
 }
 function completeSale(method,extra){
  if(!cart.length){toast('No items to complete');return;}
+ if(orderType==='Delivery')currentDeliveryCustomer();
  if(!validateDelivery())return;
  for(var si=0;si<cart.length;si++){var fs=db.foodStock.find(function(s){return s.name===cart[si].name;});if(fs&&cart[si].qty>Number(fs.qty||0)){openOrderStockProblem(cart[si].name,Number(fs.qty||0));return;}}
  var o={id:'ORD-'+Date.now().toString().slice(-6),table:activeTable,type:orderType,payment:method,total:grand(),subtotal:subtotal(),items:copy(cart),status:'Paid',time:new Date().toLocaleString(),customer:null,mpesa:extra||{}};
@@ -666,33 +712,111 @@ function clearTable(id){
  t.status='Open';t.order=[];t.paid=false;t.ready=false;delete t.lastPayment;save();tables();toast('Table '+id+' cleared and available');
 }
 function orders(){
- shell('Orders','Every completed transaction is recorded locally.','<div class="list">'+
- (db.orders.slice().reverse().map(function(o){return '<div class="order-card"><div class="order-line"><b>'+esc(o.id)+'</b><strong>'+money(o.total)+'</strong></div><div class="muted">'+esc(o.time)+' · '+esc(o.type)+' · '+esc(o.payment)+(o.table?' · Table '+o.table:'')+'</div><button class="action" data-action="receipt" data-id="'+esc(o.id)+'">View receipt</button></div>';}).join('')||'<p class="muted">No completed orders.</p>')+'</div>');
+ var cards=db.orders.slice().reverse().map(function(o){
+   var itemText=(o.items||[]).map(function(x){return x.name+' ×'+x.qty;}).join(' ');
+   var customer=o.customer?(' '+o.customer.name+' '+o.customer.phone+' '+o.customer.address):'';
+   return '<div class="order-card" data-order-search="'+esc((o.id+' '+o.time+' '+o.type+' '+o.payment+' '+itemText+customer).toLowerCase())+'"><div class="order-line"><b>'+esc(o.id)+'</b><strong>'+money(o.total)+'</strong></div><div class="muted">'+esc(o.time)+' · '+esc(o.type)+' · '+esc(o.payment)+(o.table?' · Table '+o.table:'')+'</div><button class="action" data-action="receipt" data-id="'+esc(o.id)+'">View receipt</button></div>';
+ }).join('');
+ shell('Orders','Every completed transaction is recorded locally. Search by order ID, food, customer, type or payment.','<div class="panel"><input class="search" id="ordersSearch" placeholder="Search orders..."></div><div class="list" id="ordersList">'+(cards||'<p class="muted">No completed orders.</p>')+'</div>');
+ var search=document.getElementById('ordersSearch');
+ if(search)search.addEventListener('input',function(){
+   var q=search.value.toLowerCase().trim();
+   document.querySelectorAll('#ordersList .order-card').forEach(function(card){card.style.display=!q||String(card.getAttribute('data-order-search')||'').indexOf(q)!==-1?'':'none';});
+ });
 }
 function showReceiptById(id){var o=db.orders.find(function(x){return x.id===id;});if(o)showReceipt(o);}
 function unfinishedTasks(){
  var tasks=db.unfinishedTasks.filter(function(t){return t.status==='open';});
  var body=tasks.map(function(t){
-   var icon=t.type==='chef'?'♨':'▤';
-   return '<div class="panel"><div class="section-head"><h3>'+icon+' '+esc(t.title)+'</h3><span class="badge warn">UNFINISHED</span></div><p class="muted">'+esc(t.details)+'<br>Created: '+esc(t.created)+'</p><div class="actions"><button class="action primary" data-action="review-task" data-id="'+esc(t.id)+'">Review</button><button class="action" data-action="resolve-task" data-id="'+esc(t.id)+'">Dismiss</button></div></div>';
+   var icon=t.type==='chef'?'♨':t.type==='delivery'?'🛵':t.type==='order'?'🧾':'▤';
+   return '<div class="panel unfinished-card" data-task-search="'+esc((t.id+' '+t.title+' '+t.details+' '+t.created).toLowerCase())+'"><div class="section-head"><h3>'+icon+' '+esc(t.title)+'</h3><span class="badge warn">UNFINISHED</span></div><p class="muted">'+esc(t.details)+'<br>Created: '+esc(t.created)+'</p><div class="actions"><button class="action primary" data-action="review-task" data-id="'+esc(t.id)+'">Review</button><button class="action" data-action="resolve-task" data-id="'+esc(t.id)+'">Dismiss</button></div></div>';
  }).join('')||'<div class="panel"><p class="muted">No unfinished tasks. Everything is up to date.</p></div>';
- shell('Unfinished Tasks','Tasks that could not be completed immediately and require operator review.',collapsible('Pending task queue',body,'unfinishedList',true));
+ shell('Unfinished Tasks','Tasks that could not be completed immediately and require operator review. Search the queue by order, food, staff or task ID.','<div class="panel"><input class="search" id="unfinishedSearch" placeholder="Search unfinished tasks..."></div>'+collapsible('Pending task queue',body,'unfinishedList',true));
+ var search=document.getElementById('unfinishedSearch');
+ if(search)search.addEventListener('input',function(){var q=search.value.toLowerCase().trim();document.querySelectorAll('#unfinishedList .unfinished-card').forEach(function(card){card.style.display=!q||String(card.getAttribute('data-task-search')||'').indexOf(q)!==-1?'':'none';});});
 }
 function kitchen(){var jobs=db.kitchenJobs.filter(function(j){return j.status==='cooking'||j.status==='finished';});var jobCards=jobs.map(function(j){return '<div class="panel"><div class="section-head"><h3>'+esc(j.food)+' ×'+j.qty+'</h3><span class="badge '+(j.status==='finished'?'good':'warn')+'">'+(j.status==='finished'?'COOKED':'COOKING')+'</span></div><p class="muted">Kitchen Staff: '+esc(j.chef)+'<br>'+esc(j.started)+'</p>'+(j.status==='cooking'?'<button class="action primary" data-action="finish-job" data-id="'+j.id+'">✓ Kitchen Staff confirms finished</button>':'<button class="action primary" data-action="clear-job" data-id="'+j.id+'">Clear Kitchen Staff / release</button>')+'</div>';}).join('')||'<p class="muted">No Kitchen Staff tasks.</p>';var tickets=db.tables.filter(function(t){return t.status==='Busy'&&!t.paid;});var ticketCards=tickets.map(function(t){return '<div class="panel"><div class="section-head"><h3>Table '+t.id+'</h3><span class="badge '+(t.ready?'good':'warn')+'">'+(t.ready?'READY':'COOKING')+'</span></div>'+t.order.map(function(x){return '<div class="cart-row"><span>'+esc(x.name)+'</span><b>×'+x.qty+'</b></div>';}).join('')+(t.ready?'<button class="action" data-action="unready" data-id="'+t.id+'">Return to cooking</button>':'<button class="action primary" data-action="ready" data-id="'+t.id+'">Mark ready</button>')+'</div>';}).join('')||'<p class="muted">Kitchen clear.</p>';shell('Kitchen','Kitchen Staff assignments and dine-in food tickets.',collapsible('Kitchen Staff task board',jobCards,'chefJobs',true)+collapsible('Dine-in tickets',ticketCards,'dineTickets',false));}
 function markReady(id){var t=db.tables[id-1];if(t&&t.status==='Busy'&&!t.paid){t.ready=true;save();kitchen();toast('Table '+id+' marked ready');}}
 function unready(id){var t=db.tables[id-1];if(t){t.ready=false;save();kitchen();}}
-function menu(){var rows='<div class="menu-grid">'+db.menu.map(function(x,i){return '<div class="item"><div class="category">'+esc(x[1])+'</div><div class="item-line"><b>'+esc(x[0])+'</b><strong>'+money(x[2])+'</strong></div><button class="action" data-action="edit-menu" data-index="'+i+'">Edit</button></div>';}).join('')+'</div>';shell('Menu Manager','Your live catalogue contains '+db.menu.length+' food and drink items.',collapsible('Menu catalogue',rows,'menuList',true)+'<div class="actions"><button class="action primary" data-action="add-menu">＋ Add item</button></div>');}
-function addMenu(){
- var n=prompt('Food/drink name');if(!n)return;
- var p=Number(prompt('Price in KSh'));if(!p||p<0)return;
- var c=prompt('Category','Mains')||'Mains';
- db.menu.push([n.trim(),c.trim(),p]);
- db.foodStock.push({name:n.trim(),qty:0,reorder:10,unit:'pieces'});
- save();menu();toast('Menu item added. Cook stock before selling it.');
+function menu(){
+ var rows='<div class="menu-grid" id="managementMenuGrid">'+db.menu.map(function(x,i){return '<div class="item menu-manage-card" data-menu-search="'+esc((x[0]+' '+x[1]).toLowerCase())+'"><div class="category">'+esc(x[1])+'</div><div class="item-line"><b>'+esc(x[0])+'</b><strong>'+money(x[2])+'</strong></div><button class="action" data-action="edit-menu" data-index="'+i+'">Edit</button></div>';}).join('')+'</div>';
+ shell('Menu Manager','Your live catalogue contains '+db.menu.length+' food and drink items. Search before selecting an item.','<div class="panel"><input class="search" id="managementMenuSearch" placeholder="Search food or category..."></div>'+collapsible('Menu catalogue',rows,'menuList',true)+'<div class="actions"><button class="action primary" data-action="add-menu">＋ Add item</button></div>');
+ var search=document.getElementById('managementMenuSearch');
+ if(search)search.addEventListener('input',function(){var q=search.value.toLowerCase().trim();document.querySelectorAll('#managementMenuGrid .menu-manage-card').forEach(function(card){card.style.display=!q||String(card.getAttribute('data-menu-search')||'').indexOf(q)!==-1?'':'none';});});
+}
+function menuIngredientOptions(selected){
+ return db.inventory.map(function(x){return '<option value="'+esc(x[0])+'"'+(x[0]===selected?' selected':'')+'>'+esc(x[0])+' · '+esc(x[1])+'</option>';}).join('');
+}
+function menuIngredientRow(index,ingredient,qty){
+ var ing=ingredientByName(ingredient)||db.inventory[0]||['','pieces',0,0];
+ return '<div class="panel menu-ingredient-row" data-row="'+index+'"><div class="form-grid"><div class="field"><label>INGREDIENT</label><select class="new-menu-ingredient">'+menuIngredientOptions(ingredient)+'</select></div><div class="field"><label>QTY PER 1 UNIT</label><input class="new-menu-qty" type="number" min="0.0001" step="0.001" value="'+(Number(qty)||'')+'" placeholder="e.g. 0.150"></div><div class="field"><label>UNIT</label><input class="new-menu-unit" value="'+esc(ing[1])+'" readonly></div></div><div class="actions"><button class="action" data-action="remove-menu-ingredient" data-row="'+index+'">Remove ingredient</button></div></div>';
+}
+function refreshMenuIngredientUnits(){
+ document.querySelectorAll('#newMenuIngredients .menu-ingredient-row').forEach(function(row){
+   var select=row.querySelector('.new-menu-ingredient'),unit=row.querySelector('.new-menu-unit');
+   var ing=ingredientByName(select&&select.value);
+   if(unit&&ing)unit.value=ing[1];
+ });
+}
+function openAddMenuModal(){
+ var cats=Array.from(new Set(db.menu.map(function(x){return x[1];})));
+ var catOpts=cats.map(function(x){return '<option value="'+esc(x)+'">'+esc(x)+'</option>';}).join('');
+ setModal('<div class="section-head"><div><div class="eyebrow">MENU MANAGEMENT</div><h2>Add food / drink</h2></div><button class="action" data-action="close-modal">×</button></div>'+
+ '<p class="muted">Food name is free text, but category must be selected from the existing menu. Every ingredient must also come from Inventory and must have a quantity per one unit.</p>'+
+ '<div class="form-grid"><div class="field"><label>FOOD NAME</label><input id="newMenuName" autocomplete="off" placeholder="e.g. Beef Special"></div><div class="field"><label>PRICE (KSh)</label><input id="newMenuPrice" type="number" min="0.01" step="1" placeholder="e.g. 650"></div><div class="field"><label>FOOD CATEGORY</label><select id="newMenuCategory">'+catOpts+'</select></div></div>'+
+ '<div class="section-head"><h3>Ingredients per unit</h3><button class="action" data-action="add-menu-ingredient">＋ Add ingredient</button></div>'+
+ '<div id="newMenuIngredients">'+menuIngredientRow(0,'', '')+'</div>'+
+ '<div class="problem-actions"><button class="action primary big" data-action="save-menu-draft">Save food</button><button class="action" data-action="close-modal">Cancel</button></div>');
+ setTimeout(function(){var n=document.getElementById('newMenuName');if(n)n.focus();},40);
+}
+function addMenuIngredientRow(){
+ var box=document.getElementById('newMenuIngredients');if(!box)return;
+ var count=box.querySelectorAll('.menu-ingredient-row').length;
+ box.insertAdjacentHTML('beforeend',menuIngredientRow(count,'',''));
+}
+function removeMenuIngredientRow(row){
+ var box=document.getElementById('newMenuIngredients');if(!box)return;
+ var rows=box.querySelectorAll('.menu-ingredient-row');
+ if(rows.length<=1){toast('A food must have at least one ingredient');return;}
+ var target=box.querySelector('.menu-ingredient-row[data-row="'+row+'"]');if(target)target.remove();
+}
+function saveMenuDraft(){
+ var name=((document.getElementById('newMenuName')||{}).value||'').trim();
+ var price=Number((document.getElementById('newMenuPrice')||{}).value);
+ var categorySelect=document.getElementById('newMenuCategory');
+ var cat=categorySelect?categorySelect.value:'';
+ if(!name){toast('Enter the food name');return;}
+ if(!isFinite(price)||price<=0){toast('Enter a valid price');return;}
+ if(!cat){toast('Select an existing food category');return;}
+ if(db.menu.some(function(x){return String(x[0]).trim().toLowerCase()===name.toLowerCase();})){toast('That food already exists');return;}
+ var recipe=[],seen={};
+ document.querySelectorAll('#newMenuIngredients .menu-ingredient-row').forEach(function(row){
+   var sel=row.querySelector('.new-menu-ingredient'),qtyEl=row.querySelector('.new-menu-qty');
+   var ingredient=sel?sel.value:'',qty=Number(qtyEl&&qtyEl.value);
+   if(!ingredient||!isFinite(qty)||qty<=0)return;
+   if(seen[ingredient]){toast('Each ingredient can only be added once');recipe=[];return;}
+   seen[ingredient]=true;
+   var ing=ingredientByName(ingredient);
+   if(ing)recipe.push([ingredient,ing[1],qty]);
+ });
+ if(!recipe.length){toast('Add at least one valid inventory ingredient with a quantity per unit');return;}
+ if(recipe.length!==document.querySelectorAll('#newMenuIngredients .menu-ingredient-row').length){toast('Complete every ingredient row before saving');return;}
+ setModal('<div class="problem-modal"><div class="problem-icon">✓</div><div class="eyebrow">CONFIRM FOOD</div><h2>'+esc(name)+'</h2><div class="panel"><div class="order-line"><span>Category</span><b>'+esc(cat)+'</b></div><div class="order-line"><span>Price</span><b>'+money(price)+'</b></div><div class="order-line"><span>Ingredients</span><b>'+recipe.length+' per unit</b></div>'+recipe.map(function(r){return '<div class="order-line"><span>'+esc(r[0])+'</span><b>'+r[2]+' '+esc(r[1])+'</b></div>';}).join('')+'</div><p class="problem-reason">Save this food and link its recipe to Inventory?</p><div class="problem-actions"><button class="action primary" data-action="confirm-add-menu" data-name="'+esc(name)+'" data-price="'+price+'" data-category="'+esc(cat)+'" data-recipe="'+esc(JSON.stringify(recipe))+'">Yes, save food</button><button class="action" data-action="edit-add-menu" data-name="'+esc(name)+'" data-price="'+price+'" data-category="'+esc(cat)+'" data-recipe="'+esc(JSON.stringify(recipe))+'">Edit</button></div></div>');
+}
+function commitMenu(name,price,cat,recipeJson){
+ var clean=String(name||'').trim(),p=Number(price),recipe=[];
+ try{recipe=JSON.parse(recipeJson||'[]');}catch(e){recipe=[];}
+ if(!clean||!isFinite(p)||p<=0||!recipe.length){toast('Food details are incomplete');return;}
+ if(db.menu.some(function(x){return String(x[0]).trim().toLowerCase()===clean.toLowerCase();})){toast('That food already exists');return;}
+ db.menu.push([clean,cat,p]);
+ if(!db.recipes)db.recipes={};
+ db.recipes[clean]=recipe;
+ db.foodStock.push({name:clean,qty:0,reorder:10,unit:'pieces'});
+ save();closeModal();menu();toast(clean+' added with '+recipe.length+' inventory ingredients per unit');
 }
 function editMenu(i){
  if(!db.menu[i])return;
- var p=Number(prompt('New price for '+db.menu[i][0],db.menu[i][2]));if(!p||p<0)return;
+ var p=Number(prompt('New price for '+db.menu[i][0],db.menu[i][2]));if(!isFinite(p)||p<0)return;
  db.menu[i][2]=p;save();menu();toast('Price updated');
 }
 function inventory(){
@@ -799,6 +923,7 @@ function updateUnfinishedBadge(){
 }
 function view(v,fromBack){
  if(!VIEWS[v])v='dashboard';
+ if(!fromBack&&currentView==='orders'&&cart.length&&v!=='orders')savePendingOrder('Order screen left before payment',false);
  if(!fromBack&&currentView&&currentView!==v)viewStack.push(currentView);
  currentView=v;
  document.querySelectorAll('.nav').forEach(function(n){n.classList.toggle('active',n.getAttribute('data-view')===v);});
@@ -827,6 +952,12 @@ function handleAction(el){
  if(a==='go-kitchen'){closeModal();return view('kitchen');}
  if(a==='go-unfinished'){closeModal();return view('unfinished');}
  if(a==='review-task')return reviewUnfinishedTask(el.getAttribute('data-id')||'');
+ if(a==='save-unfinished')return saveCurrentOrder();
+ if(a==='add-menu-ingredient')return addMenuIngredientRow();
+ if(a==='remove-menu-ingredient')return removeMenuIngredientRow(Number(el.getAttribute('data-row')));
+ if(a==='save-menu-draft')return saveMenuDraft();
+ if(a==='confirm-add-menu')return commitMenu(el.getAttribute('data-name')||'',el.getAttribute('data-price')||'',el.getAttribute('data-category')||'',el.getAttribute('data-recipe')||'');
+ if(a==='edit-add-menu')return openAddMenuModal();
  if(a==='add-staff')return addStaff();
  if(a==='save-staff-draft')return saveStaffDraft();
  if(a==='confirm-add-staff')return commitStaff(el.getAttribute('data-name')||'',el.getAttribute('data-role')||'Waiter');
@@ -853,7 +984,7 @@ function handleAction(el){
  if(a==='receipt')return showReceiptById(el.getAttribute('data-id'));
  if(a==='ready')return markReady(Number(el.getAttribute('data-id')));
  if(a==='unready')return unready(Number(el.getAttribute('data-id')));
- if(a==='add-menu')return addMenu();
+ if(a==='add-menu')return openAddMenuModal();
  if(a==='edit-menu')return editMenu(Number(el.getAttribute('data-index')));
  if(a==='stock')return stock(Number(el.getAttribute('data-index')),Number(el.getAttribute('data-delta')));
  if(a==='food-stock')return foodStock(Number(el.getAttribute('data-index')),Number(el.getAttribute('data-delta')));
@@ -880,6 +1011,7 @@ function bind(){
  }
  var clock=document.getElementById('clock');
  setInterval(function(){if(clock)clock.textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});},1000);
+ window.addEventListener('beforeunload',function(){if(cart.length)savePendingOrder('POS page closed with an unfinished order',false);});
  view('dashboard');
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
