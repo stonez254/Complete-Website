@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS pos_events (
   id BIGSERIAL PRIMARY KEY,
   event_type TEXT NOT NULL,
   payload JSONB NOT NULL,
-  actor_user_id UUID REFERENCES users(id) ON DELETE SET NULL CHECK (jsonb_typeof(payload) IN ('object','array')),
+  actor_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  CHECK (jsonb_typeof(payload) IN ('object','array')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS pos_events_created_at_idx ON pos_events (created_at DESC);
@@ -35,6 +36,16 @@ CREATE TABLE IF NOT EXISTS mpesa_transactions (
 CREATE INDEX IF NOT EXISTS mpesa_transactions_status_idx ON mpesa_transactions (status, updated_at DESC);
 CREATE INDEX IF NOT EXISTS mpesa_transactions_created_at_idx ON mpesa_transactions (created_at DESC);
 
+
+CREATE TABLE IF NOT EXISTS pos_payment_settlements (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  checkout_request_id TEXT NOT NULL UNIQUE REFERENCES mpesa_transactions(checkout_request_id) ON DELETE RESTRICT,
+  pos_order_id TEXT NOT NULL UNIQUE,
+  amount BIGINT NOT NULL CHECK (amount > 0),
+  settled_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  settled_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS pos_payment_settlements_settled_at_idx ON pos_payment_settlements (settled_at DESC);
 
 -- Authentication and role foundation
 CREATE TABLE IF NOT EXISTS users (
