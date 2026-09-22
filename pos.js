@@ -8,7 +8,8 @@ const MENU=[
 ['Fruit Salad','Desserts',250],['Ice Cream','Desserts',220],['Chocolate Cake','Desserts',300],['Mandazi','Breakfast',80],['Spanish Omelette','Breakfast',350],['Pancakes','Breakfast',300],['Full Breakfast','Breakfast',500]
 ];
 const seed={settings:{name:'Ederstone Restaurant',tax:0,service:0},tables:Array.from({length:16},(_,i)=>({id:i+1,status:'Open',order:[],paid:false})),menu:MENU,inventory:[['Rice','kg',32,10],['Chicken','kg',18,6],['Beef','kg',22,7],['Cooking Oil','L',20,5],['Potatoes','kg',45,12],['Passion','kg',8,4],['Mango','kg',12,4],['Soda','bottles',48,12],['Flour','kg',30,8],['Sugar','kg',18,5]],staff:[['Stone','Owner','Active'],['Cashier 01','Cashier','Active'],['Kitchen 01','Kitchen','Active'],['Waiter 01','Waiter','Active']],orders:[]};
-let db=JSON.parse(localStorage.getItem(KEY)||'null')||structuredClone(seed),cart=[],activeTable=null,orderType='Takeaway',payment='M-Pesa',category='All',currentView='dashboard',viewStack=[];
+let db=JSON.parse(localStorage.getItem(KEY)||'null')||structuredClone(seed),cart=[],activeTable=null,orderType='Takeaway',payment='M-Pesa',category='All',currentView=null,viewStack=[];
+if(!db.settings)db.settings=structuredClone(seed.settings); if(!Array.isArray(db.tables)||db.tables.length!==16)db.tables=structuredClone(seed.tables); if(!Array.isArray(db.menu)||!db.menu.length)db.menu=structuredClone(seed.menu); if(!Array.isArray(db.inventory))db.inventory=structuredClone(seed.inventory); if(!Array.isArray(db.staff))db.staff=structuredClone(seed.staff); if(!Array.isArray(db.orders))db.orders=[];
 const app=document.getElementById('app'),money=n=>'KSh '+Math.round(Number(n)||0).toLocaleString('en-KE'),save=()=>localStorage.setItem(KEY,JSON.stringify(db));
 function toast(m){let t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(window.tt);window.tt=setTimeout(()=>t.classList.remove('show'),2600)}
 function shell(title,sub,body){app.innerHTML='<section class="content"><div class="title-row"><div><div class="eyebrow">EDERSTONE / RESTAURANT POS</div><h1 class="title">'+title+'</h1><p class="sub">'+sub+'</p></div><div class="page-actions"><button class="action" onclick="goBack()">← Back</button><button class="action" onclick="view(\'dashboard\')">⌂ Home</button></div></div>'+body+'</section>'}
@@ -55,4 +56,11 @@ document.getElementById('logoutPos').onclick=()=>location.href='projects.html';
 document.getElementById('fullscreenPos').onclick=fullscreenPOS;
 setInterval(()=>{let c=document.getElementById('clock');if(c)c.textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})},1000);
 document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
-view('dashboard');
+
+// Make every POS action callable from HTML event handlers and resilient across browsers.
+Object.assign(window,{goBack,dashboard,tables,tableCard,newOrder,openTable,menuCards,orderView,subtotal,grand,addItem,changeQty,syncTable,clearCart,setCategory,setType,setPay,checkout,completeSale,openMpesa,closeModal,requestMpesa,pollMpesa,showReceipt,clearTable,orders,showReceiptById,kitchen,markReady,menu,addMenu,editMenu,inventory,stock,staff,reports,settings,saveSettings,resetPOS,fullscreenPOS,view});
+
+// Boot after the DOM is ready. The previous build initialized currentView to "dashboard"
+// and then immediately called view("dashboard"), causing the renderer to return early.
+function bootPOS(){ view('dashboard'); }
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bootPOS,{once:true}); else bootPOS();
