@@ -586,7 +586,9 @@ function shell(title,sub,body){
  app.innerHTML='<section class="content">'+
  '<div class="title-row"><div><div class="eyebrow">EDERSTONE / RESTAURANT POS</div><h1 class="title">'+esc(title)+'</h1><p class="sub">'+esc(sub)+'</p></div>'+
  '<div class="page-actions"><button class="action" data-action="back">← Back</button><button class="action" data-action="dashboard">⌂ Home</button></div></div>'+
- body+'</section>';
+ body+
+ '<footer class="pos-page-footer"><span>© 2026 EderStone Restaurant POS. All rights reserved.</span><span>ES • EderStone</span></footer>'+
+ '</section>';
 }
 
 function dashboard(){
@@ -810,12 +812,34 @@ async function pollMpesa(id,phone){
  var btn=document.getElementById('mpesaSend');if(btn){btn.disabled=false;btn.textContent='📲 Retry prompt';}
 }
 
+function receiptQrData(o){
+ var lines=['EDERSTONE RESTAURANT POS','Receipt: '+o.id,'Date: '+o.time,'Type: '+o.type+(o.table?' / Table '+o.table:'')];
+ (o.items||[]).forEach(function(x){lines.push(x.name+' x'+x.qty+' = '+money(x.price*x.qty));});
+ lines.push('TOTAL: '+money(o.total),'PAYMENT: '+o.payment,'© 2026 EderStone');
+ if(o.mpesa&&o.mpesa.phone)lines.push('M-PESA: '+o.mpesa.phone);
+ return lines.join('\n');
+}
+function receiptQrMarkup(o){
+ try{
+   var qr=qrcode(0,'M');
+   qr.addData(receiptQrData(o));
+   qr.make();
+   return '<div class="receipt-qr">'+qr.createSvgTag({cellSize:3,margin:4,scalable:true,alt:{text:'QR code containing the itemized receipt for '+o.id}})+'<small>Scan to view the purchased items and receipt details</small></div>';
+ }catch(e){
+   return '<div class="receipt-qr receipt-qr-error"><small>QR code unavailable. Receipt details remain printed above.</small></div>';
+ }
+}
 function showReceipt(o){
  setModal('<div class="section-head"><h3>Receipt '+esc(o.id)+'</h3><button class="action" data-action="close-modal">Close</button></div>'+
- '<div class="receipt"><h2>'+esc(db.settings.name)+'</h2><p>'+esc(o.time)+'<br>'+esc(o.type)+(o.table?' · Table '+o.table:'')+'</p><hr>'+
+ '<div class="receipt">'+
+ '<div class="receipt-brand"><span class="receipt-logo">ES</span><div><strong>EDERSTONE</strong><small>RESTAURANT POS</small></div></div>'+
+ '<div class="receipt-watermark" aria-hidden="true">ES</div>'+
+ '<div class="receipt-head"><h2>'+esc(db.settings.name)+'</h2><p>'+esc(o.time)+'<br>'+esc(o.type)+(o.table?' · Table '+o.table:'')+'</p></div>'+
+ receiptQrMarkup(o)+'<hr>'+
  o.items.map(function(x){return '<div class="order-line"><span>'+esc(x.name)+' ×'+x.qty+'</span><b>'+money(x.price*x.qty)+'</b></div>';}).join('')+
  '<hr><div class="order-line"><b>SUBTOTAL</b><b>'+money(o.subtotal)+'</b></div><div class="order-line"><b>TOTAL</b><b>'+money(o.total)+'</b></div><p>Payment: '+esc(o.payment)+'</p>'+
- (o.mpesa&&o.mpesa.phone?'<p>M-Pesa: '+esc(o.mpesa.phone)+'</p>':'')+'<center>Thank you. Come again.</center></div>'+
+ (o.mpesa&&o.mpesa.phone?'<p>M-Pesa: '+esc(o.mpesa.phone)+'</p>':'')+
+ '<div class="receipt-thanks">Thank you. Come again.</div><div class="receipt-copyright">© 2026 EderStone Restaurant POS. All rights reserved.</div></div>'+
  '<div class="actions"><button class="action primary big" data-action="print">Print receipt</button><button class="action big" data-action="close-modal">Close</button></div>');
 }
 function clearTable(id){
@@ -1128,6 +1152,11 @@ function bind(){
  var clock=document.getElementById('clock');
  setInterval(function(){if(clock)clock.textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});},1000);
  window.addEventListener('beforeunload',function(){if(cart.length)savePendingOrder('POS page closed with an unfinished order',false);});
+ setTimeout(function(){
+   document.body.classList.remove('pos-loading');
+   var opening=document.getElementById('posOpening');
+   if(opening){opening.classList.add('is-done');setTimeout(function(){opening.remove();},450);}
+ },5000);
  view('dashboard');
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
