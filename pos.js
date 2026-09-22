@@ -50,7 +50,7 @@ function settings(){shell('Settings','Configure the register.','<div class="pane
 function saveSettings(){db.settings.name=document.getElementById('rn').value||'Ederstone Restaurant';db.settings.tax=Number(document.getElementById('tx').value)||0;db.settings.service=Number(document.getElementById('sv').value)||0;save();toast('Settings saved');view('settings')}
 function resetPOS(){if(confirm('Reset all POS data?')){db=structuredClone(seed);save();view('dashboard')}}
 function fullscreenPOS(){if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()}
-function view(v,fromBack=false){if(v===currentView)return;if(!fromBack&&currentView)viewStack.push(currentView);currentView=v;document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('active',n.dataset.view===v));({dashboard,tables,orders,menu,kitchen,inventory,staff,reports,settings}[v]||dashboard)()}
+function view(v,fromBack=false){if(v===currentView){document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('active',n.dataset.view===v));({dashboard,tables,orders,menu,kitchen,inventory,staff,reports,settings}[v]||dashboard)();return}if(!fromBack&&currentView)viewStack.push(currentView);currentView=v;document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('active',n.dataset.view===v));({dashboard,tables,orders,menu,kitchen,inventory,staff,reports,settings}[v]||dashboard)()}
 document.querySelectorAll('.nav').forEach(n=>n.onclick=()=>view(n.dataset.view));
 document.getElementById('logoutPos').onclick=()=>location.href='projects.html';
 document.getElementById('fullscreenPos').onclick=fullscreenPOS;
