@@ -172,9 +172,28 @@ function setPay(p){payment=p;orderView();}
 
 function checkout(){
  if(!cart.length){toast('Add food before payment');return;}
+ openOrderConfirmation();
+}
+function openOrderConfirmation(){
+ var rows=cart.map(function(x){
+   return '<div class="order-line"><span>'+esc(x.name)+' ×'+x.qty+'</span><b>'+money(x.price*x.qty)+'</b></div>';
+ }).join('');
+ setModal('<div class="section-head"><div><div class="eyebrow">ORDER CONFIRMATION</div><h2>Confirm selected food</h2></div><button class="action" data-action="close-modal">×</button></div>'+
+ '<p class="muted">Please confirm that the selected food and quantities are correct before proceeding to payment.</p>'+
+ '<div class="receipt">'+rows+'<hr><div class="order-line"><strong>Total</strong><strong>'+money(grand())+'</strong></div></div>'+
+ '<div class="actions"><button class="action" data-action="close-modal">Review order</button><button class="action primary big" data-action="proceed-payment">Proceed to payment</button></div>');
+}
+function proceedPayment(){
+ closeModal();
  if(payment==='M-Pesa'){openMpesa();return;}
  if(payment==='Split'){openSplit();return;}
- completeSale(payment);
+ openCashCardPayment(payment);
+}
+function openCashCardPayment(method){
+ setModal('<div class="section-head"><div><div class="eyebrow">'+esc(method.toUpperCase())+' PAYMENT</div><h2>Complete payment</h2></div><button class="action" data-action="close-modal">×</button></div>'+
+ '<div class="mpesa-amount">'+money(grand())+'</div>'+
+ '<p class="muted">Confirm that you have received the full payment before completing this order.</p>'+
+ '<div class="actions"><button class="action" data-action="close-modal">Cancel</button><button class="action primary big" data-action="confirm-sale">✓ Payment received</button></div>');
 }
 function validateDelivery(){
  if(orderType!=='Delivery')return true;
@@ -191,7 +210,7 @@ function completeSale(method,extra){
  if(orderType==='Delivery')o.customer={name:document.getElementById('customerName').value.trim(),phone:document.getElementById('customerPhone').value.trim(),address:document.getElementById('deliveryAddress').value.trim()};
  db.orders.push(o);
  if(activeTable){var t=db.tables[activeTable-1];t.order=copy(cart);t.status='Busy';t.paid=true;t.ready=false;t.lastPayment=method;}
- cart=[];save();showReceipt(o);
+ cart=[];activeTable=null;save();showReceipt(o);
 }
 function openSplit(){
  setModal('<div class="section-head"><div><div class="eyebrow">SPLIT PAYMENT</div><h2>Complete split ticket</h2></div><button class="action" data-action="close-modal">Close</button></div>'+
@@ -235,7 +254,7 @@ async function pollMpesa(id,phone){
   try{
    var r=await fetch('/api/mpesa/query',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({checkoutRequestID:id})});
    var d=await r.json();
-   if(d.status==='success'){status.innerHTML='<span class="success">✓ Payment confirmed by M-Pesa.</span>';setTimeout(function(){closeModal();completeSale('M-Pesa',{phone:phone,checkoutRequestID:id});},500);return;}
+   if(d.status==='success'){status.innerHTML='<span class="success">✓ Payment confirmed by M-Pesa.</span>';setTimeout(function(){completeSale('M-Pesa',{phone:phone,checkoutRequestID:id});},500);return;}
    if(d.status==='failed'){status.innerHTML='<span class="danger">✕ Payment cancelled or failed.</span>';var b=document.getElementById('mpesaSend');if(b){b.disabled=false;b.textContent='📲 Retry prompt';}return;}
    status.textContent='Waiting for the customer to complete the M-Pesa prompt…';
   }catch(e){status.innerHTML='<span class="danger">Payment status check failed. Do not assume payment was received.</span>';return;}
@@ -335,6 +354,8 @@ function handleAction(el){
  if(a==='type')return setType(el.getAttribute('data-type'));
  if(a==='payment')return setPay(el.getAttribute('data-payment'));
  if(a==='checkout')return checkout();
+ if(a==='proceed-payment')return proceedPayment();
+ if(a==='confirm-sale')return completeSale(payment);
  if(a==='close-modal')return closeModal();
  if(a==='mpesa-send')return requestMpesa();
  if(a==='split-complete')return completeSplit();
@@ -357,7 +378,11 @@ function bind(){
  var full=document.getElementById('fullscreenPos');if(full)full.addEventListener('click',async function(){try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else if(document.exitFullscreen)await document.exitFullscreen();}catch(e){toast('Full screen is unavailable on this device');}});
  app.addEventListener('click',function(e){var el=e.target.closest('[data-action]');if(el)handleAction(el);});
  if(modal){
-   modal.addEventListener('click',function(e){if(e.target===modal)closeModal();});
+   modal.addEventListener('click',function(e){
+     var el=e.target.closest('[data-action]');
+     if(el)handleAction(el);
+     else if(e.target===modal)closeModal();
+   });
  }
  var clock=document.getElementById('clock');
  setInterval(function(){if(clock)clock.textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});},1000);
