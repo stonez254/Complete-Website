@@ -29,6 +29,9 @@
   async function push(){
     if(!navigator.onLine){if(!readQueue().length)enqueue();else markQueued();return false}
     if(syncing)return false;
+    const auth=window.EderStoneAuth;
+    if(!auth?.authenticated){lastError='Authentication required before server sync';emit();return false;}
+    if(auth.offline){markQueued();lastError='Waiting for trusted server authentication';emit();return false;}
     const local=localState();if(!local)return false;
     syncing=true;lastError=null;emit();
     try{
@@ -59,7 +62,11 @@
   }
   window.EderStonePOSSync=Object.freeze({pull,push,status:()=>({online:navigator.onLine,synced:serverVersion>0,syncing,queued,queueSize:readQueue().length,lastSyncAt,lastError,serverVersion}),clearQueue:()=>{writeQueue([]);queued=false;emit()}});
   window.addEventListener('offline',()=>{markQueued();});
-  window.addEventListener('online',()=>{pull().then(()=>push())});
+  window.addEventListener('online',async()=>{
+    try{await window.EderStoneAuthSession?.refresh?.();}catch(_){}
+    await pull();
+    await push();
+  });
   window.addEventListener('load',()=>{emit();pull()});
   window.addEventListener('ederstone:state-change',e=>{if(e.detail?.key!==KEY||e.detail?.source==='storage'||suppressPush)return;clearTimeout(window.__ederstoneSyncTimer);window.__ederstoneSyncTimer=setTimeout(push,900)});
 })();
