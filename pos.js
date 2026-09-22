@@ -163,6 +163,7 @@ function loadDB(){
    if(!Array.isArray(d.staff)) d.staff=copy(SEED.staff);
    if(!Array.isArray(d.orders)) d.orders=[];
    if(!Array.isArray(d.kitchenJobs)) d.kitchenJobs=[];
+   if(!Array.isArray(d.unfinishedTasks)) d.unfinishedTasks=[];
    return d;
  }catch(e){return freshDB();}
 }
@@ -184,6 +185,29 @@ function ingredientByName(name){return db.inventory.find(function(x){return x[0]
 function ensureRecipeIngredients(name,qty){var recipe=recipeFor(name),missing=[];recipe.forEach(function(r){var ing=ingredientByName(r[0]),need=Number(r[2])*qty,have=ing?Number(ing[2]):0;if(!ing||have+1e-9<need)missing.push({name:r[0],need:need,have:have,unit:r[1]});});return {ok:!missing.length,missing:missing};}
 function consumeRecipe(name,qty){recipeFor(name).forEach(function(r){var ing=ingredientByName(r[0]);if(ing)ing[2]=Math.max(0,Number(ing[2])-Number(r[2])*qty);});}
 function formatMissing(m){return m.map(function(x){return x.name+' ('+x.have.toFixed(3)+' '+x.unit+' left; need '+x.need.toFixed(3)+')';}).join(', ');}
+function addUnfinishedTask(type,title,details,data){
+ var key=type+'|'+title+'|'+JSON.stringify(data||{});
+ var exists=db.unfinishedTasks.some(function(t){return t.key===key&&t.status==='open';});
+ if(exists)return;
+ db.unfinishedTasks.push({id:'UT-'+Date.now().toString().slice(-8)+'-'+Math.floor(Math.random()*100),key:key,type:type,title:title,details:details||'',data:data||{},status:'open',created:new Date().toLocaleString()});
+ save();
+}
+function closeUnfinishedTask(id){
+ var t=db.unfinishedTasks.find(function(x){return x.id===id;});
+ if(!t)return;
+ t.status='resolved';t.resolved=new Date().toLocaleString();save();
+}
+function reviewUnfinishedTask(id){
+ var t=db.unfinishedTasks.find(function(x){return x.id===id&&x.status==='open';});
+ if(!t)return;
+ if(t.type==='chef'){
+   view('kitchen');
+   setTimeout(function(){openChefAssignment(t.data.food,Number(t.data.qty)||1,t.id);},60);
+ }else if(t.type==='restock'){
+   restockFilter=(t.data.ingredients||[]).slice();
+   view('inventory');
+ }
+}
 function kitchenChefs(){
  return db.staff.filter(function(x){
    var role=(String(x[1])+' '+String(x[0])).toLowerCase();
@@ -193,20 +217,22 @@ function kitchenChefs(){
 function chefBusy(name){
  return db.kitchenJobs.some(function(j){return j.chef===name&&j.status==='cooking';});
 }
-function openChefAssignment(food,qty){
+function openChefAssignment(food,qty,taskId){
  var available=kitchenChefs().filter(function(x){return !chefBusy(x[0]);});
  if(!available.length){
-   problemModal('No chef available','All kitchen staff currently have active cooking duties.',[
-     {label:'Open Kitchen',action:'go-kitchen',primary:true}
+   addUnfinishedTask('chef','Cook '+food+' ×'+qty,'Waiting for a free chef.',{food:food,qty:qty});
+   problemModal('No chef available','All kitchen staff currently have active cooking duties. The cooking task was saved under Unfinished Tasks.',[
+     {label:'Open unfinished tasks',action:'go-unfinished',primary:true},
+     {label:'Open Kitchen',action:'go-kitchen'}
    ]);
    return;
  }
  var buttons=available.map(function(x){
-   return '<button class="action primary" data-action="assign-chef" data-food="'+esc(food)+'" data-qty="'+qty+'" data-chef="'+esc(x[0])+'">Assign '+esc(x[0])+'</button>';
+   return '<button class="action primary" data-action="assign-chef" data-food="'+esc(food)+'" data-qty="'+qty+'" data-task="'+esc(taskId||'')+'" data-chef="'+esc(x[0])+'">Assign '+esc(x[0])+'</button>';
  }).join('');
  setModal('<div class="problem-modal"><div class="problem-icon">♨</div><div class="eyebrow">KITCHEN ASSIGNMENT</div><h2>Assign cooking duty</h2><p class="problem-reason">'+qty+' '+esc(food)+' will be prepared.</p><div class="problem-actions">'+buttons+'</div><button class="action" data-action="close-modal">Cancel</button></div>');
 }
-function assignChef(food,qty,chef){
+function assignChef(food,qty,chef,taskId){
  if(!food||qty<=0||!chef)return;
  if(chefBusy(chef)){toast(chef+' is already busy');return;}
  db.kitchenJobs.push({
@@ -214,7 +240,9 @@ function assignChef(food,qty,chef){
    food:food,qty:Number(qty),chef:chef,status:'cooking',
    started:new Date().toLocaleString(),finished:null
  });
- save();closeModal();kitchen();
+ save();
+ if(taskId)closeUnfinishedTask(taskId);
+ closeModal();kitchen();
  toast(chef+' assigned to cook '+qty+' '+food);
 }
 function finishKitchenJob(id){
@@ -241,6 +269,9 @@ function clearFinishedJob(id){
 }
 function assignLowStock(name){
  closeModal();
+ var s=db.foodStock.find(function(x){return x.name===name;});
+ var qty=Math.max(10,Number(s&&s.reorder||10));
+ addUnfinishedTask('chef','Cook '+name+' ×'+qty,'Prepared stock reached the low-stock threshold.',{food:name,qty:qty});
  view('kitchen');
  setTimeout(function(){openChefAssignment(name,10);},60);
 }
@@ -275,6 +306,7 @@ function openOrderStockProblem(name,available){
 }
 function openIngredientProblem(name,missing){
  restockFilter=missing.map(function(x){return x.name;});
+ addUnfinishedTask('restock','Restock ingredients for '+name,'Required ingredients: '+shortageText(missing),{food:name,ingredients:restockFilter.slice(),missing:missing});
  problemModal('Cooking denied','Not enough ingredients to prepare '+name+'. Missing: '+shortageText(missing),[
    {label:'View required restock',action:'go-restock',primary:true},
    {label:'Go to inventory',action:'go-inventory'}
@@ -511,6 +543,14 @@ function orders(){
  (db.orders.slice().reverse().map(function(o){return '<div class="order-card"><div class="order-line"><b>'+esc(o.id)+'</b><strong>'+money(o.total)+'</strong></div><div class="muted">'+esc(o.time)+' · '+esc(o.type)+' · '+esc(o.payment)+(o.table?' · Table '+o.table:'')+'</div><button class="action" data-action="receipt" data-id="'+esc(o.id)+'">View receipt</button></div>';}).join('')||'<p class="muted">No completed orders.</p>')+'</div>');
 }
 function showReceiptById(id){var o=db.orders.find(function(x){return x.id===id;});if(o)showReceipt(o);}
+function unfinishedTasks(){
+ var tasks=db.unfinishedTasks.filter(function(t){return t.status==='open';});
+ var body=tasks.map(function(t){
+   var icon=t.type==='chef'?'♨':'▤';
+   return '<div class="panel"><div class="section-head"><h3>'+icon+' '+esc(t.title)+'</h3><span class="badge warn">UNFINISHED</span></div><p class="muted">'+esc(t.details)+'<br>Created: '+esc(t.created)+'</p><div class="actions"><button class="action primary" data-action="review-task" data-id="'+esc(t.id)+'">Review</button><button class="action" data-action="resolve-task" data-id="'+esc(t.id)+'">Dismiss</button></div></div>';
+ }).join('')||'<div class="panel"><p class="muted">No unfinished tasks. Everything is up to date.</p></div>';
+ shell('Unfinished Tasks','Tasks that could not be completed immediately and require operator review.',collapsible('Pending task queue',body,'unfinishedList',true));
+}
 function kitchen(){var jobs=db.kitchenJobs.filter(function(j){return j.status==='cooking'||j.status==='finished';});var jobCards=jobs.map(function(j){return '<div class="panel"><div class="section-head"><h3>'+esc(j.food)+' ×'+j.qty+'</h3><span class="badge '+(j.status==='finished'?'good':'warn')+'">'+(j.status==='finished'?'COOKED':'COOKING')+'</span></div><p class="muted">Chef: '+esc(j.chef)+'<br>'+esc(j.started)+'</p>'+(j.status==='cooking'?'<button class="action primary" data-action="finish-job" data-id="'+j.id+'">✓ Chef confirms finished</button>':'<button class="action primary" data-action="clear-job" data-id="'+j.id+'">Clear chef / release</button>')+'</div>';}).join('')||'<p class="muted">No chef tasks.</p>';var tickets=db.tables.filter(function(t){return t.status==='Busy'&&!t.paid;});var ticketCards=tickets.map(function(t){return '<div class="panel"><div class="section-head"><h3>Table '+t.id+'</h3><span class="badge '+(t.ready?'good':'warn')+'">'+(t.ready?'READY':'COOKING')+'</span></div>'+t.order.map(function(x){return '<div class="cart-row"><span>'+esc(x.name)+'</span><b>×'+x.qty+'</b></div>';}).join('')+(t.ready?'<button class="action" data-action="unready" data-id="'+t.id+'">Return to cooking</button>':'<button class="action primary" data-action="ready" data-id="'+t.id+'">Mark ready</button>')+'</div>';}).join('')||'<p class="muted">Kitchen clear.</p>';shell('Kitchen','Chef assignments and dine-in food tickets.',collapsible('Chef task board',jobCards,'chefJobs',true)+collapsible('Dine-in tickets',ticketCards,'dineTickets',false));}
 function markReady(id){var t=db.tables[id-1];if(t&&t.status==='Busy'&&!t.paid){t.ready=true;save();kitchen();toast('Table '+id+' marked ready');}}
 function unready(id){var t=db.tables[id-1];if(t){t.ready=false;save();kitchen();}}
@@ -591,8 +631,11 @@ function handleAction(el){
  if(a==='confirm-sale')return completeSale(payment);
  if(a==='close-modal')return closeModal();
  if(a==='go-kitchen'){closeModal();return view('kitchen');}
+ if(a==='go-unfinished'){closeModal();return view('unfinished');}
+ if(a==='review-task')return reviewUnfinishedTask(el.getAttribute('data-id')||'');
+ if(a==='resolve-task'){closeUnfinishedTask(el.getAttribute('data-id')||'');return unfinishedTasks();}
  if(a==='toggle-collapse')return toggleCollapse(el.getAttribute('data-target'));
- if(a==='assign-chef')return assignChef(el.getAttribute('data-food')||'',Number(el.getAttribute('data-qty'))||0,el.getAttribute('data-chef')||'');
+ if(a==='assign-chef')return assignChef(el.getAttribute('data-food')||'',Number(el.getAttribute('data-qty'))||0,el.getAttribute('data-chef')||'',el.getAttribute('data-task')||'');
  if(a==='assign-low-stock')return assignLowStock(el.getAttribute('data-food')||'');
  if(a==='finish-job')return finishKitchenJob(el.getAttribute('data-id')||'');
  if(a==='clear-job')return clearFinishedJob(el.getAttribute('data-id')||'');
