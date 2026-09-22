@@ -141,7 +141,7 @@ var SEED={
  menu:MENU.map(function(x){return x.slice();}),
  inventory:[['Rice','kg',32,10],['Chicken','kg',18,6],['Beef','kg',22,7],['Fish','kg',10,3],['Cooking Oil','L',20,5],['Potatoes','kg',45,12],['Passion','kg',8,4],['Mango','kg',12,4],['Soda','bottles',48,12],['Flour','kg',30,8],['Sugar','kg',18,5],['Onions','kg',10,3],['Tomatoes','kg',10,3],['Sukuma','kg',8,2],['Maize','kg',15,4],['Beans','kg',15,4],['Cheese','kg',5,1],['Bread','pieces',60,12],['Eggs','pieces',120,20],['Carrots','kg',8,2],['Cabbage','kg',8,2],['Water','L',100,20],['Sugarcane','kg',20,5],['Tea Leaves','kg',3,1],['Milk','L',20,5],['Coffee','kg',3,1],['Mixed Fruit','kg',15,4],['Ice Cream Mix','kg',10,3],['Sausage','pieces',60,15],['Salt','kg',5,1],['Ginger','kg',3,0.8],['Garlic','kg',3,0.8],['Cinnamon','kg',1,0.25],['Cardamom','kg',1,0.25],['Cumin','kg',1,0.25],['Coriander','kg',1,0.25],['Turmeric','kg',1,0.25],['Black Pepper','kg',1,0.25],['Paprika','kg',1,0.25],['Curry Powder','kg',2,0.5],['Pilau Masala','kg',2,0.5],['Garam Masala','kg',1,0.25],['Chilli','kg',2,0.5],['Lemon','kg',5,1],['Coconut Milk','L',8,2],['Tomato Paste','kg',3,0.8],['Soy Sauce','L',3,0.8],['Vinegar','L',3,0.8],['Pasta','kg',10,2],['Spaghetti','kg',10,2],['Tuna','kg',5,1],['Avocado','kg',8,2],['Banana','kg',10,2],['Lentils','kg',8,2],['Coconut','kg',5,1],['Breadcrumbs','kg',5,1],['Yoghurt','L',5,1],['Vanilla','L',1,0.2],['Cocoa','kg',3,0.8],['Baking Powder','kg',2,0.5],['Lemon Juice','L',3,0.8],['Peas','kg',5,1],['Green Pepper','kg',5,1],['Coriander Leaves','kg',2,0.5],['Mint','kg',2,0.5],['Lettuce','kg',5,1],['Mayonnaise','L',4,1],['Ketchup','L',4,1],['Chicken Stock','L',5,1],['Beef Stock','L',5,1],['Vegetable Stock','L',5,1],['Cream','L',5,1],['Chocolate','kg',5,1],['Cloves','kg',1,0.25],['Butter','kg',3,0.8]],
  foodStock:MENU.map(function(x){return {name:x[0],qty:100,reorder:10,unit:'pieces'}; }),
- staff:[['Stone','Owner','Owner','seed'],['Cashier 01','Cashier','Cashier','seed'],['Kitchen 01','Kitchen','Kitchen Staff','seed'],['Waiter 01','Waiter','Waiter','seed']],
+ staff:[['Kitchen 01','Kitchen Staff','Kitchen Staff','seed'],['Delivery 01','Delivery Staff','Delivery Staff','seed'],['Waiter 01','Waiter','Waiter','seed']],
  orders:[],
  kitchenJobs:[],
  deliveryJobs:[],
@@ -165,10 +165,15 @@ function loadDB(){
    d.menu.forEach(function(m){if(!stockNames[m[0]])d.foodStock.push({name:m[0],qty:100,reorder:10,unit:'pieces'});});
    if(!Array.isArray(d.staff)) d.staff=copy(SEED.staff);
    d.staff=d.staff.map(function(s){
-     if(!Array.isArray(s))return ['Unnamed','Restaurant staff','Waiter','seed'];
-     if(!s[2]||s[2]==='Active')return [String(s[0]||'Unnamed'),String(s[1]||'Restaurant staff'),String(s[1]||'Waiter'),'seed'];
-     return [String(s[0]||'Unnamed'),String(s[1]||'Restaurant staff'),String(s[2]||'Waiter'),s[3]||'seed'];
-   });
+     if(!Array.isArray(s))return null;
+     var name=String(s[0]||'Unnamed').trim();
+     var rawRole=String(s[2]||s[1]||'').trim().toLowerCase();
+     var role=rawRole.indexOf('kitchen')!==-1||rawRole.indexOf('chef')!==-1||rawRole.indexOf('cook')!==-1?'Kitchen Staff':
+              rawRole.indexOf('delivery')!==-1?'Delivery Staff':
+              rawRole.indexOf('waiter')!==-1?'Waiter':null;
+     return role?[name,role,role,s[3]||'seed']:null;
+   }).filter(function(s){return !!s;});
+   if(!d.staff.length)d.staff=copy(SEED.staff);
    if(!Array.isArray(d.orders)) d.orders=[];
    if(!Array.isArray(d.kitchenJobs)) d.kitchenJobs=[];
    if(!Array.isArray(d.deliveryJobs)) d.deliveryJobs=[];
@@ -240,10 +245,7 @@ function reviewUnfinishedTask(id){
 }
 function staffRole(x){return String((x&&x[2])||((x&&x[1])||'')).trim();}
 function kitchenChefs(){
- return db.staff.filter(function(x){
-   var role=staffRole(x).toLowerCase();
-   return role==='chef'||role==='cook'||role==='kitchen staff'||role.indexOf('kitchen')!==-1||role.indexOf('cook')!==-1||role.indexOf('chef')!==-1;
- });
+ return db.staff.filter(function(x){return staffRole(x).toLowerCase()==='kitchen staff';});
 }
 function deliveryStaff(){
  return db.staff.filter(function(x){return staffRole(x).toLowerCase()==='delivery staff';});
@@ -292,7 +294,7 @@ function openChefAssignment(food,qty,taskId){
  var available=kitchenChefs().filter(function(x){return !chefBusy(x[0]);});
  if(!available.length){
    addUnfinishedTask('chef','Cook '+food+' ×'+qty,'Waiting for a free chef.',{food:food,qty:qty});
-   problemModal('No chef available','All kitchen staff currently have active cooking duties. The cooking task was saved under Unfinished Tasks.',[
+   problemModal('No Kitchen Staff available','All kitchen staff currently have active cooking duties. The cooking task was saved under Unfinished Tasks.',[
      {label:'Open unfinished tasks',action:'go-unfinished',primary:true},
      {label:'Open Kitchen',action:'go-kitchen'}
    ]);
@@ -301,7 +303,7 @@ function openChefAssignment(food,qty,taskId){
  var buttons=available.map(function(x){
    return '<button class="action primary" data-action="assign-chef" data-food="'+esc(food)+'" data-qty="'+qty+'" data-task="'+esc(taskId||'')+'" data-chef="'+esc(x[0])+'">Assign '+esc(x[0])+'</button>';
  }).join('');
- setModal('<div class="problem-modal"><div class="problem-icon">♨</div><div class="eyebrow">KITCHEN ASSIGNMENT</div><h2>Assign cooking duty</h2><p class="problem-reason">'+qty+' '+esc(food)+' will be prepared.</p><div class="problem-actions">'+buttons+'</div><button class="action" data-action="close-modal">Cancel</button></div>');
+ setModal('<div class="problem-modal"><div class="problem-icon">♨</div><div class="eyebrow">KITCHEN ASSIGNMENT</div><h2>Assign Kitchen Staff</h2><p class="problem-reason">'+qty+' '+esc(food)+' will be prepared.</p><div class="problem-actions">'+buttons+'</div><button class="action" data-action="close-modal">Cancel</button></div>');
 }
 function assignChef(food,qty,chef,taskId){
  if(!food||qty<=0||!chef)return;
@@ -348,7 +350,7 @@ function assignLowStock(name){
 }
 function lowStockReminder(name,remaining){
  if(Number(remaining)>10||Number(remaining)<0)return;
- setModal('<div class="problem-modal"><div class="problem-icon">⚠</div><div class="eyebrow">LOW STOCK REMINDER</div><h2>Stock is running low</h2><p class="problem-reason"><b>'+esc(name)+'</b> has only <b>'+Number(remaining)+'</b> prepared piece'+(Number(remaining)===1?'':'s')+' remaining.</p><div class="problem-actions"><button class="action primary" data-action="assign-low-stock" data-food="'+esc(name)+'">Assign chef now</button><button class="action" data-action="close-modal">Continue</button></div></div>');
+ setModal('<div class="problem-modal"><div class="problem-icon">⚠</div><div class="eyebrow">LOW STOCK REMINDER</div><h2>Stock is running low</h2><p class="problem-reason"><b>'+esc(name)+'</b> has only <b>'+Number(remaining)+'</b> prepared piece'+(Number(remaining)===1?'':'s')+' remaining.</p><div class="problem-actions"><button class="action primary" data-action="assign-low-stock" data-food="'+esc(name)+'">Assign Kitchen Staff now</button><button class="action" data-action="close-modal">Continue</button></div></div>');
 }
 function cookFood(i,qty){
  var s=db.foodStock[i];if(!s)return;
@@ -650,7 +652,7 @@ function unfinishedTasks(){
  }).join('')||'<div class="panel"><p class="muted">No unfinished tasks. Everything is up to date.</p></div>';
  shell('Unfinished Tasks','Tasks that could not be completed immediately and require operator review.',collapsible('Pending task queue',body,'unfinishedList',true));
 }
-function kitchen(){var jobs=db.kitchenJobs.filter(function(j){return j.status==='cooking'||j.status==='finished';});var jobCards=jobs.map(function(j){return '<div class="panel"><div class="section-head"><h3>'+esc(j.food)+' ×'+j.qty+'</h3><span class="badge '+(j.status==='finished'?'good':'warn')+'">'+(j.status==='finished'?'COOKED':'COOKING')+'</span></div><p class="muted">Chef: '+esc(j.chef)+'<br>'+esc(j.started)+'</p>'+(j.status==='cooking'?'<button class="action primary" data-action="finish-job" data-id="'+j.id+'">✓ Chef confirms finished</button>':'<button class="action primary" data-action="clear-job" data-id="'+j.id+'">Clear chef / release</button>')+'</div>';}).join('')||'<p class="muted">No chef tasks.</p>';var tickets=db.tables.filter(function(t){return t.status==='Busy'&&!t.paid;});var ticketCards=tickets.map(function(t){return '<div class="panel"><div class="section-head"><h3>Table '+t.id+'</h3><span class="badge '+(t.ready?'good':'warn')+'">'+(t.ready?'READY':'COOKING')+'</span></div>'+t.order.map(function(x){return '<div class="cart-row"><span>'+esc(x.name)+'</span><b>×'+x.qty+'</b></div>';}).join('')+(t.ready?'<button class="action" data-action="unready" data-id="'+t.id+'">Return to cooking</button>':'<button class="action primary" data-action="ready" data-id="'+t.id+'">Mark ready</button>')+'</div>';}).join('')||'<p class="muted">Kitchen clear.</p>';shell('Kitchen','Chef assignments and dine-in food tickets.',collapsible('Chef task board',jobCards,'chefJobs',true)+collapsible('Dine-in tickets',ticketCards,'dineTickets',false));}
+function kitchen(){var jobs=db.kitchenJobs.filter(function(j){return j.status==='cooking'||j.status==='finished';});var jobCards=jobs.map(function(j){return '<div class="panel"><div class="section-head"><h3>'+esc(j.food)+' ×'+j.qty+'</h3><span class="badge '+(j.status==='finished'?'good':'warn')+'">'+(j.status==='finished'?'COOKED':'COOKING')+'</span></div><p class="muted">Kitchen Staff: '+esc(j.chef)+'<br>'+esc(j.started)+'</p>'+(j.status==='cooking'?'<button class="action primary" data-action="finish-job" data-id="'+j.id+'">✓ Kitchen Staff confirms finished</button>':'<button class="action primary" data-action="clear-job" data-id="'+j.id+'">Clear Kitchen Staff / release</button>')+'</div>';}).join('')||'<p class="muted">No Kitchen Staff tasks.</p>';var tickets=db.tables.filter(function(t){return t.status==='Busy'&&!t.paid;});var ticketCards=tickets.map(function(t){return '<div class="panel"><div class="section-head"><h3>Table '+t.id+'</h3><span class="badge '+(t.ready?'good':'warn')+'">'+(t.ready?'READY':'COOKING')+'</span></div>'+t.order.map(function(x){return '<div class="cart-row"><span>'+esc(x.name)+'</span><b>×'+x.qty+'</b></div>';}).join('')+(t.ready?'<button class="action" data-action="unready" data-id="'+t.id+'">Return to cooking</button>':'<button class="action primary" data-action="ready" data-id="'+t.id+'">Mark ready</button>')+'</div>';}).join('')||'<p class="muted">Kitchen clear.</p>';shell('Kitchen','Kitchen Staff assignments and dine-in food tickets.',collapsible('Kitchen Staff task board',jobCards,'chefJobs',true)+collapsible('Dine-in tickets',ticketCards,'dineTickets',false));}
 function markReady(id){var t=db.tables[id-1];if(t&&t.status==='Busy'&&!t.paid){t.ready=true;save();kitchen();toast('Table '+id+' marked ready');}}
 function unready(id){var t=db.tables[id-1];if(t){t.ready=false;save();kitchen();}}
 function menu(){var rows='<div class="menu-grid">'+db.menu.map(function(x,i){return '<div class="item"><div class="category">'+esc(x[1])+'</div><div class="item-line"><b>'+esc(x[0])+'</b><strong>'+money(x[2])+'</strong></div><button class="action" data-action="edit-menu" data-index="'+i+'">Edit</button></div>';}).join('')+'</div>';shell('Menu Manager','Your live catalogue contains '+db.menu.length+' food and drink items.',collapsible('Menu catalogue',rows,'menuList',true)+'<div class="actions"><button class="action primary" data-action="add-menu">＋ Add item</button></div>');}
@@ -674,7 +676,7 @@ function inventory(){
    var idx=db.inventory.indexOf(x);
    return '<div class="item '+(low?'low-stock':'')+'"><div class="item-line"><b>'+esc(x[0])+'</b><strong>'+x[2]+' '+esc(x[1])+'</strong></div><div class="muted">'+(low?'⚠ Reorder now · ':'Reorder at ')+x[3]+' '+esc(x[1])+'</div><div class="actions"><button class="action" data-action="stock" data-index="'+idx+'" data-delta="-1">− 1</button><button class="action" data-action="stock" data-index="'+idx+'" data-delta="1">＋ 1</button><button class="action primary" data-action="receive-ingredient" data-index="'+idx+'">＋ Receive stock</button></div></div>';
  }).join('')||'<p class="muted">No ingredients currently require restocking.</p>';
- var foods='<div class="list">'+db.foodStock.map(function(s,i){return '<div class="item"><div class="item-line"><b>'+esc(s.name)+'</b><strong>'+s.qty+' pieces</strong></div><button class="action primary" data-action="cook-food" data-index="'+i+'">＋ Assign chef to cook</button></div>';}).join('')+'</div>';
+ var foods='<div class="list">'+db.foodStock.map(function(s,i){return '<div class="item"><div class="item-line"><b>'+esc(s.name)+'</b><strong>'+s.qty+' pieces</strong></div><button class="action primary" data-action="cook-food" data-index="'+i+'">＋ Assign Kitchen Staff</button></div>';}).join('')+'</div>';
  var filterNotice=restockFilter.length?'<div class="panel"><div class="section-head"><h3>Required restock only</h3><button class="action" data-action="clear-restock-filter">Show all</button></div><p class="muted">Only ingredients required for the blocked cooking task are shown below.</p></div>':'';
  shell('Kitchen Inventory','Track raw ingredients and prepared food stock.',filterNotice+collapsible('Raw ingredients',ingredients,'ingredientsList',true)+collapsible('Prepared food stock',foods,'preparedFoodList',true));
 }
@@ -682,34 +684,28 @@ function showRestockList(){view('inventory');}
 function stock(i,d){if(db.inventory[i]){db.inventory[i][2]=Math.max(0,Number(db.inventory[i][2])+Number(d));save();inventory();}}
 function foodStock(i,d){if(db.foodStock[i]){db.foodStock[i].qty=Math.max(0,Number(db.foodStock[i].qty)+Number(d));save();inventory();}}
 function staff(){
- var roles=["Manager","Supervisor","Cashier","Waiter","Chef","Cook","Kitchen Staff","Bartender","Cleaner","Delivery Staff","Inventory Clerk","Accountant","Security"];
+ var roles=['Kitchen Staff','Delivery Staff','Waiter'];
  var opts=roles.map(function(r){return '<option value="'+esc(r)+'">'+esc(r)+'</option>';}).join('');
- var grouped={};roles.forEach(function(r){grouped[r]=[];});
- db.staff.forEach(function(x,i){var r=staffRole(x)||'Other';if(!grouped[r])grouped[r]=[];grouped[r].push({s:x,i:i});});
- var groups=Object.keys(grouped).filter(function(r){return grouped[r].length;}).map(function(r){
+ var grouped={};
+ roles.forEach(function(r){grouped[r]=[];});
+ db.staff.forEach(function(x,i){
+   var r=staffRole(x);
+   if(roles.indexOf(r)!==-1)grouped[r].push({s:x,i:i});
+ });
+ var groups=roles.map(function(r){
    var cards=grouped[r].map(function(v){
-     var role=staffRole(v.s).toLowerCase(),busy=role==='delivery staff'?deliveryBusy(v.s[0]):chefBusy(v.s[0]);
-     return '<div class="staff-person"><div><b>'+esc(v.s[0])+'</b><small>'+esc(v.s[1]||'Restaurant staff')+'</small></div><span class="badge '+(busy?'warn':'good')+'">'+(busy?'BUSY':'AVAILABLE')+'</span></div>';
+     var busy=r==='Delivery Staff'?deliveryBusy(v.s[0]):r==='Kitchen Staff'?chefBusy(v.s[0]):false;
+     return '<div class="staff-person"><div><b>'+esc(v.s[0])+'</b><small>'+esc(r)+'</small></div><span class="badge '+(busy?'warn':'good')+'">'+(busy?'BUSY':'AVAILABLE')+'</span></div>';
    }).join('');
-   return '<div class="staff-category"><div class="staff-category-head"><h3>'+esc(r)+'</h3><span>'+grouped[r].length+'</span></div><div class="staff-category-list">'+cards+'</div></div>';
+   return '<div class="staff-category"><div class="staff-category-head"><h3>'+esc(r)+'</h3><span>'+grouped[r].length+'</span></div><div class="staff-category-list">'+(cards||'<small class="muted">No staff added yet.</small>')+'</div></div>';
  }).join('');
- shell('Staff','Add staff by category. Existing staff are protected here. Roles automatically connect to Kitchen and Delivery assignments.',
- '<div class="panel"><div class="section-head"><h3>Add staff</h3><span class="badge good">'+db.staff.length+' staff</span></div><form id="staffForm" class="form-grid"><div class="field"><label>NAME</label><input id="staffName" autocomplete="off" placeholder="e.g. Brian"></div><div class="field"><label>ROLE / CATEGORY</label><select id="staffRole">'+opts+'</select></div><button type="submit" class="action primary big" id="addStaffBtn">＋ Add staff</button></form></div><div class="staff-category-grid">'+(groups||'<div class="panel"><p class="muted">No staff members yet.</p></div>')+'</div>');
+ shell('Staff','Only Kitchen Staff, Delivery Staff and Waiter roles can be added. Availability is linked to active assignments.',
+ '<div class="panel"><div class="section-head"><h3>Add staff</h3><span class="badge good">'+db.staff.length+' staff</span></div><form id="staffForm" class="form-grid"><div class="field"><label>NAME</label><input id="staffName" autocomplete="off" placeholder="e.g. Brian"></div><div class="field"><label>STAFF CATEGORY</label><select id="staffRole">'+opts+'</select></div><button type="submit" class="action primary big" id="addStaffBtn">＋ Add staff</button></form></div><div class="staff-category-grid">'+groups+'</div>');
  var form=document.getElementById('staffForm');
  if(form)form.addEventListener('submit',function(e){e.preventDefault();addStaff();});
-}
-function editStaff(i){toast('Staff editing is reserved for Admin access');}
-function saveStaff(i){toast('Staff editing is reserved for Admin access');}
-function deleteStaff(i){toast('Staff removal is reserved for Admin access');}
-function addStaff(){var n=((document.getElementById('staffName')||{}).value||'').trim(),r=(document.getElementById('staffRole')||{}).value||'Waiter';if(!n){toast('Enter a staff name');return;}db.staff.push([n,'Added staff',r,'added']);save();staff();toast(n+' added as '+r);}
-function editStaff(i){
- var s=db.staff[i];if(!s)return;
- var roles=['Manager','Supervisor','Cashier','Waiter','Chef','Cook','Kitchen Staff','Bartender','Cleaner','Delivery Staff','Inventory Clerk','Accountant','Security'];
- setModal('<div class="section-head"><div><div class="eyebrow">STAFF MANAGEMENT</div><h2>Edit staff</h2></div><button class="action" data-action="close-modal">×</button></div><div class="form-grid"><div class="field"><label>NAME</label><input id="editStaffName" value="'+esc(s[0])+'"></div><div class="field"><label>ROLE</label><select id="editStaffRole">'+roles.map(function(r){return '<option value="'+esc(r)+'" '+(r===s[2]?'selected':'')+'>'+esc(r)+'</option>';}).join('')+'</select></div></div><div class="actions"><button class="action" data-action="close-modal">Cancel</button><button class="action primary" data-action="save-staff" data-index="'+i+'">Save changes</button></div>');
-}
-function addStaff(){var n=((document.getElementById('staffName')||{}).value||'').trim(),r=(document.getElementById('staffRole')||{}).value||'Waiter';if(!n){toast('Enter a staff name');return;}db.staff.push([n,'Restaurant staff',r,'added']);save();updateUnfinishedBadge();staff();toast(n+' added as '+r);}
-function saveStaff(i){var s=db.staff[i];if(!s)return;var n=((document.getElementById('editStaffName')||{}).value||'').trim(),r=(document.getElementById('editStaffRole')||{}).value||'Waiter';if(!n){toast('Enter a staff name');return;}s[0]=n;s[1]='Restaurant staff';s[2]=r;save();closeModal();staff();toast('Staff details updated');}
-function deleteStaff(i){var s=db.staff[i];if(!s)return;if(chefBusy(s[0])){toast('Cannot remove a chef with an active cooking task');return;}if(!window.confirm('Remove '+s[0]+' from staff?'))return;db.staff.splice(i,1);save();staff();toast('Staff member removed');}
+}function editStaff(i){toast('Staff editing is restricted to Admin access');}
+function saveStaff(i){toast('Staff editing is restricted to Admin access');}
+function deleteStaff(i){toast('Staff removal is restricted to Admin access');}
 function reports(){
  var s=db.orders.reduce(function(a,o){return a+Number(o.total||0);},0);
  shell('Reports','Sales performance from this register.','<div class="grid"><div class="stat"><small>GROSS SALES</small><strong>'+money(s)+'</strong></div><div class="stat"><small>AVERAGE TICKET</small><strong>'+money(db.orders.length?s/db.orders.length:0)+'</strong></div><div class="stat"><small>M-PESA</small><strong>'+money(db.orders.filter(function(o){return o.payment==='M-Pesa';}).reduce(function(a,o){return a+o.total;},0))+'</strong></div><div class="stat"><small>CASH</small><strong>'+money(db.orders.filter(function(o){return o.payment==='Cash';}).reduce(function(a,o){return a+o.total;},0))+'</strong></div></div>');
