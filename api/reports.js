@@ -14,7 +14,6 @@ export default async function handler(req,res){
   try{
     const auth=await requirePermission(new Request('http://localhost/api/reports.read',{method:'GET',headers:req.headers}),'reports.read');
     if(!auth.ok)return res.status(auth.response.status).json(await auth.response.json());
-    if(auth.user.role!=='owner'&&auth.user.role!=='manager')return json(res,{ok:false,error:'Forbidden'},403);
 
     const sql=neon(process.env.DATABASE_URL);
     const url=new URL(req.url,'http://localhost');
