@@ -141,8 +141,11 @@ var SEED={
  menu:MENU.map(function(x){return x.slice();}),
  inventory:[['Rice','kg',32,10],['Chicken','kg',18,6],['Beef','kg',22,7],['Fish','kg',10,3],['Cooking Oil','L',20,5],['Potatoes','kg',45,12],['Passion','kg',8,4],['Mango','kg',12,4],['Soda','bottles',48,12],['Flour','kg',30,8],['Sugar','kg',18,5],['Onions','kg',10,3],['Tomatoes','kg',10,3],['Sukuma','kg',8,2],['Maize','kg',15,4],['Beans','kg',15,4],['Cheese','kg',5,1],['Bread','pieces',60,12],['Eggs','pieces',120,20],['Carrots','kg',8,2],['Cabbage','kg',8,2],['Water','L',100,20],['Sugarcane','kg',20,5],['Tea Leaves','kg',3,1],['Milk','L',20,5],['Coffee','kg',3,1],['Mixed Fruit','kg',15,4],['Ice Cream Mix','kg',10,3],['Sausage','pieces',60,15],['Salt','kg',5,1],['Ginger','kg',3,0.8],['Garlic','kg',3,0.8],['Cinnamon','kg',1,0.25],['Cardamom','kg',1,0.25],['Cumin','kg',1,0.25],['Coriander','kg',1,0.25],['Turmeric','kg',1,0.25],['Black Pepper','kg',1,0.25],['Paprika','kg',1,0.25],['Curry Powder','kg',2,0.5],['Pilau Masala','kg',2,0.5],['Garam Masala','kg',1,0.25],['Chilli','kg',2,0.5],['Lemon','kg',5,1],['Coconut Milk','L',8,2],['Tomato Paste','kg',3,0.8],['Soy Sauce','L',3,0.8],['Vinegar','L',3,0.8],['Pasta','kg',10,2],['Spaghetti','kg',10,2],['Tuna','kg',5,1],['Avocado','kg',8,2],['Banana','kg',10,2],['Lentils','kg',8,2],['Coconut','kg',5,1],['Breadcrumbs','kg',5,1],['Yoghurt','L',5,1],['Vanilla','L',1,0.2],['Cocoa','kg',3,0.8],['Baking Powder','kg',2,0.5],['Lemon Juice','L',3,0.8],['Peas','kg',5,1],['Green Pepper','kg',5,1],['Coriander Leaves','kg',2,0.5],['Mint','kg',2,0.5],['Lettuce','kg',5,1],['Mayonnaise','L',4,1],['Ketchup','L',4,1],['Chicken Stock','L',5,1],['Beef Stock','L',5,1],['Vegetable Stock','L',5,1],['Cream','L',5,1],['Chocolate','kg',5,1],['Cloves','kg',1,0.25],['Butter','kg',3,0.8]],
  foodStock:MENU.map(function(x){return {name:x[0],qty:100,reorder:10,unit:'pieces'}; }),
- staff:[['Stone','Owner','Active'],['Cashier 01','Cashier','Active'],['Kitchen 01','Kitchen','Active'],['Waiter 01','Waiter','Active']],
- orders:[]
+ staff:[['Stone','Owner','Owner','seed'],['Cashier 01','Cashier','Cashier','seed'],['Kitchen 01','Kitchen','Kitchen Staff','seed'],['Waiter 01','Waiter','Waiter','seed']],
+ orders:[],
+ kitchenJobs:[],
+ deliveryJobs:[],
+ unfinishedTasks:[]
 };
 function copy(v){return JSON.parse(JSON.stringify(v));}
 function freshDB(){return copy(SEED);}
@@ -672,7 +675,7 @@ function staff(){
  var grouped={};roles.forEach(function(r){grouped[r]=[];});
  db.staff.forEach(function(x,i){var r=staffRole(x)||'Other';if(!grouped[r])grouped[r]=[];grouped[r].push({s:x,i:i});});
  var groups=Object.keys(grouped).filter(function(r){return grouped[r].length;}).map(function(r){
-   var cards=grouped[r].map(function(v){return '<div class="item"><div class="item-line"><div><b>'+esc(v.s[0])+'</b><div class="muted">'+esc(v.s[1]||'Restaurant staff')+'</div></div><span class="badge good">AVAILABLE</span></div></div>';}).join('');
+   var cards=grouped[r].map(function(v){var busy=staffRole(v.s).toLowerCase()==='delivery staff'?deliveryBusy(v.s[0]):chefBusy(v.s[0]);return '<div class="item"><div class="item-line"><div><b>'+esc(v.s[0])+'</b><div class="muted">'+esc(v.s[1]||'Restaurant staff')+'</div></div><span class="badge '+(busy?'warn':'good')+'">'+(busy?'BUSY':'AVAILABLE')+'</span></div></div>';}).join('');
    return collapsible(r+' · '+grouped[r].length, cards, 'staff_'+r.replace(/[^a-z0-9]/gi,'_'), false);
  }).join('');
  shell('Staff','Add staff by role. Existing staff records are protected from editing/removal here. Their roles automatically connect to Kitchen and Delivery workflows.', '<div class="panel"><div class="section-head"><h3>Add staff</h3><span class="badge good">'+db.staff.length+' staff</span></div><div class="form-grid"><div class="field"><label>NAME</label><input id="staffName" placeholder="e.g. Stone"></div><div class="field"><label>ROLE / CATEGORY</label><select id="staffRole">'+opts+'</select></div></div><button class="action primary big" data-action="add-staff">＋ Add staff</button></div><div class="panel"><div class="section-head"><h3>Staff categories</h3></div>'+groups+'</div>');
