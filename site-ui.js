@@ -141,15 +141,36 @@ function initPoemReader(){
    return nodes.length?nodes:[(target.innerText||target.textContent||'').replace(/\s+/g,' ').trim()];
  };
  const speak=(button,target)=>{
-   stop();state.button=button;button.classList.add('is-speaking');const label=button.querySelector('.reader-label');if(label)label.textContent='Stop reading';
-   const parts=split(target);const vs=voices();let idx=0;
+   stop();
+   state.button=button;
+   button.classList.add('is-speaking');
+   const label=button.querySelector('.reader-label');
+   if(label)label.textContent='Stop reading';
+   const status=button.parentElement.querySelector('.reader-status');
+   const parts=split(target);
+   const vs=voices();
+   let idx=0;
    const next=()=>{
      if(idx>=parts.length){stop();return}
-     const u=new SpeechSynthesisUtterance(parts[idx]);u.rate=state.settings.rate||.9;u.pitch=state.settings.pitch||1;u.volume=1;
-     let vi=state.settings.voiceIndexes?.[state.settings.mode==='four'?idx%4:0];if(vi!=null&&vs[vi]&&isAllowedVoice(vs[vi]))u.voice=vs[vi];else{const fallback=vs.find(isAllowedVoice);if(fallback)u.voice=fallback;}
-     const s=button.parentElement.querySelector('.reader-status');if(s)s.textContent=state.settings.mode==='four'?('Voice '+((idx%4)+1)+' · Reading…'):'Reading…';
-     u.onend=()=>{idx++;next()};u.onerror=()=>stop();state.queue.push(u);window.speechSynthesis.speak(u);
-   };next();
+     const text=parts[idx];
+     if(!text){idx++;next();return}
+     const u=new SpeechSynthesisUtterance(text);
+     u.rate=Number(state.settings.rate)||.9;
+     u.pitch=Number(state.settings.pitch)||1;
+     u.volume=1;
+     let vi=state.settings.voiceIndexes?.[state.settings.mode==='four'?idx%4:0];
+     if(vi!=null&&vs[vi]&&isAllowedVoice(vs[vi]))u.voice=vs[vi];
+     else{const fallback=vs.find(isAllowedVoice);if(fallback)u.voice=fallback;}
+     if(status)status.textContent=state.settings.mode==='four'?('Voice '+((idx%4)+1)+' · Starting…'):'Starting…';
+     u.onstart=()=>{if(status)status.textContent=state.settings.mode==='four'?('Voice '+((idx%4)+1)+' · Reading…'):'Reading…'};
+     u.onend=()=>{idx++;setTimeout(next,30)};
+     u.onerror=()=>{if(status)status.textContent='Voice playback stopped';stop()};
+     state.queue.push(u);
+     try{window.speechSynthesis.resume();window.speechSynthesis.speak(u)}catch(e){if(status)status.textContent='Voice playback is unavailable';stop()}
+   };
+   if(!parts.length){if(status)status.textContent='No poem text found';stop();return}
+   window.speechSynthesis.cancel();
+   setTimeout(()=>{window.speechSynthesis.resume();next()},40);
  };
  const globalSettings=[...document.querySelectorAll('[data-open-voice-settings]')];
  globalSettings.forEach(btn=>btn.addEventListener('click',()=>ensurePanel().hidden=false));
