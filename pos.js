@@ -209,12 +209,18 @@ function closeUnfinishedTask(id){
  if(!t)return;
  t.status='resolved';t.resolved=new Date().toLocaleString();save();
 }
+function restorePendingOrder(task){
+ if(!task||!task.data||!Array.isArray(task.data.cart))return false;
+ cart=copy(task.data.cart);activeTable=task.data.activeTable||null;orderType=task.data.orderType||'Takeaway';payment=task.data.payment||'M-Pesa';category='All';
+ return true;
+}
 function reviewUnfinishedTask(id){
  var t=db.unfinishedTasks.find(function(x){return x.id===id&&x.status==='open';});
  if(!t)return;
  if(t.type==='delivery'){
    openDeliveryAssignment(t.data&&t.data.orderId,t.id);
  }else if(t.type==='chef'){
+   restorePendingOrder(t);
    view('kitchen');
    setTimeout(function(){openChefAssignment(t.data.food,Number(t.data.qty)||1,t.id);},60);
  }else if(t.type==='restock'){
@@ -334,11 +340,10 @@ function clearFinishedJob(id){
  toast(j.chef+' is available again.');
 }
 function assignLowStock(name){
- closeModal();
  var s=db.foodStock.find(function(x){return x.name===name;});
  var qty=Math.max(10,Number(s&&s.reorder||10));
- var task=addUnfinishedTask('chef','Cook '+name+' ×'+qty,'Prepared stock reached the low-stock threshold.',{food:name,qty:qty});
- view('kitchen');
+ var task=addUnfinishedTask('chef','Cook '+name+' ×'+qty,'Prepared stock reached the low-stock threshold. The current order is saved and can be resumed after cooking.',{food:name,qty:qty,cart:copy(cart),activeTable:activeTable,orderType:orderType,payment:payment});
+ closeModal();view('kitchen');
  setTimeout(function(){openChefAssignment(name,qty,task&&task.id);},60);
 }
 function lowStockReminder(name,remaining){
@@ -673,10 +678,16 @@ function staff(){
  var grouped={};roles.forEach(function(r){grouped[r]=[];});
  db.staff.forEach(function(x,i){var r=staffRole(x)||'Other';if(!grouped[r])grouped[r]=[];grouped[r].push({s:x,i:i});});
  var groups=Object.keys(grouped).filter(function(r){return grouped[r].length;}).map(function(r){
-   var cards=grouped[r].map(function(v){var busy=staffRole(v.s).toLowerCase()==='delivery staff'?deliveryBusy(v.s[0]):chefBusy(v.s[0]);return '<div class="item"><div class="item-line"><div><b>'+esc(v.s[0])+'</b><div class="muted">'+esc(v.s[1]||'Restaurant staff')+'</div></div><span class="badge '+(busy?'warn':'good')+'">'+(busy?'BUSY':'AVAILABLE')+'</span></div></div>';}).join('');
-   return collapsible(r+' · '+grouped[r].length, cards, 'staff_'+r.replace(/[^a-z0-9]/gi,'_'), false);
+   var cards=grouped[r].map(function(v){
+     var role=staffRole(v.s).toLowerCase(),busy=role==='delivery staff'?deliveryBusy(v.s[0]):chefBusy(v.s[0]);
+     return '<div class="staff-person"><div><b>'+esc(v.s[0])+'</b><small>'+esc(v.s[1]||'Restaurant staff')+'</small></div><span class="badge '+(busy?'warn':'good')+'">'+(busy?'BUSY':'AVAILABLE')+'</span></div>';
+   }).join('');
+   return '<div class="staff-category"><div class="staff-category-head"><h3>'+esc(r)+'</h3><span>'+grouped[r].length+'</span></div><div class="staff-category-list">'+cards+'</div></div>';
  }).join('');
- shell('Staff','Add staff by role. Existing staff records are protected from editing/removal here. Their roles automatically connect to Kitchen and Delivery workflows.', '<div class="panel"><div class="section-head"><h3>Add staff</h3><span class="badge good">'+db.staff.length+' staff</span></div><div class="form-grid"><div class="field"><label>NAME</label><input id="staffName" placeholder="e.g. Stone"></div><div class="field"><label>ROLE / CATEGORY</label><select id="staffRole">'+opts+'</select></div></div><button class="action primary big" data-action="add-staff">＋ Add staff</button></div><div class="panel"><div class="section-head"><h3>Staff categories</h3></div>'+groups+'</div>');
+ shell('Staff','Add staff by category. Existing staff are protected here. Roles automatically connect to Kitchen and Delivery assignments.',
+ '<div class="panel"><div class="section-head"><h3>Add staff</h3><span class="badge good">'+db.staff.length+' staff</span></div><form id="staffForm" class="form-grid"><div class="field"><label>NAME</label><input id="staffName" autocomplete="off" placeholder="e.g. Brian"></div><div class="field"><label>ROLE / CATEGORY</label><select id="staffRole">'+opts+'</select></div><button type="submit" class="action primary big" id="addStaffBtn">＋ Add staff</button></form></div><div class="staff-category-grid">'+(groups||'<div class="panel"><p class="muted">No staff members yet.</p></div>')+'</div>');
+ var form=document.getElementById('staffForm');
+ if(form)form.addEventListener('submit',function(e){e.preventDefault();addStaff();});
 }
 function editStaff(i){toast('Staff editing is reserved for Admin access');}
 function saveStaff(i){toast('Staff editing is reserved for Admin access');}
@@ -687,7 +698,7 @@ function editStaff(i){
  var roles=['Manager','Supervisor','Cashier','Waiter','Chef','Cook','Kitchen Staff','Bartender','Cleaner','Delivery Staff','Inventory Clerk','Accountant','Security'];
  setModal('<div class="section-head"><div><div class="eyebrow">STAFF MANAGEMENT</div><h2>Edit staff</h2></div><button class="action" data-action="close-modal">×</button></div><div class="form-grid"><div class="field"><label>NAME</label><input id="editStaffName" value="'+esc(s[0])+'"></div><div class="field"><label>ROLE</label><select id="editStaffRole">'+roles.map(function(r){return '<option value="'+esc(r)+'" '+(r===s[2]?'selected':'')+'>'+esc(r)+'</option>';}).join('')+'</select></div></div><div class="actions"><button class="action" data-action="close-modal">Cancel</button><button class="action primary" data-action="save-staff" data-index="'+i+'">Save changes</button></div>');
 }
-function addStaff(){var n=((document.getElementById('staffName')||{}).value||'').trim(),r=(document.getElementById('staffRole')||{}).value||'Waiter';if(!n){toast('Enter a staff name');return;}db.staff.push([n,'Restaurant staff',r]);save();staff();toast(n+' added as '+r);}
+function addStaff(){var n=((document.getElementById('staffName')||{}).value||'').trim(),r=(document.getElementById('staffRole')||{}).value||'Waiter';if(!n){toast('Enter a staff name');return;}db.staff.push([n,'Restaurant staff',r,'added']);save();updateUnfinishedBadge();staff();toast(n+' added as '+r);}
 function saveStaff(i){var s=db.staff[i];if(!s)return;var n=((document.getElementById('editStaffName')||{}).value||'').trim(),r=(document.getElementById('editStaffRole')||{}).value||'Waiter';if(!n){toast('Enter a staff name');return;}s[0]=n;s[1]='Restaurant staff';s[2]=r;save();closeModal();staff();toast('Staff details updated');}
 function deleteStaff(i){var s=db.staff[i];if(!s)return;if(chefBusy(s[0])){toast('Cannot remove a chef with an active cooking task');return;}if(!window.confirm('Remove '+s[0]+' from staff?'))return;db.staff.splice(i,1);save();staff();toast('Staff member removed');}
 function reports(){
