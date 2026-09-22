@@ -13,6 +13,15 @@
 
   const recordSale = (order, stockItems, tableNumber) => {
     const db = getDB();
+    const saleId = String(order?.id || '');
+    if (!saleId) return { ok: false, error: 'Sale ID is required' };
+    if (!Array.isArray(db.orders)) db.orders = [];
+
+    // Idempotency guard: a retry with the same sale ID must never
+    // deduct stock or append a second order.
+    const existing = db.orders.find(item => String(item?.id || '') === saleId);
+    if (existing) return { ok: true, duplicate: true, order: clone(existing) };
+
     const items = clone(stockItems || []);
     const missing = [];
 
@@ -31,7 +40,6 @@
       stock.qty = Math.max(0, Number(stock.qty || 0) - Number(item.qty || 0));
     });
 
-    if (!Array.isArray(db.orders)) db.orders = [];
     db.orders.push(clone(order));
 
     if (tableNumber) {
