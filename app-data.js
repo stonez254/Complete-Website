@@ -43,6 +43,13 @@
     recipes: domain('recipes')
   });
 
+  const sync = Object.freeze({
+    enabled: () => !!window.EderStonePOSSync,
+    pull: () => window.EderStonePOSSync?.pull?.(),
+    push: () => window.EderStonePOSSync?.push?.(),
+    status: () => window.EderStonePOSSync?.status?.() || { online: navigator.onLine, synced: false }
+  });
+
   window.EderStoneData = Object.freeze({
     version: 2,
     defaults,
@@ -52,6 +59,7 @@
       if (!(key in defaults)) return false;
       return set(key, defaults[key]);
     },
-    pos
+    pos,
+    sync
   });
 })();
