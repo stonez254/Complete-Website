@@ -1005,9 +1005,8 @@ function saveMenuDraft(){
  if(recipe.length!==document.querySelectorAll('#newMenuIngredients .menu-ingredient-row').length){toast('Complete every ingredient row before saving');return;}
  setModal('<div class="problem-modal"><div class="problem-icon">✓</div><div class="eyebrow">CONFIRM FOOD</div><h2>'+esc(name)+'</h2><div class="panel"><div class="order-line"><span>Category</span><b>'+esc(cat)+'</b></div><div class="order-line"><span>Price</span><b>'+money(price)+'</b></div><div class="order-line"><span>Ingredients</span><b>'+recipe.length+' per unit</b></div>'+recipe.map(function(r){return '<div class="order-line"><span>'+esc(r[0])+'</span><b>'+r[2]+' '+esc(r[1])+'</b></div>';}).join('')+'</div><p class="problem-reason">Save this food and link its recipe to Inventory?</p><div class="problem-actions"><button class="action primary" data-action="confirm-add-menu" data-name="'+esc(name)+'" data-price="'+price+'" data-category="'+esc(cat)+'" data-recipe="'+esc(JSON.stringify(recipe))+'">Yes, save food</button><button class="action" data-action="edit-add-menu" data-name="'+esc(name)+'" data-price="'+price+'" data-category="'+esc(cat)+'" data-recipe="'+esc(JSON.stringify(recipe))+'">Edit</button></div></div>');
 }
-function commitMenu(
+function commitMenu(name,price,cat,recipeJson){
  if(!ederStoneCan('menu.manage')){toast('Menu management is restricted');return;}
- name,price,cat,recipeJson){
  var clean=String(name||'').trim(),p=Number(price),recipe=[];
  try{recipe=JSON.parse(recipeJson||'[]');}catch(e){recipe=[];}
  if(!clean||!isFinite(p)||p<=0||!recipe.length){toast('Food details are incomplete');return;}
@@ -1035,9 +1034,8 @@ function inventory(){
  shell('Kitchen Inventory','Track raw ingredients and prepared food stock.',filterNotice+collapsible('Raw ingredients',ingredients,'ingredientsList',true)+collapsible('Prepared food stock',foods,'preparedFoodList',true));
 }
 function showRestockList(){view('inventory');}
-function stock(
- if(!ederStoneCan('inventory.manage')){toast('Inventory management is restricted');return;}
- i,d){if(db.inventory[i]){db.inventory[i][2]=Math.max(0,Number(db.inventory[i][2])+Number(d));save();inventory();}}
+function stock(i,d){
+ if(!ederStoneCan('inventory.manage')){toast('Inventory management is restricted');return;}if(db.inventory[i]){db.inventory[i][2]=Math.max(0,Number(db.inventory[i][2])+Number(d));save();inventory();}}
 function foodStock(i,d){if(db.foodStock[i]){db.foodStock[i].qty=Math.max(0,Number(db.foodStock[i].qty)+Number(d));save();inventory();}}
 function staff(){
  var roles=['Kitchen Staff','Delivery Staff','Waiter'];
