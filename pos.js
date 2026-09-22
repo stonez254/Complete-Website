@@ -152,8 +152,9 @@ function copy(v){return JSON.parse(JSON.stringify(v));}
 function freshDB(){return copy(SEED);}
 function loadDB(){
  try{
+   var shared=window.EderStoneStore&&window.EderStoneStore.get('pos',null);
    var raw=localStorage.getItem(KEY);
-   var d=raw?JSON.parse(raw):freshDB();
+   var d=shared&&typeof shared==='object'?shared:(raw?JSON.parse(raw):freshDB());
    if(!d||typeof d!=='object') d=freshDB();
    if(!d.settings||typeof d.settings!=='object') d.settings=copy(SEED.settings);
    if(!Array.isArray(d.tables)||d.tables.length!==16) d.tables=copy(SEED.tables);
@@ -199,7 +200,13 @@ var restockFilter=[];
 var deliveryCustomer={name:'',phone:'',address:''};
 var pendingCookOrder=null;
 
-function save(){try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){}}
+function save(){
+ try{
+   if(window.EderStoneStore) window.EderStoneStore.set('pos',db);
+   // Keep the legacy key during migration so older POS sessions can recover safely.
+   localStorage.setItem(KEY,JSON.stringify(db));
+ }catch(e){}
+}
 function recipeFor(name){return (db&&db.recipes&&db.recipes[name])||RECIPES[name]||[];}
 function ingredientByName(name){return db.inventory.find(function(x){return x[0]===name;});}
 function ensureRecipeIngredients(name,qty){var recipe=recipeFor(name),missing=[];recipe.forEach(function(r){var ing=ingredientByName(r[0]),need=Number(r[2])*qty,have=ing?Number(ing[2]):0;if(!ing||have+1e-9<need)missing.push({name:r[0],need:need,have:have,unit:r[1]});});return {ok:!missing.length,missing:missing};}
