@@ -15,7 +15,7 @@ const verifyPassword = (password, stored) => {
 const tokenHash = token => crypto.createHash('sha256').update(token).digest('hex');
 const legacyCookie = request => {
   const raw = request.headers.get('cookie') || '';
-  const match = raw.match(/(?:^|;\\s*)__Host-ederstone_session=([^;]+)/);
+  const match = raw.match(/(?:^|;\s*)__Host-ederstone_session=([^;]+)/);
   if (!match) return null;
   const [payload, signature] = decodeURIComponent(match[1]).split('.');
   const secret = process.env.PORTFOLIO_AUTH_SECRET;
@@ -25,7 +25,7 @@ const legacyCookie = request => {
   const exp = Number(Buffer.from(payload, 'base64url').toString());
   return Number.isFinite(exp) && exp > Date.now() ? exp : null;
 };
-const sessionToken = request => { const raw = request.headers.get('cookie') || ''; const match = raw.match(/(?:^|;\\s*)ederstone_session=([^;]+)/); return match ? decodeURIComponent(match[1]) : null; };
+const sessionToken = request => { const raw = request.headers.get('cookie') || ''; const match = raw.match(/(?:^|;\s*)ederstone_session=([^;]+)/); return match ? decodeURIComponent(match[1]) : null; };
 const cookie = token => 'ederstone_session=' + encodeURIComponent(token) + '; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800';
 const clearCookie = 'ederstone_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0';
 const authAttempts = new Map();
