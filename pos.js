@@ -497,13 +497,22 @@ function addItem(i){
  var stock=db.foodStock.find(function(s){return s.name===x[0];});
  var found=cart.find(function(c){return c.name===x[0];});
  var requested=(found?found.qty:0)+1;
- if(stock&&requested>Number(stock.qty||0)){openOrderStockProblem(x[0],Number(stock.qty||0));return;}
+ if(stock&&requested>Number(stock.qty||0)){
+   var pendingCart=copy(cart);
+   var pendingLine=pendingCart.find(function(q){return q.name===x[0];});
+   if(pendingLine)pendingLine.qty=requested;else pendingCart.push({name:x[0],price:Number(x[2]),qty:1});
+   openOrderStockProblem(x[0],Number(stock.qty||0),pendingCart);return;
+}
  if(found)found.qty++;else cart.push({name:x[0],price:Number(x[2]),qty:1});
  syncTable();orderView();toast(x[0]+' added');if(stock)lowStockReminder(x[0],Number(stock.qty||0)-requested);
 }
 function changeQty(i,d){
  if(!cart[i])return;
- if(d>0){var stock=db.foodStock.find(function(s){return s.name===cart[i].name;});if(stock&&cart[i].qty+d>Number(stock.qty||0)){openOrderStockProblem(cart[i].name,Number(stock.qty||0));return;}}
+ if(d>0){var stock=db.foodStock.find(function(s){return s.name===cart[i].name;});if(stock&&cart[i].qty+d>Number(stock.qty||0)){
+   var pendingCart=copy(cart);
+   pendingCart[i].qty=Number(pendingCart[i].qty||0)+d;
+   openOrderStockProblem(cart[i].name,Number(stock.qty||0),pendingCart);return;
+ }}
  cart[i].qty+=d;if(cart[i].qty<=0){cart.splice(i,1);} 
  syncTable();orderView();
  if(d>0){var remaining=stock?Number(stock.qty||0)-Number(cart[i]&&cart[i].qty||0):null;if(stock&&remaining>=0&&remaining<=10)lowStockReminder(cart[i].name,remaining);}
