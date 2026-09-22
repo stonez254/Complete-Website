@@ -18,8 +18,8 @@
     return user;
   }
 
-  async function bootstrap(){
-    if(booted) return user;
+  async function bootstrap(force=false){
+    if(booted && !force) return user;
     try{
       const response=await fetch('/api/auth',{credentials:'include',cache:'no-store'});
       const data=await response.json().catch(()=>({}));
@@ -43,7 +43,8 @@
     }
   }
 
-  window.EderStoneAuthSession=Object.freeze({bootstrap,user:()=>user});
+  window.EderStoneAuthSession=Object.freeze({bootstrap,user:()=>user,refresh:()=>bootstrap(true)});
+  window.addEventListener('online',()=>{bootstrap(true);});
   if(!publicPaths.has(location.pathname)) {
     if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bootstrap,{once:true});
     else bootstrap();
