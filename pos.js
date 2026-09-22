@@ -745,7 +745,7 @@ function commitStaff(name,role){
  staff();
  toast(clean+' added as '+cleanRole);
 }
-function editStaff(i){toast('Staff editing is restricted to Admin access');}(i){toast('Staff editing is restricted to Admin access');}
+function editStaff(i){toast('Staff editing is restricted to Admin access');}
 function saveStaff(i){toast('Staff editing is restricted to Admin access');}
 function deleteStaff(i){toast('Staff removal is restricted to Admin access');}
 function reports(){
