@@ -53,6 +53,33 @@ export async function POST(request) {
     return json({ok:true,authenticated:true,user:{id:user.id,display_name:user.display_name,username:user.username,role:user.role}},200,{'set-cookie':cookie(token)});
   } catch(error) { console.error('Auth request failed:',error?.message||error); return json({ok:false,error:'Authentication service unavailable'},503); }
 }
+export async function requireRole(request, roles = []) {
+  const user = await currentUser(request);
+  const allowed = Array.isArray(roles) ? roles : [roles];
+  if (!user || !user.active || (allowed.length && !allowed.includes(user.role) && user.role !== 'owner')) {
+    return { ok: false, user: null, response: json({ ok: false, error: 'Forbidden' }, 403) };
+  }
+  return { ok: true, user, response: null };
+}
+
+export async function requirePermission(request, permission) {
+  const user = await currentUser(request);
+  const matrix = {
+    owner: ['*'],
+    manager: ['pos.read','pos.write','menu.manage','inventory.manage','reports.read','staff.read'],
+    cashier: ['pos.read','pos.write','receipts.read'],
+    kitchen: ['pos.read','kitchen.manage'],
+    waiter: ['pos.read','orders.create'],
+    delivery: ['delivery.read','delivery.update'],
+    viewer: ['reports.read']
+  };
+  const permissions = matrix[user?.role] || [];
+  if (!user || !user.active || (!permissions.includes('*') && !permissions.includes(permission))) {
+    return { ok: false, user: null, response: json({ ok: false, error: 'Forbidden' }, 403) };
+  }
+  return { ok: true, user, response: null };
+}
+
 export async function staffApi(request) {
   const user = await currentUser(request);
   if (!user || !['owner','manager'].includes(user.role)) return json({ok:false,error:'Forbidden'},403);
