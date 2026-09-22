@@ -1,2 +1,20 @@
 import { requirePermission } from './auth.js';
-export default async function handler(req,res){const u=await currentUser(new Request('http://local/api/inventory',{method:req.method,headers:req.headers}));if(!u)return res.status(401).json({ok:false,error:'Authentication required'});if(!['owner','manager'].includes(u.role))return res.status(403).json({ok:false,error:'Forbidden'});return res.status(200).json({ok:true,authorized:true,role:u.role});}
+
+const json = (body, status = 200) => new Response(JSON.stringify(body), {
+  status,
+  headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }
+});
+
+export default async function handler(req, res) {
+  try {
+    const request = new Request('http://localhost/api/inventory.js', {
+      method: req.method,
+      headers: req.headers
+    });
+    const auth = await requirePermission(request, 'inventory.manage');
+    if (!auth.ok) return res.status(auth.response.status).json(await auth.response.json());
+    return res.status(200).json({ ok: true, authorized: true, role: auth.user.role });
+  } catch (_) {
+    return res.status(503).json({ ok: false, error: 'Authorization service unavailable' });
+  }
+}
