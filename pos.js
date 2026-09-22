@@ -129,7 +129,7 @@ function setModal(html){
 }
 function closeModal(){if(modal)modal.classList.remove('show');}
 
-function shell(title,sub,body){
+function collapsible(title,body,id,open){return '<div class="panel collapsible-panel"><button class="action collapse-toggle '+(open?'open':'')+'" data-action="toggle-collapse" data-target="'+id+'"><span>'+esc(title)+'</span><span class="chevron">⌄</span></button><div id="'+id+'" class="collapsible-list '+(open?'open':'')+'">'+body+'</div></div>\n}\nfunction toggleCollapse(id){var el=document.getElementById(id);if(!el)return;var btn=document.querySelector('[data-target="'+id+'"]');el.classList.toggle('open');if(btn)btn.classList.toggle('open',el.classList.contains('open'));}\nfunction shell(title,sub,body){
  if(!app)return;
  app.innerHTML='<section class="content">'+
  '<div class="title-row"><div><div class="eyebrow">EDERSTONE / RESTAURANT POS</div><h1 class="title">'+esc(title)+'</h1><p class="sub">'+esc(sub)+'</p></div>'+
@@ -440,7 +440,7 @@ function handleAction(el){
  if(a==='checkout')return checkout();
  if(a==='proceed-payment')return proceedPayment();
  if(a==='confirm-sale')return completeSale(payment);
- if(a==='close-modal')return closeModal();
+ if(a==='close-modal')return closeModal();\n if(a==='toggle-collapse')return toggleCollapse(el.getAttribute('data-target'));
  if(a==='go-kitchen'){return goKitchenForFood(el.getAttribute('data-food')||'');}
  if(a==='go-inventory'){closeModal();return view('inventory');}
  if(a==='mpesa-send')return requestMpesa();
