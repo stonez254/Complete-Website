@@ -21,8 +21,9 @@ export default async function handler(req,res){
     const amount=value('Amount');
     const phone=value('PhoneNumber');
     const incomingStatus=resultCode===0?'success':'failed';
-    const stored=await sql`SELECT amount,status FROM mpesa_transactions WHERE checkout_request_id=${checkoutRequestID} LIMIT 1`;
+    const stored=await sql`SELECT amount,status,merchant_request_id FROM mpesa_transactions WHERE checkout_request_id=${checkoutRequestID} LIMIT 1`;
     if(!stored.length)return json(res,{ResultCode:0,ResultDesc:'Accepted'});
+    if(stored[0].merchant_request_id && merchantRequestID && String(stored[0].merchant_request_id)!==String(merchantRequestID))return json(res,{ResultCode:1,ResultDesc:'Callback transaction mismatch'},400);
     const storedAmount=Number(stored[0].amount||0);
     const callbackAmount=Number(amount||0);
     const amountMissing=incomingStatus==='success'&&(!Number.isSafeInteger(callbackAmount)||callbackAmount<=0); const amountMismatch=incomingStatus==='success'&&(amountMissing||callbackAmount!==storedAmount);
