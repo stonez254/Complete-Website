@@ -87,3 +87,4 @@ body.pos-loading .pos-shell{visibility:hidden}
 }
 
 .sync-pill{position:fixed;top:12px;right:14px;z-index:50;display:flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid rgba(255,255,255,.12);border-radius:999px;background:rgba(5,5,5,.82);backdrop-filter:blur(8px);font-size:12px}.sync-dot{width:7px;height:7px;border-radius:50%;background:#62ffb0;box-shadow:0 0 8px currentColor}.sync-pill.is-offline .sync-dot{background:#ffb347}.sync-pill.is-syncing .sync-dot{background:#66d9ff;animation:ederstoneSyncPulse 1s infinite}.sync-pill.is-conflict .sync-dot{background:#ff6262}@keyframes ederstoneSyncPulse{50%{opacity:.35;transform:scale(.7)}}
+.sync-action{border:0;background:transparent;color:inherit;font-size:15px;line-height:1;padding:0 1px;cursor:pointer}.sync-action:disabled{opacity:.45;cursor:wait}.sync-action:focus-visible{outline:2px solid currentColor;outline-offset:2px}
