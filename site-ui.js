@@ -324,4 +324,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   const load=s=>{if(!document.querySelector('script[src="'+s+'"]')){const x=document.createElement('script');x.src=s;x.defer=true;document.head.appendChild(x);}};
   if(location.pathname!=='/auth'&&location.pathname!=='/auth.html'&&location.pathname!=='/access-loader'&&location.pathname!=='/access-loader.html') load('/session-manager.js');
   load('/logout.js');
+  load('/auth-session.js');
 })();
