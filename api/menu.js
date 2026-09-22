@@ -1,3 +1,20 @@
 import { requirePermission } from './auth.js';
-const json=(b,s=200)=>new Response(JSON.stringify(b),{status:s,headers:{'content-type':'application/json','cache-control':'no-store'}});
-export default async function handler(req,res){const u=await currentUser(new Request('http://local'+(req.url||'/api/menu'),{method:req.method,headers:req.headers}));if(!u)return res.status(401).json({ok:false,error:'Authentication required'});const allowed=u.role==='owner'||u.role==='manager'||u.role==='cashier'||u.role==='waiter'||u.role==='kitchen';if(!allowed)return res.status(403).json({ok:false,error:'Forbidden'});return res.status(200).json({ok:true,authorized:true,role:u.role});}
+
+const json = (body, status = 200) => new Response(JSON.stringify(body), {
+  status,
+  headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }
+});
+
+export default async function handler(req, res) {
+  try {
+    const request = new Request('http://localhost/api/menu.js', {
+      method: req.method,
+      headers: req.headers
+    });
+    const auth = await requirePermission(request, 'menu.manage');
+    if (!auth.ok) return res.status(auth.response.status).json(await auth.response.json());
+    return res.status(200).json({ ok: true, authorized: true, role: auth.user.role });
+  } catch (_) {
+    return res.status(503).json({ ok: false, error: 'Authorization service unavailable' });
+  }
+}
