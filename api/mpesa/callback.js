@@ -25,9 +25,9 @@ export default async function handler(req,res){
     if(!stored.length)return json(res,{ResultCode:0,ResultDesc:'Accepted'});
     const storedAmount=Number(stored[0].amount||0);
     const callbackAmount=Number(amount||0);
-    const amountMismatch=incomingStatus==='success'&&callbackAmount>0&&callbackAmount!==storedAmount;
+    const amountMissing=incomingStatus==='success'&&(!Number.isSafeInteger(callbackAmount)||callbackAmount<=0); const amountMismatch=incomingStatus==='success'&&(amountMissing||callbackAmount!==storedAmount);
     const status=amountMismatch?'failed':(stored[0].status==='success'?'success':incomingStatus);
-    const safeMessage=amountMismatch?'Payment amount mismatch with the requested STK amount':String(resultDesc||'');
+    const safeMessage=amountMismatch?(amountMissing?'Payment callback did not include a valid amount':'Payment amount mismatch with the requested STK amount'):String(resultDesc||'');
     const reference=metadata.length?String(value('AccountReference')||''):'';
     const rows=await sql`
       UPDATE mpesa_transactions
