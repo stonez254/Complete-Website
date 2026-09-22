@@ -195,6 +195,7 @@ var app=null;
 var modal=null;
 var restockFilter=[];
 var deliveryCustomer={name:'',phone:'',address:''};
+var pendingCookOrder=null;
 
 function save(){try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){}}
 function recipeFor(name){return (db&&db.recipes&&db.recipes[name])||RECIPES[name]||[];}
@@ -469,9 +470,10 @@ function problemModal(title,reason,actions){
 function shortageText(missing){
  return missing.map(function(x){return x.name+': need '+x.need.toFixed(3)+' '+x.unit+', available '+x.have.toFixed(3)+' '+x.unit;}).join(' | ');
 }
-function openOrderStockProblem(name,available,qty){
+function openOrderStockProblem(name,available,pendingCart){
+ pendingCookOrder={cart:copy(pendingCart||[]),food:name,activeTable:activeTable,orderType:orderType,payment:payment};
  problemModal('Food not prepared',name+' has no prepared stock. Choose Cook Food to prepare it before adding it to the order.',[
-   {label:'Cook this food',action:'cook-food-from-order',primary:true,food:name,qty:qty||1}
+   {label:'Cook this food',action:'cook-food-from-order',primary:true,food:name,qty:(pendingCart&&pendingCart.find(function(x){return x.name===name;})||{qty:1}).qty}
  ]);
 }
 function openRecipeBuilder(food,qty,afterAction){
@@ -522,7 +524,13 @@ function saveRecipeBuilder(food,qty,afterAction){
  db.recipes[food]=recipe;
  save();
  closeModal();
- openChefAssignment(food,Number(qty)||1,'');
+ if(afterAction==='order'&&pendingCookOrder){
+   var pending=pendingCookOrder;pendingCookOrder=null;cart=copy(pending.cart);activeTable=pending.activeTable||null;orderType=pending.orderType||'Takeaway';payment=pending.payment||'M-Pesa';category='All';view('orders');orderView();
+   toast(food+' recipe saved. Cook it, then it can be added to the order.');
+   setTimeout(function(){openChefAssignment(food,Number(qty)||1,'');},60);
+ }else{
+   openChefAssignment(food,Number(qty)||1,'');
+ }
 }
 function ensureRecipeIngredientsFromRecipe(recipe,qty){
  var missing=[];
