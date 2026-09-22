@@ -12,7 +12,7 @@
 </div>
 <div class="pos-shell">
 <header class="pos-header"><a class="pos-brand" href="projects.html"><span>ES</span> EDERSTONE <small>RESTAURANT POS</small></a><div class="pos-status"><span class="dot"></span><b id="clock">--:--</b><span>OFFLINE-READY</span></div><div class="header-actions"><button class="icon-btn" id="fullscreenPos" title="Full screen">⛶ <span>Full screen</span></button><button class="icon-btn" id="logoutPos" title="Exit POS">⏻ <span>Exit</span></button></div></header>
-<div class="pos-layout">
+<div class="sync-pill" id="syncStatus" role="status" aria-live="polite" title="Synchronization status"><span class="sync-dot"></span><span class="sync-label">Checking sync…</span></div><div class="pos-layout">
 <aside class="sidebar" id="sidebar"><button class="sidebar-toggle" id="sidebarToggle" data-action="toggle-sidebar" aria-label="Collapse sidebar" aria-expanded="true" title="Collapse sidebar">‹<span>Collapse</span></button>
 <button class="nav active" data-view="dashboard">▦ <span>Dashboard</span></button>
 <button class="nav" data-view="tables" data-permission="pos.read">▥ <span>Tables</span></button>
@@ -46,5 +46,16 @@ document.addEventListener('DOMContentLoaded',()=>{
       if(!ok){el.hidden=true;el.setAttribute('aria-hidden','true');}
     });
   });
+});
+</script><script>
+document.addEventListener('ederstone:sync-status',e=>{
+ const el=document.getElementById('syncStatus'); if(!el)return;
+ const d=e.detail||{};
+ let label=d.syncing?'Syncing…':!d.online?'Offline':(d.lastError||'').toLowerCase().includes('conflict')?'Conflict':'Synced';
+ el.classList.toggle('is-offline',!d.online);
+ el.classList.toggle('is-syncing',!!d.syncing);
+ el.classList.toggle('is-conflict',label==='Conflict');
+ const text=el.querySelector('.sync-label');
+ if(text)text.textContent=label+(d.queueSize?' · '+d.queueSize+' queued':'');
 });
 </script><script src="pos.js"></script></body></html>
