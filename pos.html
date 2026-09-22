@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><meta name="theme-color" content="#080808"><meta name="description" content="Ederstone Restaurant POS"><title>Ederstone Restaurant POS</title><link rel="stylesheet" href="pos.css"></head>
-<body>
+<body class="pos-loading">
+<div id="posOpening" class="pos-opening" aria-live="polite">
+  <div class="opening-orbit"><div class="opening-logo">ES</div></div>
+  <div class="opening-brand">EDERSTONE</div>
+  <strong>Opening Restaurant POS...</strong>
+  <div class="opening-progress" aria-hidden="true"><i></i></div>
+  <small>Secure local register • Offline-ready</small>
+  <footer>© 2026 EderStone. All rights reserved.</footer>
+</div>
 <div class="pos-shell">
 <header class="pos-header"><a class="pos-brand" href="projects.html"><span>ES</span> EDERSTONE <small>RESTAURANT POS</small></a><div class="pos-status"><span class="dot"></span><b id="clock">--:--</b><span>OFFLINE-READY</span></div><div class="header-actions"><button class="icon-btn" id="fullscreenPos" title="Full screen">⛶ <span>Full screen</span></button><button class="icon-btn" id="logoutPos" title="Exit POS">⏻ <span>Exit</span></button></div></header>
 <div class="pos-layout">
@@ -19,4 +27,4 @@
 <main id="app"></main>
 </div></div>
 <div class="toast" id="toast"></div><div class="modal" id="modal"><div class="modal-box" id="modalBox"></div></div>
-<script src="pos.js"></script></body></html>
+<script src="qrcode.js"></script><script src="pos.js"></script></body></html>
