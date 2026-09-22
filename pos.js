@@ -152,7 +152,7 @@ function copy(v){return JSON.parse(JSON.stringify(v));}
 function freshDB(){return copy(SEED);}
 function loadDB(){
  try{
-   var shared=window.EderStoneStore&&window.EderStoneStore.get('pos',null);
+   var shared=window.EderStoneData&&window.EderStoneData.pos?window.EderStoneData.pos.get():(window.EderStoneStore&&window.EderStoneStore.get('pos',null));
    var raw=localStorage.getItem(KEY);
    var d=shared&&typeof shared==='object'?shared:(raw?JSON.parse(raw):freshDB());
    if(!d||typeof d!=='object') d=freshDB();
@@ -212,7 +212,7 @@ var pendingCookOrder=null;
 
 function save(){
  try{
-   if(window.EderStoneStore) window.EderStoneStore.set('pos',db);
+   if(window.EderStoneData&&window.EderStoneData.pos) window.EderStoneData.pos.set(db); else if(window.EderStoneStore) window.EderStoneStore.set('pos',db);
    // Keep the legacy key during migration so older POS sessions can recover safely.
    localStorage.setItem(KEY,JSON.stringify(db));
  }catch(e){}
