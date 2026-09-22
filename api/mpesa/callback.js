@@ -26,7 +26,7 @@ export default async function handler(req,res){
     const storedAmount=Number(stored[0].amount||0);
     const callbackAmount=Number(amount||0);
     const amountMissing=incomingStatus==='success'&&(!Number.isSafeInteger(callbackAmount)||callbackAmount<=0); const amountMismatch=incomingStatus==='success'&&(amountMissing||callbackAmount!==storedAmount);
-    const status=amountMismatch?'failed':(stored[0].status==='success'?'success':incomingStatus);
+    const status=stored[0].status==='success'?'success':(amountMismatch?'failed':incomingStatus);
     const safeMessage=amountMismatch?(amountMissing?'Payment callback did not include a valid amount':'Payment amount mismatch with the requested STK amount'):String(resultDesc||'');
     const reference=metadata.length?String(value('AccountReference')||''):'';
     const rows=await sql`
