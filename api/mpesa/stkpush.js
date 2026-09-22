@@ -17,7 +17,8 @@ export default async function handler(req,res){
     const required=['MPESA_CONSUMER_KEY','MPESA_CONSUMER_SECRET','MPESA_SHORTCODE','MPESA_PASSKEY','MPESA_CALLBACK_URL'];
     if(required.some(k=>!process.env[k]))return json(res,{ok:false,error:'M-Pesa service is not configured'},503);
     const raw=JSON.stringify(req.body||{});if(raw.length>8192)return json(res,{ok:false,error:'Request too large'},413);
-    const {phone,amount,accountReference='EDERSTONE',transactionDesc='Restaurant payment'}=req.body||{};
+    const {phone,amount,accountReference='EDERSTONE',transactionDesc='Restaurant payment',posOrderId}=req.body||{};
+    if(posOrderId!==undefined&&(!String(posOrderId).match(/^[A-Za-z0-9_-]{6,80}$/)))return json(res,{ok:false,error:'Invalid POS order ID'},400);
     if(typeof phone!=='string'||!/^(?:254|\+254|07|01)\d{8}$/.test(phone))return json(res,{ok:false,error:'Invalid Kenyan M-Pesa phone number'},400);
     const normalized=phone.replace(/^\+/, '').replace(/^0/,'254');
     const value=Number(amount);if(!Number.isSafeInteger(value)||value<1||value>150000)return json(res,{ok:false,error:'Invalid payment amount'},400);
@@ -29,7 +30,7 @@ export default async function handler(req,res){
     const result=await requestJson(host,'/mpesa/stkpush/v1/processrequest',{BusinessShortCode:process.env.MPESA_SHORTCODE,Password:password,Timestamp:timestamp,TransactionType:'CustomerPayBillOnline',Amount:value,PartyA:normalized,PartyB:process.env.MPESA_SHORTCODE,PhoneNumber:normalized,CallBackURL:process.env.MPESA_CALLBACK_URL,AccountReference:reference,TransactionDesc:description},access_token);
     if(result.status<200||result.status>=300||result.data.ResponseCode!=='0')return json(res,{ok:false,error:'M-Pesa STK request was rejected'},400);
     const sql=neon(process.env.DATABASE_URL);
-    await sql`INSERT INTO mpesa_transactions (checkout_request_id,merchant_request_id,phone,amount,account_reference,transaction_desc,status,created_by) VALUES (${result.data.CheckoutRequestID},${result.data.MerchantRequestID||null},${normalized},${value},${reference},${description},'pending',${auth.user.id==='legacy-owner'?null:auth.user.id}) ON CONFLICT (checkout_request_id) DO UPDATE SET merchant_request_id=EXCLUDED.merchant_request_id,updated_at=NOW()`;
+    await sql`INSERT INTO mpesa_transactions (checkout_request_id,merchant_request_id,phone,amount,account_reference,transaction_desc,status,created_by,pos_order_id) VALUES (${result.data.CheckoutRequestID},${result.data.MerchantRequestID||null},${normalized},${value},${reference},${description},'pending',${auth.user.id==='legacy-owner'?null:auth.user.id},${posOrderId||null}) ON CONFLICT (checkout_request_id) DO UPDATE SET merchant_request_id=EXCLUDED.merchant_request_id,pos_order_id=COALESCE(mpesa_transactions.pos_order_id,EXCLUDED.pos_order_id),updated_at=NOW()`;
     return json(res,{ok:true,checkoutRequestID:result.data.CheckoutRequestID,merchantRequestID:result.data.MerchantRequestID,customerMessage:result.data.CustomerMessage});
   }catch(e){console.error('M-Pesa STK request failed:',e?.message||e);return json(res,{ok:false,error:'Payment service unavailable'},503)}
 }
