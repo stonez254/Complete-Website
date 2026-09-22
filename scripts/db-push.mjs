@@ -20,6 +20,20 @@ await sql`CREATE TABLE IF NOT EXISTS schema_migrations (
   applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 )`;
 
+let appliedSchemaStatements = 0;
+for (const statement of schemaStatements) {
+  try {
+    await sql.unsafe(statement);
+    appliedSchemaStatements += 1;
+  } catch (error) {
+    console.error(`Database schema statement ${appliedSchemaStatements + 1} failed.`);
+    console.error(error?.message || error);
+    throw error;
+  }
+}
+
+console.log(`Database schema applied successfully (${appliedSchemaStatements} statements; migrations tracked: ${migrationFiles.length}).`);
+
 const migrationDir = new URL('../db/migrations/', import.meta.url);
 let migrationFiles = [];
 try {
@@ -58,16 +72,3 @@ for (const file of migrationFiles) {
   console.log(`Applied database migration ${file}.`);
 }
 
-let appliedSchemaStatements = 0;
-for (const statement of schemaStatements) {
-  try {
-    await sql.unsafe(statement);
-    appliedSchemaStatements += 1;
-  } catch (error) {
-    console.error(`Database schema statement ${appliedSchemaStatements + 1} failed.`);
-    console.error(error?.message || error);
-    throw error;
-  }
-}
-
-console.log(`Database schema applied successfully (${appliedSchemaStatements} statements; migrations tracked: ${migrationFiles.length}).`);
