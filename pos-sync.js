@@ -9,7 +9,8 @@
   const MAX_QUEUE_ITEMS=5;
   const markQueued=()=>{queued=true;emit()};
   const emit=()=>window.dispatchEvent(new CustomEvent('ederstone:sync-status',{detail:{online:navigator.onLine,synced:serverVersion>0,syncing,queued,queueSize:readQueue().length,lastSyncAt,lastError,serverVersion}}));
-  const enqueue=()=>{const state=localState();if(!state)return;const q=readQueue();const serialized=JSON.stringify(state);const last=q[q.length-1];if(last&&JSON.stringify(last.state)===serialized){markQueued();return;}q.push({id:crypto.randomUUID?.()||String(Date.now()),state,createdAt:Date.now()});const trimmed=q.slice(-MAX_QUEUE_ITEMS);if(!writeQueue(trimmed)){lastError='Unable to persist offline sync queue';}markQueued()};
+  const enqueue=()=>{const state=localState();if(!state)return;const q=readQueue();const serialized=JSON.stringify(state);const normal=q.filter(item=>item.reason!=='version-conflict');const last=normal[normal.length-1];if(last&&JSON.stringify(last.state)===serialized){markQueued();return;}const conflicts=q.filter(item=>item.reason==='version-conflict');const next=[...conflicts,{id:crypto.randomUUID?.()||String(Date.now()),state,createdAt:Date.now()}];const trimmed=next.slice(-MAX_QUEUE_ITEMS);if(!writeQueue(trimmed)){lastError='Unable to persist offline sync queue';}markQueued()};
+  const normalPending=()=>readQueue().filter(item=>item.reason!=='version-conflict');
 
   async function pullInternal(){
     const response=await fetch('/api/pos',{cache:'no-store',credentials:'include'});
@@ -36,7 +37,7 @@
     const local=localState();if(!local)return false;
     syncing=true;lastError=null;emit();
     try{
-      const pending=readQueue();
+      const pending=normalPending();
       const batch=pending.length?pending[pending.length-1]:{state:local};
       const sent=await send(batch.state,serverVersion||null);
       if(sent.response.status===409){
@@ -44,9 +45,9 @@
         const conflictQueue=readQueue();
         const pulled=await pullInternal();
         if(pulled){
-          const q=readQueue();
+          const q=readQueue().filter(item=>item.reason==='version-conflict');
           q.push({id:crypto.randomUUID?.()||String(Date.now()),state:conflictState,createdAt:Date.now(),reason:'version-conflict',serverVersion});
-          writeQueue(q);
+          writeQueue(q.slice(-MAX_QUEUE_ITEMS));
         } else {
           writeQueue(conflictQueue.length?conflictQueue:[{id:crypto.randomUUID?.()||String(Date.now()),state:conflictState,createdAt:Date.now(),reason:'version-conflict',serverVersion}]);
         }
@@ -57,7 +58,8 @@
       }
       if(!sent.response.ok||!sent.result.ok)throw new Error(sent.result.error||'Sync push failed');
       serverVersion=Number(sent.result.version||serverVersion);lastSyncAt=Date.now();
-      writeQueue([]);queued=false;lastError=null;emit();return true;
+      const conflicts=readQueue().filter(item=>item.reason==='version-conflict');
+      writeQueue(conflicts.slice(-MAX_QUEUE_ITEMS));queued=conflicts.length>0;lastError=null;emit();return true;
     }catch(e){lastError=e?.message||'Sync push failed';if(!readQueue().length)enqueue();else markQueued();return false}
     finally{syncing=false;emit()}
   }
