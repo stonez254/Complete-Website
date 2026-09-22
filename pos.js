@@ -279,6 +279,12 @@ function closeUnfinishedTask(id){
  t.status='resolved';t.resolved=new Date().toLocaleString();save();
 }
 function reviewUnfinishedTask(id){
+
+ var pending=db.unfinishedTasks.find(function(x){return x.id===id&&x.status==='open';});
+ if(pending){
+   var required=pending.type==='delivery'?'delivery.update':(pending.type==='chef'?'kitchen.manage':'orders.create');
+   if(!ederStoneCan(required)){toast('This task is restricted for your role');return;}
+ }
  var t=db.unfinishedTasks.find(function(x){return x.id===id&&x.status==='open';});
  if(!t)return;
  if(t.type==='order'){
