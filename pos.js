@@ -823,37 +823,46 @@ async function pollMpesa(id,phone){
  var btn=document.getElementById('mpesaSend');if(btn){btn.disabled=false;btn.textContent='📲 Retry prompt';}
 }
 
-function receiptQrData(o){
- var items=(o.items||[]).map(function(x){return [String(x.name||''),Number(x.qty)||0,Number(x.price)||0];});
- var data={brand:'EDERSTONE',receipt:String(o.id||''),date:String(o.time||''),type:String(o.type||'')+(o.table?' / Table '+o.table:''),items:items,subtotal:Number(o.subtotal)||0,total:Number(o.total)||0,payment:String(o.payment||'')};
- if(o.customer)data.customer={name:String(o.customer.name||''),phone:String(o.customer.phone||''),address:String(o.customer.address||'')};
- if(o.mpesa&&o.mpesa.phone)data.mpesa=String(o.mpesa.phone);
+function receiptQrData(o,compact){
+ var items=(o.items||[]).map(function(x){
+   return compact
+     ? [String(x.name||''),Number(x.qty)||0]
+     : [String(x.name||''),Number(x.qty)||0,Number(x.price)||0];
+ });
+ var data={
+   brand:'EDERSTONE',
+   receipt:String(o.id||''),
+   date:String(o.time||''),
+   type:String(o.type||'')+(o.table?' / Table '+o.table:''),
+   items:items,
+   total:Number(o.total)||0,
+   payment:String(o.payment||'')
+ };
+ if(!compact){
+   data.subtotal=Number(o.subtotal)||0;
+   if(o.customer)data.customer={name:String(o.customer.name||''),phone:String(o.customer.phone||''),address:String(o.customer.address||'')};
+   if(o.mpesa&&o.mpesa.phone)data.mpesa=String(o.mpesa.phone);
+ }
  return JSON.stringify(data);
 }
 function receiptQrMarkup(o){
- var svg='',fallback=false;
  try{
-   if(typeof qrcode!=='function')throw new Error('QR library missing');
+   if(typeof qrcode!=='function')throw new Error('QR library is not loaded');
+   var payload=receiptQrData(o,false);
    var qr=qrcode(0,'L');
    try{
-     qr.addData(receiptQrData(o),'Byte');
+     qr.addData(payload,'Byte');
      qr.make();
-   }catch(fullError){
+   }catch(e){
      qr=qrcode(0,'L');
-     qr.addData(JSON.stringify({brand:'EDERSTONE',receipt:String(o.id||''),date:String(o.time||''),total:Number(o.total)||0,items:(o.items||[]).map(function(x){return [String(x.name||''),Number(x.qty)||0];})}),'Byte');
+     qr.addData(receiptQrData(o,true),'Byte');
      qr.make();
-     fallback=true;
    }
-   svg=qr.createSvgTag({cellSize:3,margin:4,scalable:true,alt:{text:'QR code for receipt '+o.id}});
-   if(!svg||svg.indexOf('<svg')===-1)throw new Error('QR SVG generation failed');
-   var table=qr.createTableTag(2,4);
-   return '<div class="receipt-qr">'+
-     '<div class="receipt-qr-screen">'+svg+'</div>'+
-     '<div class="receipt-qr-print" aria-hidden="true">'+table+'</div>'+
-     '<small>'+(fallback?'QR contains a compact receipt record with the receipt number, date, total and items.':'Scan to view the itemized receipt record.')+'</small>'+
-     '</div>';
+   var svg=qr.createSvgTag({cellSize:3,margin:4,scalable:true,alt:{text:'EDERSTONE receipt '+String(o.id||'')+' QR code'}});
+   if(!svg||svg.indexOf('<svg')===-1)throw new Error('QR SVG was not created');
+   return '<div class="receipt-qr">'+svg+'<small>Scan to view the receipt details.</small></div>';
  }catch(e){
-   return '<div class="receipt-qr receipt-qr-error"><small>QR generation failed for this receipt. The complete receipt details remain printed above.</small></div>';
+   return '<div class="receipt-qr receipt-qr-error"><strong>QR generation failed</strong><small>The receipt is still valid and printable. '+esc(String(e&&e.message||'QR error'))+'</small></div>';
  }
 }
 function showReceipt(o){
