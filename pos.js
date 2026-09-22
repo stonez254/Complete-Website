@@ -158,6 +158,8 @@ function loadDB(){
    if(!d.settings||typeof d.settings!=='object') d.settings=copy(SEED.settings);
    if(!Array.isArray(d.tables)||d.tables.length!==16) d.tables=copy(SEED.tables);
    if(!Array.isArray(d.menu)||!d.menu.length) d.menu=copy(SEED.menu);
+   d.menu=d.menu.filter(function(x){return Array.isArray(x)&&String(x[0]||'').trim();}).map(function(x){return [String(x[0]).trim(),String(x[1]||'Mains').trim(),Number(x[2])||0];});
+   if(!d.menu.length)d.menu=copy(SEED.menu);
    if(!Array.isArray(d.inventory)) d.inventory=copy(SEED.inventory);
    var existingIngredients={};d.inventory.forEach(function(x){existingIngredients[x[0]]=true;});
    SEED.inventory.forEach(function(x){if(!existingIngredients[x[0]])d.inventory.push(copy(x));});
@@ -639,13 +641,15 @@ function openTable(id){
 function subtotal(){return cart.reduce(function(a,x){return a+Number(x.price||0)*Number(x.qty||0);},0);}
 function grand(){return subtotal()*(1+(Number(db.settings.tax)||0)/100+(Number(db.settings.service)||0)/100);}
 function menuCards(items){
- return items.map(function(x){
+ var list=Array.isArray(items)?items:[];
+ if(!list.length)return '<div class="menu-empty"><strong>No menu items available.</strong><small>The restaurant menu could not be loaded. Refreshing the menu data is available in Settings.</small></div>';
+ return list.map(function(x){
    var i=db.menu.indexOf(x);
    return '<div class="item" data-action="add-item" data-index="'+i+'"><div class="category">'+esc(x[1])+'</div><div class="item-line"><b>'+esc(x[0])+'</b><span class="price">'+money(x[2])+'</span></div><small>Tap to add</small></div>';
  }).join('');
 }
 function orderView(){
- var cats=['All'].concat(Array.from(new Set(db.menu.map(function(x){return x[1];}))));
+ var cats=['All'].concat(Array.from(new Set(db.menu.filter(function(x){return Array.isArray(x);}).map(function(x){return x[1];}))));
  var filtered=category==='All'?db.menu:db.menu.filter(function(x){return x[1]===category;});
  var catButtons=cats.map(function(c){return '<button class="filter '+(category===c?'active':'')+'" data-action="category" data-category="'+esc(c)+'">'+esc(c)+'</button>';}).join('');
  var rows=cart.map(function(x,i){return '<div class="cart-row"><div><b>'+esc(x.name)+'</b><div class="muted">'+money(x.price)+' × '+x.qty+'</div></div><div class="qty"><button data-action="qty" data-index="'+i+'" data-delta="-1">−</button><b>'+x.qty+'</b><button data-action="qty" data-index="'+i+'" data-delta="1">+</button></div></div>';}).join('');
