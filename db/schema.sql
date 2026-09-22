@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS mpesa_transactions (
   created_by UUID REFERENCES users(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  completed_at TIMESTAMPTZ
+  completed_at TIMESTAMPTZ,
+  pos_order_id TEXT UNIQUE
 );
 CREATE INDEX IF NOT EXISTS mpesa_transactions_status_idx ON mpesa_transactions (status, updated_at DESC);
 CREATE INDEX IF NOT EXISTS mpesa_transactions_created_at_idx ON mpesa_transactions (created_at DESC);
