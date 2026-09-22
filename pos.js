@@ -256,11 +256,9 @@ function openDeliveryAssignment(orderId,taskId){
  }).join('');
  var buttons=available.map(function(x){return '<button class="action primary" data-action="assign-delivery" data-order="'+esc(orderId)+'" data-task="'+esc(taskId||'')+'" data-driver="'+esc(x[0])+'">Assign '+esc(x[0])+'</button>';}).join('');
  if(!available.length){
-   if(!taskId)addUnfinishedTask('delivery','Deliver order '+orderId,'All delivery staff are currently assigned. Waiting for a driver.',{orderId:orderId});
-   problemModal('No delivery staff available','All delivery staff are currently assigned. Review this task when a driver is released.',[
-     {label:'Review delivery staff',action:'go-unfinished',primary:true},
-     {label:'Open Staff',action:'go-staff'}
-   ]);
+   if(!taskId){var pending=addUnfinishedTask('delivery','Deliver order '+orderId,'All delivery staff are currently assigned. Waiting for a driver.',{orderId:orderId});taskId=pending.id;}
+   setModal('<div class="problem-modal"><div class="problem-icon">🛵</div><div class="eyebrow">DELIVERY QUEUE</div><h2>No driver available</h2><p class="problem-reason">Order '+esc(orderId)+' is waiting for a delivery driver. Clear one of the currently assigned drivers below, then assign this order.</p><div class="panel"><h3>Currently assigned delivery staff</h3>'+busyCards+'</div><div class="problem-actions"><button class="action" data-action="go-staff">Open Staff</button><button class="action" data-action="close-modal">Close</button></div></div>');
+   updateUnfinishedBadge();
    return;
  }
  setModal('<div class="problem-modal"><div class="problem-icon">🛵</div><div class="eyebrow">DELIVERY ASSIGNMENT</div><h2>Assign order '+esc(orderId)+'</h2><p class="problem-reason">'+(o.customer?esc(o.customer.name)+' · '+esc(o.customer.phone)+'<br>'+esc(o.customer.address):'Delivery details unavailable')+'</p><div class="problem-actions">'+buttons+'</div>'+(busyCards?'<div class="panel"><h3>Currently assigned drivers</h3>'+busyCards+'</div>':'')+'<button class="action problem-close" data-action="close-modal">Close</button></div>');
