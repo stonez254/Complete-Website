@@ -341,19 +341,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (window.speechSynthesis) window.speechSynthesis.cancel();
   });
 
-  document.querySelectorAll('[data-speak-target]').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      var selector = btn.getAttribute('data-speak-target');
-      var el = selector ? document.querySelector(selector) : null;
-      if (!el || !window.speechSynthesis) return;
-      window.speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(el.innerText);
-      u.rate = 0.88;
-      window.speechSynthesis.speak(u);
-    });
-  });
-
   refresh();
 });
 </script></body></html>
