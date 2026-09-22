@@ -74,7 +74,10 @@ export async function PUT(request){
       )
       SELECT version,updated_at FROM updated
     `;
-    if(!rows.length)return json({ok:false,error:'Version conflict',conflict:true},409);
+    if(!rows.length){
+      const current=await sql`SELECT version,updated_at FROM pos_state WHERE id=1 LIMIT 1`;
+      return json({ok:false,error:'Version conflict',conflict:true,version:Number(current[0]?.version||0),updatedAt:current[0]?.updated_at||null},409);
+    }
     return json({ok:true,version:Number(rows[0].version),updatedAt:rows[0].updated_at});
   }catch(error){
     console.error('POS database request failed:',error?.message||error);
