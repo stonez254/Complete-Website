@@ -40,7 +40,10 @@ async function currentUser(request) {
 export async function GET(request) { try { const user = await currentUser(request); return json({ ok:true, authenticated:!!user, user:user || null }); } catch (error) { console.error('Auth check failed:', error?.message || error); return json({ok:false,error:'Authentication service unavailable'},503); } }
 export async function POST(request) {
   try {
-    const body = await request.json(); const action = body?.action || 'login'; const sql = db();
+    const raw = await request.text();
+  if (raw.length > 16384) return json({ok:false,error:'Request too large'},413);
+  let body;
+  try { body = raw ? JSON.parse(raw) : {}; } catch (_) { return json({ok:false,error:'Invalid JSON'},400); } const action = body?.action || 'login'; const sql = db();
     if (action === 'logout') { const token=sessionToken(request); if(token) await sql`DELETE FROM sessions WHERE token_hash = ${tokenHash(token)}`; return json({ok:true,authenticated:false},200,{'set-cookie': [clearCookie, '__Host-ederstone_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0'].join(', ')}); }
     if (action !== 'login') return json({ok:false,error:'Unsupported authentication action'},400);
     const username=String(body?.username||'').trim().toLowerCase(); const password=String(body?.password||'');
@@ -84,6 +87,7 @@ export async function staffApi(request) {
   const user = await currentUser(request);
   if (!user || !['owner','manager'].includes(user.role)) return json({ok:false,error:'Forbidden'},403);
   const sql = db();
+  if (!['GET','POST','PATCH'].includes(request.method)) return json({ok:false,error:'Method not allowed'},405);
   if (request.method === 'GET') {
     const rows = await sql`SELECT id, display_name, username, role, active, created_at, updated_at FROM users ORDER BY created_at DESC`;
     return json({ok:true,users:rows});
@@ -92,7 +96,7 @@ export async function staffApi(request) {
   if (request.method === 'POST') {
     const displayName=String(body?.displayName||'').trim(); const username=String(body?.username||'').trim().toLowerCase(); const password=String(body?.password||''); const role=String(body?.role||'viewer');
     const allowed=['manager','cashier','kitchen','waiter','delivery','viewer'];
-    if(!displayName||!username||password.length<8||!allowed.includes(role)) return json({ok:false,error:'Valid name, username, password (8+ chars), and staff role are required'},400);
+    if(displayName.length>100||username.length<3||username.length>50||!/^[a-z0-9._-]+$/.test(username)||password.length<8||password.length>256||!allowed.includes(role)) return json({ok:false,error:'Valid name, username, password (8+ chars), and staff role are required'},400);
     try { const rows=await sql`INSERT INTO users (display_name,username,password_hash,role) VALUES (${displayName},${username},${hashPassword(password)},${role}) RETURNING id,display_name,username,role,active,created_at`; return json({ok:true,user:rows[0]},201); }
     catch(e){ if(String(e?.message||'').toLowerCase().includes('unique')) return json({ok:false,error:'Username already exists'},409); throw e; }
   }
