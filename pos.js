@@ -210,7 +210,7 @@ function completeSale(method,extra){
  if(orderType==='Delivery')o.customer={name:document.getElementById('customerName').value.trim(),phone:document.getElementById('customerPhone').value.trim(),address:document.getElementById('deliveryAddress').value.trim()};
  db.orders.push(o);
  if(activeTable){var t=db.tables[activeTable-1];t.order=copy(cart);t.status='Busy';t.paid=true;t.ready=false;t.lastPayment=method;}
- cart=[];activeTable=null;save();showReceipt(o);
+ cart=[];activeTable=null;save();orderView();showReceipt(o);
 }
 function openSplit(){
  setModal('<div class="section-head"><div><div class="eyebrow">SPLIT PAYMENT</div><h2>Complete split ticket</h2></div><button class="action" data-action="close-modal">Close</button></div>'+
