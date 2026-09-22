@@ -23,7 +23,7 @@ export default async function handler(req,res){
     if(code===undefined)return json(res,{status:'pending',message:'Payment pending'});
     const status=String(code)==='0'?'success':'failed';
     const sql=neon(process.env.DATABASE_URL);
-    await sql`UPDATE mpesa_transactions SET status=${status},result_code=${String(code)},result_message=${String(r.data.ResultDesc||r.data.ResponseDescription||'')},updated_at=NOW(),completed_at=NOW() WHERE checkout_request_id=${checkoutRequestID}`;
+    await sql`UPDATE mpesa_transactions SET status=CASE WHEN status='success' THEN 'success' ELSE ${status} END,result_code=${String(code)},result_message=${String(r.data.ResultDesc||r.data.ResponseDescription||'')},updated_at=NOW(),completed_at=NOW() WHERE checkout_request_id=${checkoutRequestID}`;
     if(status==='success')return json(res,{status:'success',message:'Payment received'});
     return json(res,{status:'failed',message:'Payment cancelled or failed'});
   }catch(e){console.error('M-Pesa query failed:',e?.message||e);return json(res,{ok:false,error:'Payment service unavailable'},503)}
