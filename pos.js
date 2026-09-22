@@ -18,7 +18,7 @@ var SEED={
  settings:{name:'Ederstone Restaurant',tax:0,service:0},
  tables:Array.from({length:16},function(_,i){return {id:i+1,status:'Open',order:[],paid:false,ready:false};}),
  menu:MENU.map(function(x){return x.slice();}),
- inventory:[['Rice','kg',32,10],['Chicken','kg',18,6],['Beef','kg',22,7],['Cooking Oil','L',20,5],['Potatoes','kg',45,12],['Passion','kg',8,4],['Mango','kg',12,4],['Soda','bottles',48,12],['Flour','kg',30,8],['Sugar','kg',18,5]],
+ inventory:[['Rice','kg',32,10],['Chicken','kg',18,6],['Beef','kg',22,7],['Cooking Oil','L',20,5],['Potatoes','kg',45,12],['Passion','kg',8,4],['Mango','kg',12,4],['Soda','bottles',48,12],['Flour','kg',30,8],['Sugar','kg',18,5]],\n foodStock:MENU.map(function(x){return {name:x[0],qty:100,reorder:10,unit:'pieces'}; }),
  staff:[['Stone','Owner','Active'],['Cashier 01','Cashier','Active'],['Kitchen 01','Kitchen','Active'],['Waiter 01','Waiter','Active']],
  orders:[]
 };
@@ -32,7 +32,7 @@ function loadDB(){
    if(!d.settings||typeof d.settings!=='object') d.settings=copy(SEED.settings);
    if(!Array.isArray(d.tables)||d.tables.length!==16) d.tables=copy(SEED.tables);
    if(!Array.isArray(d.menu)||!d.menu.length) d.menu=copy(SEED.menu);
-   if(!Array.isArray(d.inventory)) d.inventory=copy(SEED.inventory);
+   if(!Array.isArray(d.inventory)) d.inventory=copy(SEED.inventory);\n   if(!Array.isArray(d.foodStock)) d.foodStock=copy(SEED.foodStock);\n   var stockNames={}; d.foodStock.forEach(function(s){stockNames[s.name]=true;});\n   d.menu.forEach(function(m){if(!stockNames[m[0]])d.foodStock.push({name:m[0],qty:100,reorder:10,unit:'pieces'});});
    if(!Array.isArray(d.staff)) d.staff=copy(SEED.staff);
    if(!Array.isArray(d.orders)) d.orders=[];
    return d;
@@ -298,7 +298,7 @@ function addMenu(){
  var n=prompt('Food/drink name');if(!n)return;
  var p=Number(prompt('Price in KSh'));if(!p||p<0)return;
  var c=prompt('Category','Mains')||'Mains';
- db.menu.push([n.trim(),c.trim(),p]);save();menu();toast('Menu item added');
+ db.menu.push([n.trim(),c.trim(),p]);\n db.foodStock.push({name:n.trim(),qty:100,reorder:10,unit:'pieces'});\n save();menu();toast('Menu item added with 100 pieces opening stock');
 }
 function editMenu(i){
  if(!db.menu[i])return;
@@ -306,9 +306,14 @@ function editMenu(i){
  db.menu[i][2]=p;save();menu();toast('Price updated');
 }
 function inventory(){
- shell('Inventory','Monitor stock and reorder points.','<div class="list">'+db.inventory.map(function(x,i){return '<div class="item"><div class="item-line"><b>'+esc(x[0])+'</b><strong>'+x[2]+' '+esc(x[1])+'</strong></div><div class="muted">Reorder at '+x[3]+' '+esc(x[1])+'</div><div class="actions"><button class="action" data-action="stock" data-index="'+i+'" data-delta="-1">− 1</button><button class="action" data-action="stock" data-index="'+i+'" data-delta="1">＋ 1</button></div></div>';}).join('')+'</div>');
+ var ingredients='<div class="panel"><div class="section-head"><div><h3>Kitchen ingredients</h3><p class="muted">Raw cooking materials used by the kitchen.</p></div></div><div class="list">'+
+ db.inventory.map(function(x,i){var low=Number(x[2])<=Number(x[3]);return '<div class="item '+(low?'low-stock':'')+'"><div class="item-line"><b>'+esc(x[0])+'</b><strong>'+x[2]+' '+esc(x[1])+'</strong></div><div class="muted">'+(low?'⚠ Reorder now · ':'Reorder at ')+x[3]+' '+esc(x[1])+'</div><div class="actions"><button class="action" data-action="stock" data-index="'+i+'" data-delta="-1">− 1</button><button class="action" data-action="stock" data-index="'+i+'" data-delta="1">＋ 1</button></div></div>';}).join('')+'</div></div>';
+ var foods='<div class="panel"><div class="section-head"><div><h3>Prepared food stock</h3><p class="muted">Sellable food quantities. A paid order automatically deducts the quantity here.</p></div></div><div class="list">'+
+ db.foodStock.map(function(s,i){var low=Number(s.qty)<=Number(s.reorder);return '<div class="item '+(low?'low-stock':'')+'"><div class="item-line"><b>'+esc(s.name)+'</b><strong>'+s.qty+' '+esc(s.unit)+'</strong></div><div class="muted">'+(low?'⚠ Reorder now · ':'Reorder at ')+s.reorder+' '+esc(s.unit)+'</div><div class="actions"><button class="action" data-action="food-stock" data-index="'+i+'" data-delta="-1">− 1</button><button class="action" data-action="food-stock" data-index="'+i+'" data-delta="1">＋ 1</button></div></div>';}).join('')+'</div></div>';
+ shell('Kitchen Inventory','Track raw ingredients and the quantity of each sellable food item remaining.',ingredients+foods);
 }
 function stock(i,d){if(db.inventory[i]){db.inventory[i][2]=Math.max(0,Number(db.inventory[i][2])+Number(d));save();inventory();}}
+function foodStock(i,d){if(db.foodStock[i]){db.foodStock[i].qty=Math.max(0,Number(db.foodStock[i].qty)+Number(d));save();inventory();}}
 function staff(){
  shell('Staff','Roles for the restaurant team.','<div class="list">'+db.staff.map(function(x){return '<div class="item"><div class="item-line"><b>'+esc(x[0])+'</b><span class="badge good">'+esc(x[2])+'</span></div><span class="muted">'+esc(x[1])+'</span></div>';}).join('')+'</div>');
 }
@@ -365,7 +370,7 @@ function handleAction(el){
  if(a==='unready')return unready(Number(el.getAttribute('data-id')));
  if(a==='add-menu')return addMenu();
  if(a==='edit-menu')return editMenu(Number(el.getAttribute('data-index')));
- if(a==='stock')return stock(Number(el.getAttribute('data-index')),Number(el.getAttribute('data-delta')));
+ if(a==='stock')return stock(Number(el.getAttribute('data-index')),Number(el.getAttribute('data-delta')));\n if(a==='food-stock')return foodStock(Number(el.getAttribute('data-index')),Number(el.getAttribute('data-delta')));
  if(a==='save-settings')return saveSettings();
  if(a==='reset')return resetPOS();
 }
