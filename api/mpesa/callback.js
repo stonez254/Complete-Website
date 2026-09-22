@@ -20,16 +20,23 @@ export default async function handler(req,res){
     const receipt=value('MpesaReceiptNumber');
     const amount=value('Amount');
     const phone=value('PhoneNumber');
-    const status=resultCode===0?'success':'failed';
+    const incomingStatus=resultCode===0?'success':'failed';
+    const stored=await sql`SELECT amount,status FROM mpesa_transactions WHERE checkout_request_id=${checkoutRequestID} LIMIT 1`;
+    if(!stored.length)return json(res,{ResultCode:0,ResultDesc:'Accepted'});
+    const storedAmount=Number(stored[0].amount||0);
+    const callbackAmount=Number(amount||0);
+    const amountMismatch=incomingStatus==='success'&&callbackAmount>0&&callbackAmount!==storedAmount;
+    const status=amountMismatch?'failed':(stored[0].status==='success'?'success':incomingStatus);
+    const safeMessage=amountMismatch?'Payment amount mismatch with the requested STK amount':String(resultDesc||'');
     const reference=metadata.length?String(value('AccountReference')||''):'';
     const rows=await sql`
       UPDATE mpesa_transactions
       SET status=${status},
           merchant_request_id=COALESCE(${merchantRequestID||null},merchant_request_id),
           result_code=${String(resultCode)},
-          result_message=${String(resultDesc||'')},
+          result_message=${safeMessage},
           mpesa_receipt=COALESCE(${receipt?String(receipt):null},mpesa_receipt),
-          amount=CASE WHEN ${status}='success' AND ${Number(amount||0)}>0 THEN ${Number(amount)} ELSE amount END,
+          amount=amount,
           phone=COALESCE(${phone?String(phone):null},phone),
           updated_at=NOW(),
           completed_at=NOW()
