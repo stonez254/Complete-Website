@@ -79,7 +79,6 @@ function loadDB(){
    d.menu.forEach(function(m){if(!stockNames[m[0]])d.foodStock.push({name:m[0],qty:100,reorder:10,unit:'pieces'});});
    if(!Array.isArray(d.staff)) d.staff=copy(SEED.staff);
    if(!Array.isArray(d.orders)) d.orders=[];
-   if(!Array.isArray(d.kitchenJobs)) d.kitchenJobs=[];
    return d;
  }catch(e){return freshDB();}
 }
@@ -100,54 +99,10 @@ function ingredientByName(name){return db.inventory.find(function(x){return x[0]
 function ensureRecipeIngredients(name,qty){var recipe=recipeFor(name),missing=[];recipe.forEach(function(r){var ing=ingredientByName(r[0]),need=Number(r[2])*qty,have=ing?Number(ing[2]):0;if(!ing||have+1e-9<need)missing.push({name:r[0],need:need,have:have,unit:r[1]});});return {ok:!missing.length,missing:missing};}
 function consumeRecipe(name,qty){recipeFor(name).forEach(function(r){var ing=ingredientByName(r[0]);if(ing)ing[2]=Math.max(0,Number(ing[2])-Number(r[2])*qty);});}
 function formatMissing(m){return m.map(function(x){return x.name+' ('+x.have.toFixed(3)+' '+x.unit+' left; need '+x.need.toFixed(3)+')';}).join(', ');}
-function cookFood(i,qty,chef){
- var s=db.foodStock[i];if(!s)return;
- qty=Math.floor(Number(qty)||0);if(qty<=0){toast('Enter a valid quantity to cook');return;}
- var check=ensureRecipeIngredients(s.name,qty);if(!check.ok){openIngredientProblem(s.name,check.missing);return;}
- if(!chef){openChefAssignment(s.name,qty);return;}
- assignChef(s.name,qty,chef);
-}
-function chefs(){return db.staff.filter(function(x){var r=(String(x[1])+' '+String(x[2])+' '+String(x[0])).toLowerCase();return r.indexOf('kitchen')!==-1||r.indexOf('chef')!==-1||r.indexOf('cook')!==-1;});}
-function chefBusy(name){return db.kitchenJobs.some(function(j){return j.chef===name&&j.status==='cooking';});}
-function openChefAssignment(food,qty){
- var available=chefs().filter(function(x){return !chefBusy(x[0]);});
- if(!available.length){problemModal('No chef available','All kitchen staff are currently assigned to cooking tasks.',[{label:'Open Kitchen',action:'go-kitchen',primary:true}]);return;}
- var buttons=available.map(function(x){return '<button class="action primary" data-action="assign-chef" data-food="'+esc(food)+'" data-qty="'+qty+'" data-chef="'+esc(x[0])+'">Assign '+esc(x[0])+'</button>';}).join('');
- setModal('<div class="problem-modal"><div class="problem-icon">♨</div><div class="eyebrow">KITCHEN ASSIGNMENT</div><h2>Assign a chef</h2><p class="problem-reason">'+esc(qty)+' '+esc(food)+' needs to be cooked. Choose an available chef.</p><div class="problem-actions">'+buttons+'</div><button class="action problem-close" data-action="close-modal">Cancel</button></div>');
-}
-function assignChef(food,qty,chef){
- var s=db.foodStock.find(function(x){return x.name===food;});if(!s)return;
- var check=ensureRecipeIngredients(food,qty);if(!check.ok){openIngredientProblem(food,check.missing);return;}
- if(chefBusy(chef)){toast(chef+' is already assigned');return;}
- db.kitchenJobs.push({id:'KJ-'+Date.now().toString().slice(-6),food:food,qty:Number(qty),chef:chef,status:'cooking',started:new Date().toLocaleString(),finished:null});
- save();closeModal();kitchen();toast(chef+' assigned to cook '+qty+' '+food);
-}
-function finishKitchenJob(id){
- var j=db.kitchenJobs.find(function(x){return x.id===id;});if(!j||j.status!=='cooking')return;
- var check=ensureRecipeIngredients(j.food,j.qty);if(!check.ok){openIngredientProblem(j.food,check.missing);return;}
- consumeRecipe(j.food,j.qty);
- var s=db.foodStock.find(function(x){return x.name===j.food;});if(!s)return;
- s.qty=Number(s.qty||0)+Number(j.qty);j.status='finished';j.finished=new Date().toLocaleString();
- save();kitchen();toast(j.food+' stock increased by '+j.qty+'. '+j.chef+' can now be released.');
-}
-function clearFinishedJob(id){
- var index=db.kitchenJobs.findIndex(function(x){return x.id===id&&x.status==='finished';});if(index<0)return;
- var j=db.kitchenJobs[index];db.kitchenJobs.splice(index,1);save();kitchen();toast(j.chef+' cleared and available for the next task');
-}
-function goKitchenForFood(name){
- closeModal();view('kitchen');
- setTimeout(function(){var s=db.foodStock.find(function(x){return x.name===name;});if(s){var q=Number(prompt('How many '+name+' pieces should the kitchen prepare?','10'));if(isFinite(q)&&q>0)openChefAssignment(name,Math.floor(q));}},50);
-}
+function cookFood(i,qty){var s=db.foodStock[i];if(!s)return;qty=Math.floor(Number(qty)||0);if(qty<=0){toast('Enter a valid quantity to cook');return;}var check=ensureRecipeIngredients(s.name,qty);if(!check.ok){openIngredientProblem(s.name,check.missing);return;}consumeRecipe(s.name,qty);s.qty=Number(s.qty||0)+qty;save();inventory();toast(qty+' '+s.name+' added to prepared stock');}
 function receiveIngredient(i){var ing=db.inventory[i];if(!ing)return;var qty=Number(prompt('How much '+ing[0]+' received?','10'));if(!isFinite(qty)||qty<=0)return;ing[2]=Number(ing[2])+qty;save();inventory();toast(qty+' '+ing[0]+' added to kitchen inventory');}
 function money(n){return 'KSh '+Math.round(Number(n)||0).toLocaleString('en-KE');}
-function esc(v){
- return String(v==null?'':v).replace(/[&<>"]/g,function(ch){
-  if(ch==='&')return '&amp;';
-  if(ch==='<')return '&lt;';
-  if(ch==='>')return '&gt;';
-  return '&quot;';
- });
-}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function toast(msg){
  var t=document.getElementById('toast'); if(!t)return;
  t.textContent=msg; t.classList.add('show');
@@ -162,10 +117,10 @@ function shortageText(missing){
  return missing.map(function(x){return x.name+': need '+x.need.toFixed(3)+' '+x.unit+', available '+x.have.toFixed(3)+' '+x.unit;}).join(' | ');
 }
 function openOrderStockProblem(name,available){
- setModal('<div class="problem-modal"><div class="problem-icon">!</div><div class="eyebrow">POS ACTION DENIED</div><h2>Order denied</h2><p class="problem-reason">'+esc(name)+' is out of stock. Only '+available+' pieces remain.</p><div class="problem-actions"><button class="action primary" data-action="go-kitchen" data-food="'+esc(name)+'">Cook this food</button><button class="action" data-action="close-modal">Close</button></div></div>');
+ problemModal('Order denied',name+' is out of stock. Only '+available+' pieces remain.',[{label:'Cook this food',action:'go-kitchen',primary:true}]);
 }
 function openIngredientProblem(name,missing){
- setModal('<div class="problem-modal"><div class="problem-icon">!</div><div class="eyebrow">KITCHEN ACTION DENIED</div><h2>Cooking denied</h2><p class="problem-reason">Not enough ingredients to prepare '+esc(name)+'. Missing: '+esc(shortageText(missing))+'</p><div class="problem-actions"><button class="action primary" data-action="go-inventory">Order ingredients</button><button class="action" data-action="close-modal">Close</button></div></div>');
+ problemModal('Cooking denied','Not enough ingredients to prepare '+name+'. Missing: '+shortageText(missing),[{label:'Go to inventory',action:'go-inventory',primary:true}]);
 }
 function setModal(html){
  if(!modal)return;
@@ -174,9 +129,6 @@ function setModal(html){
 }
 function closeModal(){if(modal)modal.classList.remove('show');}
 
-function collapsible(title,body,id,open){return '<div class="panel collapsible-panel"><button class="action collapse-toggle '+(open?'open':'')+'" data-action="toggle-collapse" data-target="'+id+'"><span>'+esc(title)+'</span><span class="chevron">⌄</span></button><div id="'+id+'" class="collapsible-list '+(open?'open':'')+'">'+body+'</div></div>
-}
-function toggleCollapse(id){var el=document.getElementById(id);if(!el)return;var btn=document.querySelector('[data-target="'+id+'"]');el.classList.toggle('open');if(btn)btn.classList.toggle('open',el.classList.contains('open'));}
 function shell(title,sub,body){
  if(!app)return;
  app.innerHTML='<section class="content">'+
@@ -260,12 +212,6 @@ function orderView(){
    if(box)box.innerHTML=menuCards(filtered.filter(function(x){return x[0].toLowerCase().indexOf(q)!==-1;}));
  });
 }
-function lowStockReminder(name,remaining){
- if(remaining<=10&&remaining>=0){
-  setModal('<div class="problem-modal"><div class="problem-icon">⚠</div><div class="eyebrow">LOW STOCK REMINDER</div><h2>Stock is running low</h2><p class="problem-reason">'+esc(name)+' will have only '+remaining+' piece'+(remaining===1?'':'s')+' remaining after this order.</p><div class="problem-actions"><button class="action primary" data-action="assign-low-stock" data-food="'+esc(name)+'">Assign chef now</button><button class="action" data-action="close-modal">Continue order</button></div></div>');
- }
-}
-function assignLowStock(name){closeModal();view('kitchen');setTimeout(function(){var s=db.foodStock.find(function(x){return x.name===name;});if(s){var q=Number(prompt('How many '+name+' pieces should the kitchen prepare?','10'));if(isFinite(q)&&q>0)openChefAssignment(name,Math.floor(q));}},50);}
 function addItem(i){
  var x=db.menu[i];if(!x)return;
  var stock=db.foodStock.find(function(s){return s.name===x[0];});
@@ -274,14 +220,12 @@ function addItem(i){
  if(stock&&requested>Number(stock.qty||0)){openOrderStockProblem(x[0],Number(stock.qty||0));return;}
  if(found)found.qty++;else cart.push({name:x[0],price:Number(x[2]),qty:1});
  syncTable();orderView();toast(x[0]+' added');
- if(stock)lowStockReminder(x[0],Number(stock.qty||0)-requested);
 }
 function changeQty(i,d){
  if(!cart[i])return;
  if(d>0){var stock=db.foodStock.find(function(s){return s.name===cart[i].name;});if(stock&&cart[i].qty+d>Number(stock.qty||0)){openOrderStockProblem(cart[i].name,Number(stock.qty||0));return;}}
- cart[i].qty+=d;if(cart[i].qty<=0){cart.splice(i,1);} 
+ cart[i].qty+=d;if(cart[i].qty<=0)cart.splice(i,1);
  syncTable();orderView();
- if(d>0&&cart[i]){var s2=db.foodStock.find(function(x){return x.name===cart[i].name;});if(s2)lowStockReminder(cart[i].name,Number(s2.qty||0)-Number(cart[i].qty));}
 }
 function syncTable(){
  if(activeTable){
@@ -336,7 +280,7 @@ function completeSale(method,extra){
  cart.forEach(function(ci){var fs=db.foodStock.find(function(s){return s.name===ci.name;});if(fs)fs.qty=Math.max(0,Number(fs.qty)-Number(ci.qty));});
  db.orders.push(o);
  if(activeTable){var t=db.tables[activeTable-1];t.order=copy(cart);t.status='Busy';t.paid=true;t.ready=false;t.lastPayment=method;}
- var lowSale=cart.map(function(ci){var fs=db.foodStock.find(function(s){return s.name===ci.name;});return fs?{name:fs.name,qty:Number(fs.qty||0)}:null;}).filter(Boolean);cart=[];activeTable=null;save();orderView();showReceipt(o);setTimeout(function(){var alert=lowSale.find(function(x){return x.qty<=10;});if(alert)lowStockReminder(alert.name,alert.qty);},1200);
+ cart=[];activeTable=null;save();orderView();showReceipt(o);
 }
 function openSplit(){
  setModal('<div class="section-head"><div><div class="eyebrow">SPLIT PAYMENT</div><h2>Complete split ticket</h2></div><button class="action" data-action="close-modal">Close</button></div>'+
@@ -402,27 +346,23 @@ function clearTable(id){
  t.status='Open';t.order=[];t.paid=false;t.ready=false;delete t.lastPayment;save();tables();toast('Table '+id+' cleared and available');
 }
 function orders(){
- var rows=db.orders.slice().reverse().map(function(o){return '<div class="order-card"><div class="order-line"><b>'+esc(o.id)+'</b><strong>'+money(o.total)+'</strong></div><div class="muted">'+esc(o.time)+' · '+esc(o.type)+' · '+esc(o.payment)+(o.table?' · Table '+o.table:'')+'</div><button class="action" data-action="receipt" data-id="'+esc(o.id)+'">View receipt</button></div>';}).join('')||'<p class="muted">No completed orders.</p>';
- shell('Orders','Every completed transaction is recorded locally.',collapsible('Completed order list',rows,'ordersList',true));
+ shell('Orders','Every completed transaction is recorded locally.','<div class="list">'+
+ (db.orders.slice().reverse().map(function(o){return '<div class="order-card"><div class="order-line"><b>'+esc(o.id)+'</b><strong>'+money(o.total)+'</strong></div><div class="muted">'+esc(o.time)+' · '+esc(o.type)+' · '+esc(o.payment)+(o.table?' · Table '+o.table:'')+'</div><button class="action" data-action="receipt" data-id="'+esc(o.id)+'">View receipt</button></div>';}).join('')||'<p class="muted">No completed orders.</p>')+'</div>');
 }
 function showReceiptById(id){var o=db.orders.find(function(x){return x.id===id;});if(o)showReceipt(o);}
 function kitchen(){
- var jobs=db.kitchenJobs.filter(function(j){return j.status==='cooking'||j.status==='finished';});
- var jobCards=jobs.map(function(j){return '<div class="panel"><div class="section-head"><div><div class="eyebrow">COOKING TASK</div><h3>'+esc(j.food)+' × '+j.qty+'</h3></div><span class="badge '+(j.status==='finished'?'good':'warn')+'">'+(j.status==='finished'?'COOKED':'COOKING')+'</span></div><p class="muted">Chef: <b>'+esc(j.chef)+'</b><br>Started: '+esc(j.started)+(j.finished?'<br>Finished: '+esc(j.finished):'')+'</p>'+(j.status==='cooking'?'<button class="action primary" data-action="finish-job" data-id="'+j.id+'">✓ Chef confirms finished</button>':'<div class="actions"><button class="action primary" data-action="clear-job" data-id="'+j.id+'">Clear chef / release task</button><span class="badge good">+'+j.qty+' added to prepared stock</span></div>')+'</div>';}).join('');
- var low=db.foodStock.filter(function(s){return Number(s.qty)<=10;});
- var lowCards=low.map(function(s){return '<div class="item low-stock"><div class="item-line"><b>'+esc(s.name)+'</b><strong>'+s.qty+' pieces</strong></div><div class="muted">Low prepared stock</div><button class="action primary" data-action="assign-food" data-food="'+esc(s.name)+'">Assign chef</button></div>';}).join('');
  var tickets=db.tables.filter(function(t){return t.status==='Busy'&&!t.paid;});
- var ticketCards=tickets.map(function(t){return '<div class="panel"><div class="section-head"><h3>Table '+t.id+'</h3><span class="badge '+(t.ready?'good':'warn')+'">'+(t.ready?'READY':'COOKING')+'</span></div>'+t.order.map(function(x){return '<div class="cart-row"><span>'+esc(x.name)+'</span><b>×'+x.qty+'</b></div>';}).join('')+(t.ready?'<button class="action" data-action="unready" data-id="'+t.id+'">Return to cooking</button>':'<button class="action primary" data-action="ready" data-id="'+t.id+'">Mark ready</button>')+'</div>';}).join('');
- shell('Kitchen','Chef assignments, cooking confirmation and prepared-stock replenishment.',
- collapsible('Chef task board',jobCards||'<p class="muted">No active chef tasks.</p>','kitchenJobs',true)+
- collapsible('Low prepared-stock alerts',lowCards||'<p class="muted">Prepared food stock is above the reminder threshold.</p>','kitchenLow',false)+
- collapsible('Dine-in tickets',ticketCards||'<p class="muted">Kitchen clear. New dine-in tickets appear here.</p>','kitchenTickets',false));
+ shell('Kitchen Display','Live unpaid food tickets from occupied tables.','<div class="grid">'+
+ (tickets.map(function(t){return '<div class="panel"><div class="section-head"><h3>Table '+t.id+'</h3><span class="badge '+(t.ready?'good':'warn')+'">'+(t.ready?'READY':'COOKING')+'</span></div>'+
+ t.order.map(function(x){return '<div class="cart-row"><span>'+esc(x.name)+'</span><b>×'+x.qty+'</b></div>';}).join('')+
+ (t.ready?'<button class="action" data-action="unready" data-id="'+t.id+'">Return to cooking</button>':'<button class="action primary" data-action="ready" data-id="'+t.id+'">Mark ready</button>')+
+ '</div>';}).join('')||'<p class="muted">Kitchen clear. New dine-in tickets appear here.</p>')+'</div>');
 }
 function markReady(id){var t=db.tables[id-1];if(t&&t.status==='Busy'&&!t.paid){t.ready=true;save();kitchen();toast('Table '+id+' marked ready');}}
 function unready(id){var t=db.tables[id-1];if(t){t.ready=false;save();kitchen();}}
 function menu(){
- var rows=db.menu.map(function(x,i){return '<div class="item"><div class="category">'+esc(x[1])+'</div><div class="item-line"><b>'+esc(x[0])+'</b><strong>'+money(x[2])+'</strong></div><button class="action" data-action="edit-menu" data-index="'+i+'">Edit</button></div>';}).join('');
- shell('Menu Manager','Your live catalogue contains '+db.menu.length+' food and drink items.',collapsible('Menu catalogue',rows,'menuList',true)+'<div class="actions"><button class="action primary" data-action="add-menu">＋ Add item</button></div>');
+ shell('Menu Manager','Your live catalogue contains '+db.menu.length+' food and drink items.','<div class="panel"><div class="section-head"><h3>Menu catalogue</h3><button class="action primary" data-action="add-menu">＋ Add item</button></div><div class="menu-grid">'+
+ db.menu.map(function(x,i){return '<div class="item"><div class="category">'+esc(x[1])+'</div><div class="item-line"><b>'+esc(x[0])+'</b><strong>'+money(x[2])+'</strong></div><button class="action" data-action="edit-menu" data-index="'+i+'">Edit</button></div>';}).join('')+'</div></div>');
 }
 function addMenu(){
  var n=prompt('Food/drink name');if(!n)return;
@@ -438,9 +378,11 @@ function editMenu(i){
  db.menu[i][2]=p;save();menu();toast('Price updated');
 }
 function inventory(){
- var ingredients=db.inventory.map(function(x,i){var low=Number(x[2])<=Number(x[3]);return '<div class="item '+(low?'low-stock':'')+'"><div class="item-line"><b>'+esc(x[0])+'</b><strong>'+x[2]+' '+esc(x[1])+'</strong></div><div class="muted">'+(low?'⚠ Reorder now · ':'Reorder at ')+x[3]+' '+esc(x[1])+'</div><div class="actions"><button class="action" data-action="stock" data-index="'+i+'" data-delta="-1">− 1</button><button class="action" data-action="stock" data-index="'+i+'" data-delta="1">＋ 1</button><button class="action primary" data-action="receive-ingredient" data-index="'+i+'">＋ Receive stock</button></div></div>';}).join('');
- var foods=db.foodStock.map(function(s,i){var low=Number(s.qty)<=Number(s.reorder);return '<div class="item '+(low?'low-stock':'')+'"><div class="item-line"><b>'+esc(s.name)+'</b><strong>'+s.qty+' '+esc(s.unit)+'</strong></div><div class="muted">'+(low?'⚠ Reorder now · ':'Reorder at ')+s.reorder+' '+esc(s.unit)+'</div><div class="actions"><button class="action" data-action="food-stock" data-index="'+i+'" data-delta="-1">− 1</button><button class="action primary" data-action="assign-food" data-food="'+esc(s.name)+'">♨ Assign chef</button></div></div>';}).join('');
- shell('Kitchen Inventory','Track raw ingredients and each sellable food item.',collapsible('Raw ingredients',ingredients,'ingredientList',false)+collapsible('Prepared food stock',foods,'preparedList',true));
+ var ingredients='<div class="panel"><div class="section-head"><div><h3>Kitchen ingredients</h3><p class="muted">Raw cooking materials used by the kitchen.</p></div></div><div class="list">'+
+ db.inventory.map(function(x,i){var low=Number(x[2])<=Number(x[3]);return '<div class="item '+(low?'low-stock':'')+'"><div class="item-line"><b>'+esc(x[0])+'</b><strong>'+x[2]+' '+esc(x[1])+'</strong></div><div class="muted">'+(low?'⚠ Reorder now · ':'Reorder at ')+x[3]+' '+esc(x[1])+'</div><div class="actions"><button class="action" data-action="stock" data-index="'+i+'" data-delta="-1">− 1</button><button class="action" data-action="stock" data-index="'+i+'" data-delta="1">＋ 1</button><button class="action primary" data-action="receive-ingredient" data-index="'+i+'">＋ Receive stock</button></div></div>';}).join('')+'</div></div>';
+ var foods='<div class="panel"><div class="section-head"><div><h3>Prepared food stock</h3><p class="muted">Cooking a food item adds sellable pieces and automatically consumes its recipe ingredients.</p></div></div><div class="list">'+
+ db.foodStock.map(function(s,i){var low=Number(s.qty)<=Number(s.reorder);return '<div class="item '+(low?'low-stock':'')+'"><div class="item-line"><b>'+esc(s.name)+'</b><strong>'+s.qty+' '+esc(s.unit)+'</strong></div><div class="muted">'+(low?'⚠ Reorder now · ':'Reorder at ')+s.reorder+' '+esc(s.unit)+'</div><div class="actions"><button class="action" data-action="food-stock" data-index="'+i+'" data-delta="-1">− 1</button><button class="action primary" data-action="cook-food" data-index="'+i+'">＋ Cook stock</button></div></div>';}).join('')+'</div></div>';
+ shell('Kitchen Inventory','Track raw ingredients and the quantity of each sellable food item remaining.',ingredients+foods);
 }
 function stock(i,d){if(db.inventory[i]){db.inventory[i][2]=Math.max(0,Number(db.inventory[i][2])+Number(d));save();inventory();}}
 function foodStock(i,d){if(db.foodStock[i]){db.foodStock[i].qty=Math.max(0,Number(db.foodStock[i].qty)+Number(d));save();inventory();}}
@@ -465,13 +407,6 @@ function resetPOS(){
  db=freshDB();cart=[];activeTable=null;orderType='Takeaway';payment='M-Pesa';category='All';viewStack=[];currentView='';save();view('dashboard');toast('POS data reset');
 }
 function goBack(){view(viewStack.pop()||'dashboard',true);}
-function goKitchenForFood(name){
- closeModal(); view('kitchen');
- setTimeout(function(){
-   var s=db.foodStock.find(function(x){return x.name===name;});
-   if(s){var q=Number(prompt('How many '+name+' pieces should the kitchen cook?','10'));if(isFinite(q)&&q>0)cookFood(db.foodStock.indexOf(s),q);}
- },50);
-}
 var VIEWS={dashboard:dashboard,tables:tables,orders:orders,menu:menu,kitchen:kitchen,inventory:inventory,staff:staff,reports:reports,settings:settings};
 function view(v,fromBack){
  if(!VIEWS[v])v='dashboard';
@@ -499,13 +434,7 @@ function handleAction(el){
  if(a==='proceed-payment')return proceedPayment();
  if(a==='confirm-sale')return completeSale(payment);
  if(a==='close-modal')return closeModal();
- if(a==='toggle-collapse')return toggleCollapse(el.getAttribute('data-target'));
- if(a==='go-kitchen'){return goKitchenForFood(el.getAttribute('data-food')||'');}
- if(a==='assign-food'){return openChefAssignment(el.getAttribute('data-food')||'',10);}
- if(a==='assign-chef'){return assignChef(el.getAttribute('data-food')||'',Number(el.getAttribute('data-qty'))||0,el.getAttribute('data-chef')||'');}
- if(a==='assign-low-stock'){return assignLowStock(el.getAttribute('data-food')||'');}
- if(a==='finish-job'){return finishKitchenJob(el.getAttribute('data-id')||'');}
- if(a==='clear-job'){return clearFinishedJob(el.getAttribute('data-id')||'');}
+ if(a==='go-kitchen'){closeModal();return view('inventory');}
  if(a==='go-inventory'){closeModal();return view('inventory');}
  if(a==='mpesa-send')return requestMpesa();
  if(a==='split-complete')return completeSplit();
