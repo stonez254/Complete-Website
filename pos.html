@@ -15,16 +15,16 @@
 <div class="pos-layout">
 <aside class="sidebar" id="sidebar"><button class="sidebar-toggle" id="sidebarToggle" data-action="toggle-sidebar" aria-label="Collapse sidebar" aria-expanded="true" title="Collapse sidebar">‹<span>Collapse</span></button>
 <button class="nav active" data-view="dashboard">▦ <span>Dashboard</span></button>
-<button class="nav" data-view="tables">▥ <span>Tables</span></button>
-<button class="nav" data-action="new-order">＋ <span>New Order</span></button>
-<button class="nav" data-view="orders">☷ <span>Sales History</span></button>
-<button class="nav" data-view="menu">◫ <span>Menu</span></button>
-<button class="nav" data-view="kitchen">♨ <span>Kitchen</span></button>
+<button class="nav" data-view="tables" data-permission="pos.read">▥ <span>Tables</span></button>
+<button class="nav" data-action="new-order" data-permission="orders.create">＋ <span>New Order</span></button>
+<button class="nav" data-view="orders" data-permission="pos.read">☷ <span>Sales History</span></button>
+<button class="nav" data-view="menu" data-permission="menu.manage">◫ <span>Menu</span></button>
+<button class="nav" data-view="kitchen" data-permission="kitchen.manage">♨ <span>Kitchen</span></button>
 <button class="nav" data-view="unfinished">⏳ <span>Unfinished Tasks</span><b class="nav-count" id="unfinishedCount">0</b></button>
-<button class="nav" data-view="inventory">▤ <span>Inventory</span></button>
-<button class="nav" data-view="staff">♙ <span>Staff</span></button>
-<button class="nav" data-view="reports">◒ <span>Sales</span></button>
-<button class="nav" data-view="settings">⚙ <span>Settings</span></button>
+<button class="nav" data-view="inventory" data-permission="inventory.manage">▤ <span>Inventory</span></button>
+<button class="nav" data-view="staff" data-permission="staff.read">♙ <span>Staff</span></button>
+<button class="nav" data-view="reports" data-permission="reports.read">◒ <span>Sales</span></button>
+<button class="nav" data-view="settings" data-permission="pos.write">⚙ <span>Settings</span></button>
 </aside>
 <main id="app"></main>
 </div></div>
