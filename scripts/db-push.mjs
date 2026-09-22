@@ -12,8 +12,16 @@ const statements = schema
   .map(statement => statement.trim())
   .filter(Boolean);
 
+let applied = 0;
 for (const statement of statements) {
-  await sql.unsafe(statement);
+  try {
+    await sql.unsafe(statement);
+    applied += 1;
+  } catch (error) {
+    console.error(`Database schema statement ${applied + 1} failed.`);
+    console.error(error?.message || error);
+    throw error;
+  }
 }
 
-console.log(`Database schema applied successfully (${statements.length} statements).`);
+console.log(`Database schema applied successfully (${applied} statements).`);
