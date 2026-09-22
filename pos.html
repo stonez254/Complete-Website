@@ -1,10 +1,20 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><meta name="theme-color" content="#080808"><meta name="description" content="Ederstone Restaurant POS demo"><title>Ederstone Restaurant POS</title><link rel="stylesheet" href="pos.css"></head>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><meta name="theme-color" content="#080808"><meta name="description" content="Ederstone Restaurant POS"><title>Ederstone Restaurant POS</title><link rel="stylesheet" href="pos.css"></head>
 <body>
 <div class="pos-shell">
-<header class="pos-header"><a class="pos-brand" href="projects.html"><span>ES</span> EDERSTONE <small>RESTAURANT POS</small></a><div class="pos-status"><span class="dot"></span><b id="clock">--:--</b><span>OFFLINE-READY</span></div><button class="icon-btn" id="logoutPos" title="Exit POS">⏻</button></header>
+<header class="pos-header"><a class="pos-brand" href="projects.html"><span>ES</span> EDERSTONE <small>RESTAURANT POS</small></a><div class="pos-status"><span class="dot"></span><b id="clock">--:--</b><span>OFFLINE-READY</span></div><div class="header-actions"><button class="icon-btn" id="fullscreenPos" title="Full screen">⛶ <span>Full screen</span></button><button class="icon-btn" id="logoutPos" title="Exit POS">⏻ <span>Exit</span></button></div></header>
 <div class="pos-layout">
-<aside class="sidebar" id="sidebar"><button class="nav active" data-view="dashboard">▦ <span>Dashboard</span></button><button class="nav" data-view="tables">▥ <span>Tables</span></button><button class="nav" data-view="orders">☷ <span>Orders</span></button><button class="nav" data-view="menu">◫ <span>Menu</span></button><button class="nav" data-view="kitchen">♨ <span>Kitchen</span></button><button class="nav" data-view="inventory">▤ <span>Inventory</span></button><button class="nav" data-view="staff">♙ <span>Staff</span></button><button class="nav" data-view="reports">◒ <span>Reports</span></button><button class="nav" data-view="settings">⚙ <span>Settings</span></button></aside>
+<aside class="sidebar" id="sidebar">
+<button class="nav active" data-view="dashboard">▦ <span>Dashboard</span></button>
+<button class="nav" data-view="tables">▥ <span>Tables</span></button>
+<button class="nav" data-view="orders">☷ <span>Orders</span></button>
+<button class="nav" data-view="menu">◫ <span>Menu</span></button>
+<button class="nav" data-view="kitchen">♨ <span>Kitchen</span></button>
+<button class="nav" data-view="inventory">▤ <span>Inventory</span></button>
+<button class="nav" data-view="staff">♙ <span>Staff</span></button>
+<button class="nav" data-view="reports">◒ <span>Sales</span></button>
+<button class="nav" data-view="settings">⚙ <span>Settings</span></button>
+</aside>
 <main id="app"></main>
 </div></div>
 <div class="toast" id="toast"></div><div class="modal" id="modal"><div class="modal-box" id="modalBox"></div></div>
