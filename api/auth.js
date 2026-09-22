@@ -51,7 +51,7 @@ export async function POST(request) {
     await sql`DELETE FROM sessions WHERE user_id = ${user.id} AND expires_at <= NOW()`;
     await sql`INSERT INTO sessions (user_id, token_hash, expires_at) VALUES (${user.id}, ${tokenHash(token)}, NOW() + INTERVAL '7 days')`;
     return json({ok:true,authenticated:true,user:{id:user.id,display_name:user.display_name,username:user.username,role:user.role}},200,{'set-cookie':cookie(token)});
-  } catch(error) { console.error('Auth request failed:',error?.message||error); return json({ok:false,error:'Authentication service unavailable'},503); }
+  } catch(error) { console.error('Auth request failed'); return json({ok:false,error:'Authentication service unavailable'},503); }
 }
 export async function requireRole(request, roles = []) {
   const user = await currentUser(request);
