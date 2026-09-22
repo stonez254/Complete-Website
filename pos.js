@@ -187,6 +187,16 @@ function loadDB(){
  }catch(e){return freshDB();}
 }
 var db=loadDB();
+
+function refreshFromSharedState(){
+  if(!window.EderStoneStore)return;
+  var latest=window.EderStoneStore.get('pos',null);
+  if(!latest||typeof latest!=='object')return;
+  db=latest;
+  updateUnfinishedBadge();
+  if(currentView&&VIEWS[currentView]) VIEWS[currentView]();
+}
+
 var cart=[];
 var activeTable=null;
 var orderType='Takeaway';
@@ -207,6 +217,9 @@ function save(){
    localStorage.setItem(KEY,JSON.stringify(db));
  }catch(e){}
 }
+window.addEventListener('ederstone:state-change',function(event){
+ if(event.detail&&event.detail.key==='pos'&&event.detail.source==='storage') refreshFromSharedState();
+});
 function recipeFor(name){return (db&&db.recipes&&db.recipes[name])||RECIPES[name]||[];}
 function ingredientByName(name){return db.inventory.find(function(x){return x[0]===name;});}
 function ensureRecipeIngredients(name,qty){var recipe=recipeFor(name),missing=[];recipe.forEach(function(r){var ing=ingredientByName(r[0]),need=Number(r[2])*qty,have=ing?Number(ing[2]):0;if(!ing||have+1e-9<need)missing.push({name:r[0],need:need,have:have,unit:r[1]});});return {ok:!missing.length,missing:missing};}
