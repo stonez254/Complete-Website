@@ -785,10 +785,16 @@ function completeSale(method,extra){
  }
  var o={id:'ORD-'+Date.now().toString().slice(-6),table:activeTable,type:orderType,payment:method,total:grand(),subtotal:subtotal(),items:copy(cart),status:'Paid',time:new Date().toLocaleString(),customer:null,mpesa:extra||{}};
  if(orderType==='Delivery')o.customer={name:document.getElementById('customerName').value.trim(),phone:document.getElementById('customerPhone').value.trim(),address:document.getElementById('deliveryAddress').value.trim()};
- cart.forEach(function(ci){var fs=db.foodStock.find(function(s){return s.name===ci.name;});if(fs)fs.qty=Math.max(0,Number(fs.qty)-Number(ci.qty));});
- db.orders.push(o);
+ var committed=window.EderStonePOSData&&window.EderStonePOSData.recordSale
+   ?window.EderStonePOSData.recordSale(o,cart,activeTable)
+   :null;
+ if(!committed||!committed.ok){
+   var missing=committed&&committed.missing?committed.missing:[];
+   openOrderStockProblem(missing.length?missing[0].name:'selected item',missing.length?missing[0].available:0,copy(cart));
+   return;
+ }
+ db=window.EderStonePOSData.getDB()||db;
  if(orderType==='Delivery')addUnfinishedTask('delivery','Deliver order '+o.id,'Delivery order for '+(o.customer?o.customer.name:'customer')+'.',{orderId:o.id});
- if(activeTable){var t=db.tables[activeTable-1];t.order=copy(cart);t.status='Busy';t.paid=true;t.ready=false;t.lastPayment=method;}
  cart=[];activeTable=null;save();orderView();showReceipt(o);
  if(o.type==='Delivery')setTimeout(function(){openDeliveryAssignment(o.id,null);},500);
 }
