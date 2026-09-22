@@ -3,6 +3,21 @@ import { currentUser } from './auth.js';
 
 const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store'}});
 function database(){const url=process.env.DATABASE_URL;if(!url)throw new Error('DATABASE_URL is not configured');return neon(url);}
+function validatePOSState(state){
+  const required=['orders','tables','foodStock'];
+  for(const key of required)if(!(key in state)||!Array.isArray(state[key]))return 'Invalid POS state structure';
+  for(const item of state.foodStock){
+    if(!item||typeof item!=='object'||typeof item.name!=='string'||item.name.length>160)return 'Invalid food stock entry';
+    const qty=Number(item.qty);
+    if(!Number.isFinite(qty)||qty<0||qty>1e9)return 'Invalid food stock quantity';
+  }
+  for(const order of state.orders){
+    if(!order||typeof order!=='object'||typeof order.id!=='string'||order.id.length<1||order.id.length>120)return 'Invalid order entry';
+    const total=Number(order.total);
+    if(!Number.isFinite(total)||total<0||total>1e9)return 'Invalid order total';
+  }
+  return null;
+}
 async function hasPermission(user,p){
   if(!user?.active)return false;
   if(user.role==='owner')return true;
@@ -33,6 +48,8 @@ export async function PUT(request){
     if(raw.length>2_000_000)return json({ok:false,error:'Request too large'},413);
     let body;try{body=JSON.parse(raw)}catch(_){return json({ok:false,error:'Invalid JSON'},400)}
     if(!body||typeof body.state!=='object'||Array.isArray(body.state))return json({ok:false,error:'state must be an object'},400);
+    const stateError=validatePOSState(body.state);
+    if(stateError)return json({ok:false,error:stateError},400);
     const state=JSON.stringify(body.state);
     if(state.length>1_500_000)return json({ok:false,error:'POS state too large'},413);
 
