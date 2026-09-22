@@ -817,7 +817,7 @@ async function pollMpesa(id,phone){
 }
 
 function receiptQrData(o){
- var lines=['EDERSTONE RESTAURANT POS','Receipt: '+o.id,'Date: '+o.time,'Type: '+o.type+(o.table?' / Table '+o.table:'')];
+ var lines=['EDERSTONE RESTAURANT POS','Receipt: '+o.id,'Date: '+o.time,'Type: '+o.type+(o.table?' / Table '+o.table:''),'Record: '+JSON.stringify({id:o.id,type:o.type,table:o.table||null,total:o.total,payment:o.payment,items:o.items||[]})];
  (o.items||[]).forEach(function(x){lines.push(x.name+' x'+x.qty+' = '+money(x.price*x.qty));});
  lines.push('TOTAL: '+money(o.total),'PAYMENT: '+o.payment,'© 2026 EderStone');
  if(o.mpesa&&o.mpesa.phone)lines.push('M-PESA: '+o.mpesa.phone);
@@ -836,7 +836,7 @@ function receiptQrMarkup(o){
 function showReceipt(o){
  setModal('<div class="section-head"><h3>Receipt '+esc(o.id)+'</h3><button class="action" data-action="close-modal">Close</button></div>'+
  '<div class="receipt">'+
- '<div class="receipt-brand"><span class="receipt-logo">ES</span><div><strong>EDERSTONE</strong><small>RESTAURANT POS</small></div></div>'+
+ '<div class="receipt-brand"><span class="receipt-logo"><img src="assets/icons/web-app-manifest-512x512.png" alt="EderStone logo"></span><div><strong>EDERSTONE</strong><small>RESTAURANT POS</small></div></div>'+
  '<div class="receipt-watermark" aria-hidden="true">ES</div>'+
  '<div class="receipt-head"><h2>'+esc(db.settings.name)+'</h2><p>'+esc(o.time)+'<br>'+esc(o.type)+(o.table?' · Table '+o.table:'')+'</p></div>'+
  receiptQrMarkup(o)+'<hr>'+
