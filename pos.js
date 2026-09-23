@@ -23,16 +23,32 @@ function money(n){return (db.store.currency||'KES')+' '+Number(n||0).toLocaleStr
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function toast(s){const t=document.getElementById('toast');t.textContent=s;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800)}
 function setView(v){currentView=v;document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===v));document.getElementById('pageTitle').textContent=v[0].toUpperCase()+v.slice(1);render()}
-document.querySelectorAll('.nav-item').forEach(b=>b.onclick=()=>setView(b.dataset.view));
-document.getElementById('collapseBtn').onclick=()=>document.getElementById('sidebar').classList.toggle('collapsed');
-document.getElementById('mobileMenu').onclick=()=>document.getElementById('sidebar').classList.toggle('mobile-open');
-document.getElementById('newOrderSide').onclick=()=>setView('orders');
-document.getElementById('resetBtn').onclick=()=>{if(confirm('Reset all POS demo data?')){db=structuredClone(seed);save();cart=[];render();toast('Demo data reset')}}};
-document.querySelector('[data-close]').onclick=closeModal;
-function closeModal(){document.getElementById('modal').classList.add('hidden')}
-function modal(html){document.getElementById('modalBody').innerHTML=html;document.getElementById('modal').classList.remove('hidden')}
-document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
-function render(){save();const c=document.getElementById('content');if(!c)return;const views={dashboard:renderDashboard,menu:renderMenu,orders:renderOrders,inventory:renderInventory,kitchen:renderKitchen,reports:renderReports,staff:renderStaff,settings:renderSettings};(views[currentView]||renderDashboard)(c)}
+function closeModal(){const m=document.getElementById('modal');if(m)m.classList.add('hidden')}
+function modal(html){const body=document.getElementById('modalBody');const m=document.getElementById('modal');if(!body||!m)return;body.innerHTML=html;m.classList.remove('hidden')}
+function render(){
+  try{
+    save();
+    const c=document.getElementById('content');
+    if(!c) throw new Error('POS content container is missing');
+    const views={dashboard:renderDashboard,menu:renderMenu,orders:renderOrders,inventory:renderInventory,kitchen:renderKitchen,reports:renderReports,staff:renderStaff,settings:renderSettings};
+    (views[currentView]||renderDashboard)(c);
+  }catch(err){
+    console.error('EderStone POS render error:',err);
+    const c=document.getElementById('content');
+    if(c)c.innerHTML='<div class="panel"><h2>POS could not render</h2><p class="empty">The POS engine encountered an error. Refresh the page to retry.</p><pre style="white-space:pre-wrap;color:#e65b68;font-size:.72rem">'+esc(err&&err.message||err)+'</pre><button class="primary" onclick="location.reload()">Refresh POS</button></div>';
+  }
+}
+function initPOS(){
+  document.querySelectorAll('.nav-item').forEach(b=>b.onclick=()=>setView(b.dataset.view));
+  const collapse=document.getElementById('collapseBtn'); if(collapse)collapse.onclick=()=>document.getElementById('sidebar').classList.toggle('collapsed');
+  const mobile=document.getElementById('mobileMenu'); if(mobile)mobile.onclick=()=>document.getElementById('sidebar').classList.toggle('mobile-open');
+  const newOrder=document.getElementById('newOrderSide'); if(newOrder)newOrder.onclick=()=>setView('orders');
+  const reset=document.getElementById('resetBtn'); if(reset)reset.onclick=()=>{if(confirm('Reset all POS demo data?')){db=structuredClone(seed);save();cart=[];render();toast('Demo data reset')}};
+  const close=document.querySelector('[data-close]'); if(close)close.onclick=closeModal;
+  const modalEl=document.getElementById('modal'); if(modalEl)modalEl.addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
+  const storeEl=document.getElementById('storeName'); if(storeEl)storeEl.textContent=db.store.name;
+  render();
+}
 function renderDashboard(c){
  const sales=db.orders.filter(o=>o.status==='Paid').reduce((a,o)=>a+o.total,0), today=new Date().toDateString(), todaySales=db.orders.filter(o=>new Date(o.created).toDateString()===today&&o.status==='Paid').reduce((a,o)=>a+o.total,0);
  const low=db.menu.filter(p=>p.stock<=p.low), pending=db.orders.filter(o=>o.status==='Pending').length;
@@ -84,4 +100,6 @@ function drawQR(canvas,text){
  finder(0,0);finder(n-7,0);finder(0,n-7);
  for(let y=0;y<n;y++)for(let x=0;x<n;x++){if(reserved.has(y+','+x))continue;let v;if(y===6||x===6)v=(x+y)%2===0;else{v=bits[k++%bits.length]^(Math.imul(x+11,y+7)>>>3)%2;if((x+y)%5===0)v=!v}if(v)ctx.fillRect(x*m,y*m,m,m)}
 }
-function tick(){document.getElementById('clock').textContent=new Date().toLocaleString()}setInterval(tick,1000);tick();const storeEl=document.getElementById('storeName');if(storeEl)storeEl.textContent=db.store.name;render();
+function tick(){const c=document.getElementById('clock');if(c)c.textContent=new Date().toLocaleString()}
+setInterval(tick,1000);
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{tick();initPOS()},{once:true});else{tick();initPOS()}
