@@ -18,7 +18,7 @@ settings:{receiptFooter:'Thank you for shopping with us.',tax:0},
 lastOrder:0};
 let db=load();let cart=[];let pay='Cash';let currentView='dashboard';let category='All';
 function load(){try{const x=JSON.parse(localStorage.getItem(KEY));return x&&x.menu&&x.orders?x:structuredClone(seed)}catch(e){return structuredClone(seed)}}
-function save(){localStorage.setItem(KEY,JSON.stringify(db));document.getElementById('storageState').textContent='● Saved'}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(db));const s=document.getElementById('storageState');if(s)s.textContent='● Saved'}catch(e){console.warn('Local storage unavailable',e)}}
 function money(n){return (db.store.currency||'KES')+' '+Number(n||0).toLocaleString()}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function toast(s){const t=document.getElementById('toast');t.textContent=s;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800)}
@@ -32,7 +32,7 @@ document.querySelector('[data-close]').onclick=closeModal;
 function closeModal(){document.getElementById('modal').classList.add('hidden')}
 function modal(html){document.getElementById('modalBody').innerHTML=html;document.getElementById('modal').classList.remove('hidden')}
 document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
-function render(){save();const c=document.getElementById('content');({dashboard:renderDashboard,menu:renderMenu,orders:renderOrders,inventory:renderInventory,kitchen:renderKitchen,reports:renderReports,staff:renderStaff,settings:renderSettings}[currentView])(c)}
+function render(){save();const c=document.getElementById('content');if(!c)return;const views={dashboard:renderDashboard,menu:renderMenu,orders:renderOrders,inventory:renderInventory,kitchen:renderKitchen,reports:renderReports,staff:renderStaff,settings:renderSettings};(views[currentView]||renderDashboard)(c)}
 function renderDashboard(c){
  const sales=db.orders.filter(o=>o.status==='Paid').reduce((a,o)=>a+o.total,0), today=new Date().toDateString(), todaySales=db.orders.filter(o=>new Date(o.created).toDateString()===today&&o.status==='Paid').reduce((a,o)=>a+o.total,0);
  const low=db.menu.filter(p=>p.stock<=p.low), pending=db.orders.filter(o=>o.status==='Pending').length;
@@ -84,4 +84,4 @@ function drawQR(canvas,text){
  finder(0,0);finder(n-7,0);finder(0,n-7);
  for(let y=0;y<n;y++)for(let x=0;x<n;x++){if(reserved.has(y+','+x))continue;let v;if(y===6||x===6)v=(x+y)%2===0;else{v=bits[k++%bits.length]^(Math.imul(x+11,y+7)>>>3)%2;if((x+y)%5===0)v=!v}if(v)ctx.fillRect(x*m,y*m,m,m)}
 }
-function tick(){document.getElementById('clock').textContent=new Date().toLocaleString()}setInterval(tick,1000);tick();document.getElementById('storeName').textContent=db.store.name;render();
+function tick(){document.getElementById('clock').textContent=new Date().toLocaleString()}setInterval(tick,1000);tick();const storeEl=document.getElementById('storeName');if(storeEl)storeEl.textContent=db.store.name;render();
