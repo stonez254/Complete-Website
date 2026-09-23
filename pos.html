@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080808">
+<meta name="description" content="EderStone POS - local-first point of sale system">
+<title>EderStone POS</title>
+<link rel="stylesheet" href="pos.css">
+</head>
+<body>
+<div id="toast" class="toast"></div>
+<div id="app" class="app">
+  <aside id="sidebar" class="sidebar">
+    <div class="side-brand"><span>ES</span><b>POS</b></div>
+    <button id="collapseBtn" class="icon-btn" title="Collapse sidebar">☰</button>
+    <div class="store-mini"><strong id="storeName">EderStone POS</strong><small id="roleLabel">Owner</small></div>
+    <nav id="nav">
+      <button class="nav-item active" data-view="dashboard"><i>⌂</i><span>Dashboard</span></button>
+      <button class="nav-item" data-view="menu"><i>▦</i><span>Menu</span></button>
+      <button class="nav-item" data-view="orders"><i>☷</i><span>Orders</span></button>
+      <button class="nav-item" data-view="inventory"><i>◈</i><span>Inventory</span></button>
+      <button class="nav-item" data-view="kitchen"><i>♨</i><span>Kitchen</span></button>
+      <button class="nav-item" data-view="reports"><i>▥</i><span>Reports</span></button>
+      <button class="nav-item" data-view="staff"><i>♙</i><span>Staff & Shifts</span></button>
+      <button class="nav-item" data-view="settings"><i>⚙</i><span>Settings</span></button>
+    </nav>
+    <button id="newOrderSide" class="new-order">＋ <span>New Order</span></button>
+    <div class="side-foot"><small>LOCAL MODE</small><span id="storageState">● Saved</span></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div><button id="mobileMenu" class="icon-btn mobile-only">☰</button><span id="pageTitle">Dashboard</span><small id="clock"></small></div>
+      <div class="top-actions"><span class="offline">LOCAL • OFFLINE</span><button id="resetBtn" class="ghost">Reset demo</button></div>
+    </header>
+    <section id="content" class="content"></section>
+  </main>
+</div>
+
+<div id="modal" class="modal hidden"><div class="modal-card"><button class="modal-close" data-close>×</button><div id="modalBody"></div></div></div>
+
+<script src="pos.js"></script>
+</body>
+</html>
